@@ -1,5 +1,6 @@
 // The Upgrades, Trophies, Cosmos and Probes tabs.
 
+import { noteHappyMoment } from './rating.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from '../data/achievements.js';
 import { ANOMALIES, ANOMALY_BY_ID } from '../data/anomalies.js';
 import { abandonAnomaly, anomaliesUnlocked, enterAnomaly } from '../core/anomalies.js';
@@ -356,6 +357,7 @@ export class CosmosPanel implements Panel {
         ctx.sky.setStage(stageFor(0));
         ctx.showTab('build');
         breakAd(ctx);
+        noteHappyMoment(12000);
         toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>A new universe begins</b><br>+${fmt(gained)} Dark Matter</div>`, 'good', 5000);
       },
     );

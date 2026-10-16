@@ -203,6 +203,12 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    wheel glows, prizes are doubled (Stardust, Hyperdrive minutes, crystals; a comet also brings 15
    minutes of production) and the jackpot weight goes from 2 to 12. Ad spins never count. Missing a
    day restarts the streak at 1.
+   Run 8 (backlog #1): **Rating prompt.** On the phone only, a few seconds after a happy moment (a
+   collapse, a Golden Orbit or the jackpot slice), the game may ask for a Google Play rating. It waits
+   until the player has played for 2 days and at least an hour, asks at most once per 30 days and 3
+   times in total, and "Don't ask again" stops it for good. Rating is never rewarded (Play policy).
+   It opens the store page; the native In-App Review API is a later upgrade because it needs a
+   Capacitor plugin. Settings also has a "Rate on Google Play" button on the phone.
 
 ## Research log
 
@@ -348,8 +354,8 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. In-app review prompt (Google Play In-App Review) after a happy moment, such as a first collapse or a
-   jackpot, at most once per 30 days; ratings decide store ranking at launch.
-2. Spanish and Portuguese text: the largest Play audiences for idle games after English.
-3. Welcome-back summary that lists what each system did while away (probes, garden, market).
-4. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
+1. Spanish and Portuguese text: the largest Play audiences for idle games after English.
+2. Welcome-back summary that lists what each system did while away (probes, garden, market).
+3. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
+4. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
+   added and tested.

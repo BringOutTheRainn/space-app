@@ -771,6 +771,25 @@ test('lucky orbit streak: seven days in a row gives a golden spin, a missed day 
   assert.ok(golden >= normal * 4, `jackpot ${normal} -> ${golden}`);
 });
 
+test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
+  const r = await import('../www/js/core/rating.js');
+  const DAY = 86400000;
+  const T = new Date(2026, 9, 14, 12).getTime();
+  const s = newState(T);
+  s.playSeconds = 7200;
+  assert.equal(r.shouldAskRating(s, T + DAY), false, 'too soon after install');
+  s.playSeconds = 100;
+  assert.equal(r.shouldAskRating(s, T + 3 * DAY), false, 'too little play');
+  s.playSeconds = 7200;
+  assert.equal(r.shouldAskRating(s, T + 3 * DAY), true);
+  r.markRatingAsked(s, T + 3 * DAY);
+  assert.equal(r.shouldAskRating(s, T + 10 * DAY), false, '30-day gap');
+  for (let i = 1; i < 3; i++) { assert.ok(r.shouldAskRating(s, T + (3 + 31 * i) * DAY)); r.markRatingAsked(s, T + (3 + 31 * i) * DAY); }
+  assert.equal(r.shouldAskRating(s, T + 200 * DAY), false, 'three asks at most');
+  const t = newState(T); t.playSeconds = 7200; r.markRatingDone(t);
+  assert.equal(r.shouldAskRating(t, T + 5 * DAY), false, 'never after rating or opting out');
+});
+
 test('star pass seasons are numbered from launch week', async () => {
   const pass = await import('../www/js/core/pass.js');
   assert.equal(pass.seasonLabel(new Date(2026, 9, 14, 12).getTime()), 1, 'never below 1');

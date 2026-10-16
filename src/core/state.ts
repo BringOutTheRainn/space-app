@@ -136,6 +136,10 @@ export interface GameState {
   /** Days in a row the free spin was used, and the last such day. */
   wheelStreak: number;
   wheelStreakDay: number;
+  /** Google Play rating prompt: when last asked, how often, and whether to stop. */
+  rateAskedAt: number;
+  rateAsks: number;
+  rateDone: boolean;
   /** Purchases by product id: how many times each was bought. */
   purchases: Record<string, number>;
   /** Celestial body skin id, or 'default'. */
@@ -225,6 +229,9 @@ export function newState(now = Date.now()): GameState {
     wheelSpins: 0,
     wheelStreak: 0,
     wheelStreakDay: -1,
+    rateAskedAt: 0,
+    rateAsks: 0,
+    rateDone: false,
     purchases: {},
     skin: 'default',
     vaultHours: 0,

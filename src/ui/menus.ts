@@ -1,5 +1,7 @@
 // Modal screens: stats, settings, offline earnings and the daily reward.
 
+import { markRatingDone } from '../core/rating.js';
+import { noteHappyMoment, openPlayPage } from './rating.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES } from '../data/upgrades.js';
@@ -11,7 +13,7 @@ import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from '.
 import type { Ctx } from './ctx.js';
 import { closeModal, confirmModal, esc, openModal, toast } from './dom.js';
 import { icon } from './icons.js';
-import { copyText, haptic, setVibration } from './platform.js';
+import { copyText, haptic, isNative, setVibration } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
 import { errorReport, hasErrors } from './errors.js';
 import { adPrivacyOptionsAvailable, rewardedAvailable, showAdPrivacyOptions, showRewarded } from './ads.js';
@@ -109,6 +111,7 @@ export function openSettings(ctx: Ctx): void {
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">Copy save code</button><button class="btn btn-plain" id="btn-import">Load save code</button></div>
       ${hasErrors() ? '<h3 class="section-title">Problems</h3><p class="dim">The game caught an error. If something looked wrong, copy this report and send it to the developer.</p><button class="btn btn-plain" id="btn-errors">Copy error report</button>' : ''}
       ${adPrivacyOptionsAvailable() ? '<h3 class="section-title">Ads</h3><button class="btn btn-plain" id="btn-ad-privacy">Ad privacy choices</button>' : ''}
+      ${isNative() ? '<button class="btn btn-plain" id="btn-rate">Rate on Google Play</button>' : ''}
       <h3 class="section-title">Danger zone</h3>
       <button class="btn btn-danger" id="btn-reset">Erase all progress</button>
       <p class="dim small">Stardust Empire ${VERSION} · <a class="link" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy policy</a></p>`,
@@ -148,6 +151,7 @@ export function openSettings(ctx: Ctx): void {
     });
   });
 
+  el.querySelector('#btn-rate')?.addEventListener('click', () => { markRatingDone(ctx.s); ctx.save(); openPlayPage(); });
   el.querySelector('#btn-errors')?.addEventListener('click', async () => {
     const report = errorReport(VERSION);
     if (await copyText(report)) toast('Error report copied', 'good');
@@ -354,6 +358,7 @@ export function openHyperdrive(ctx: Ctx): void {
       busy = false;
       sfxAchievement();
       haptic('medium');
+      if (r.golden || r.slice === 7) noteHappyMoment();
       toast(`<div class="t-ico">${icon('gift')}</div><div><b>${r.golden ? 'Golden Orbit' : 'Lucky Orbit'}</b><br>${esc(prizeText(ctx, r.slice, r.amount, r.golden))}</div>`, 'good');
       ctx.recalc();
       ctx.dirty();

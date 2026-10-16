@@ -36,6 +36,7 @@ import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel 
 import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
+import { maybeAskRating } from './ui/rating.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -283,6 +284,7 @@ function start(): void {
 
   function refreshSlow(force = false): void {
     const { s, d } = ctx;
+    maybeAskRating(ctx);
     // Achievements.
     const fresh = checkAchievements(s, d.sps);
     if (fresh.length) {
