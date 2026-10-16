@@ -18,7 +18,7 @@ import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
 import { $, closeModal, esc, modalOpen, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
-import { applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
+import { VERSION, applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
 import { contractClaimable } from './core/contracts.js';
 import { autoBuyStep } from './core/autobuy.js';
@@ -35,6 +35,7 @@ import { AD_CONFIG } from './data/ads.js';
 import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel } from './ui/panels.js';
 import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
+import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -451,13 +452,26 @@ function start(): void {
   const SLOW_FRAME_MS = 45;
   const slowSample: number[] = [];
 
+  // One bad frame must never stop the game: errors are logged for the report
+  // in Settings and the loop carries on.
+  let frameErrorShown = false;
   function frame(now: number): void {
+    try {
+      step(now);
+    } catch (e) {
+      recordError('frame', e);
+      if (!frameErrorShown) {
+        frameErrorShown = true;
+        toast('Something went wrong, but your progress is safe. Settings has an error report.', 'bad', 5000);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function step(now: number): void {
     const gap = now - last;
     // Battery saver runs the whole loop at about 30 fps.
-    if (ctx.s.settings.saver && gap < 30) {
-      requestAnimationFrame(frame);
-      return;
-    }
+    if (ctx.s.settings.saver && gap < 30) return;
     const dt = Math.min(1, Math.max(0, gap / 1000));
     last = now;
     if (!paused && !ctx.s.settings.saverAuto && gap > 0 && gap < 1000) {
@@ -528,7 +542,6 @@ function start(): void {
       }
     }
     sky.frame(dt);
-    requestAnimationFrame(frame);
   }
 
   if (ctx.s.nextCometAt < ctx.s.time) scheduleNextComet(ctx.s, ctx.d);
@@ -556,4 +569,16 @@ function start(): void {
   };
 }
 
-start();
+installErrorHandlers();
+try {
+  start();
+} catch (e) {
+  // Startup failed: show what happened instead of a blank screen. The save is untouched.
+  recordError('start', e);
+  hideSplash();
+  document.body.innerHTML = `<div class="crash"><h2>Stardust Empire could not start</h2>
+    <p>Your progress is still saved on this phone. Please close the game and open it again. If this keeps
+    happening, copy the report below and send it to the developer.</p>
+    <textarea class="code" readonly>${esc(errorReport(VERSION))}</textarea></div>`;
+}
+

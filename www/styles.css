@@ -855,3 +855,8 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .chip::before, .btn-buy::before, .crystal-chip::before { content: ''; position: absolute; inset: -7px -2px; }
 .hyper-btn::before { content: ''; position: absolute; inset: -6px -2px; }
 #sky:focus-visible { outline: 3px solid var(--cyan); outline-offset: -3px; }
+
+/* Startup failure screen */
+.crash { max-width: 520px; margin: 0 auto; padding: 48px 20px; color: var(--text, #e9edff); }
+.crash h2 { margin: 0 0 12px; }
+.crash .code { width: 100%; min-height: 220px; margin-top: 12px; }

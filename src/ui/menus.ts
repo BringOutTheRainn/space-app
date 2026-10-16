@@ -13,6 +13,7 @@ import { closeModal, confirmModal, esc, openModal, toast } from './dom.js';
 import { icon } from './icons.js';
 import { copyText, haptic, setVibration } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
+import { errorReport, hasErrors } from './errors.js';
 import { adPrivacyOptionsAvailable, rewardedAvailable, showAdPrivacyOptions, showRewarded } from './ads.js';
 import { BUFF_MULT, earn } from '../core/economy.js';
 import { AD_CONFIG } from '../data/ads.js';
@@ -106,6 +107,7 @@ export function openSettings(ctx: Ctx): void {
       <h3 class="section-title">Save</h3>
       <p class="dim">Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.</p>
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">Copy save code</button><button class="btn btn-plain" id="btn-import">Load save code</button></div>
+      ${hasErrors() ? '<h3 class="section-title">Problems</h3><p class="dim">The game caught an error. If something looked wrong, copy this report and send it to the developer.</p><button class="btn btn-plain" id="btn-errors">Copy error report</button>' : ''}
       ${adPrivacyOptionsAvailable() ? '<h3 class="section-title">Ads</h3><button class="btn btn-plain" id="btn-ad-privacy">Ad privacy choices</button>' : ''}
       <h3 class="section-title">Danger zone</h3>
       <button class="btn btn-danger" id="btn-reset">Erase all progress</button>
@@ -146,6 +148,11 @@ export function openSettings(ctx: Ctx): void {
     });
   });
 
+  el.querySelector('#btn-errors')?.addEventListener('click', async () => {
+    const report = errorReport(VERSION);
+    if (await copyText(report)) toast('Error report copied', 'good');
+    else openModal({ title: 'Error report', body: `<textarea class="code" readonly>${esc(report)}</textarea>` });
+  });
   el.querySelector('#btn-ad-privacy')?.addEventListener('click', () => void showAdPrivacyOptions());
   el.querySelector('#btn-export')!.addEventListener('click', async () => {
     ctx.save();

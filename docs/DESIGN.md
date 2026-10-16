@@ -193,6 +193,11 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    Run 5: Play compliance. Settings shows "Ad privacy choices" (Google's privacy options form) where
    the consent rules apply; the Android build removes the exact-alarm permission (reminders use
    inexact alarms) and reports whether native libraries are aligned for 16 KB pages.
+   Run 6: crash safety. An error inside one frame no longer stops the game loop: it is logged, a toast
+   says progress is safe, and the game carries on. Uncaught errors and promise rejections are kept (last
+   10, on the phone only), and Settings shows "Copy error report" when there are any, for closed-test
+   feedback. If startup itself fails, a screen explains that the save is safe and shows the report
+   instead of a blank page.
 
 ## Research log
 
