@@ -133,6 +133,9 @@ export interface GameState {
   wheelFree: boolean;
   wheelAds: number;
   wheelSpins: number;
+  /** Days in a row the free spin was used, and the last such day. */
+  wheelStreak: number;
+  wheelStreakDay: number;
   /** Purchases by product id: how many times each was bought. */
   purchases: Record<string, number>;
   /** Celestial body skin id, or 'default'. */
@@ -220,6 +223,8 @@ export function newState(now = Date.now()): GameState {
     wheelFree: true,
     wheelAds: 0,
     wheelSpins: 0,
+    wheelStreak: 0,
+    wheelStreakDay: -1,
     purchases: {},
     skin: 'default',
     vaultHours: 0,

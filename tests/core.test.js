@@ -741,6 +741,36 @@ test('older saves get battery saver off by default', () => {
   assert.equal(back.settings.sound, true);
 });
 
+test('lucky orbit streak: seven days in a row gives a golden spin, a missed day resets it', async () => {
+  const w = await import('../www/js/core/wheel.js');
+  const day = (n) => new Date(2026, 9, 1 + n, 12).getTime();
+  const s = newState(day(0));
+  s.generators[0] = 100;
+  const d = computeDerived(s, 0);
+  const half = () => 0.5;
+  for (let n = 0; n < 6; n++) {
+    assert.equal(w.goldenReady(s, day(n)), false, `day ${n + 1} is not golden`);
+    const r = w.spin(s, d, false, day(n), half);
+    assert.equal(r.golden, false);
+    assert.equal(r.streak, n + 1);
+  }
+  assert.equal(w.goldenReady(s, day(6)), true, 'day 7 is golden');
+  const plain = w.spin(newState(day(6)), d, false, day(6), () => 0).amount;
+  const r7 = w.spin(s, d, false, day(6), () => 0);
+  assert.equal(r7.golden, true);
+  assert.equal(r7.slice, 0);
+  assert.equal(r7.amount, plain * w.GOLDEN_MULT, 'golden prizes are doubled');
+  // Ad spins never count as golden.
+  assert.equal(w.spin(s, d, true, day(6), () => 0).golden, false);
+  // Skip a day: the streak starts again.
+  assert.equal(w.currentStreak(s, day(8)), 0);
+  assert.equal(w.spin(s, d, false, day(8), half).streak, 1);
+  // The golden wheel makes the jackpot far more likely.
+  let normal = 0, golden = 0;
+  for (let i = 0; i < 1000; i++) { const x = (i + 0.5) / 1000; if (w.pickSlice(() => x) === 7) normal++; if (w.pickSlice(() => x, true) === 7) golden++; }
+  assert.ok(golden >= normal * 4, `jackpot ${normal} -> ${golden}`);
+});
+
 test('star pass seasons are numbered from launch week', async () => {
   const pass = await import('../www/js/core/pass.js');
   assert.equal(pass.seasonLabel(new Date(2026, 9, 14, 12).getTime()), 1, 'never below 1');

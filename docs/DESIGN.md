@@ -198,6 +198,11 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    10, on the phone only), and Settings shows "Copy error report" when there are any, for closed-test
    feedback. If startup itself fails, a screen explains that the save is safe and shows the report
    instead of a blank page.
+   Run 7 (backlog #1): **Lucky Orbit streak.** Using the free spin on consecutive days builds a streak,
+   shown as seven dots under the wheel. Every 7th day in a row the free spin is a Golden Orbit: the
+   wheel glows, prizes are doubled (Stardust, Hyperdrive minutes, crystals; a comet also brings 15
+   minutes of production) and the jackpot weight goes from 2 to 12. Ad spins never count. Missing a
+   day restarts the streak at 1.
 
 ## Research log
 
@@ -343,4 +348,8 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. Lucky Orbit streak: a bigger wheel (more jackpot weight) after spinning 7 days in a row.
+1. In-app review prompt (Google Play In-App Review) after a happy moment, such as a first collapse or a
+   jackpot, at most once per 30 days; ratings decide store ranking at launch.
+2. Spanish and Portuguese text: the largest Play audiences for idle games after English.
+3. Welcome-back summary that lists what each system did while away (probes, garden, market).
+4. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.

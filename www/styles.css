@@ -860,3 +860,18 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .crash { max-width: 520px; margin: 0 auto; padding: 48px 20px; color: var(--text, #e9edff); }
 .crash h2 { margin: 0 0 12px; }
 .crash .code { width: 100%; min-height: 220px; margin-top: 12px; }
+
+/* Lucky Orbit streak */
+.wheel-streak { display: flex; gap: 5px; margin-top: 2px; }
+.sdot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; }
+.sdot.on { background: var(--cyan); border-color: var(--cyan); }
+.sdot.gold { border-color: var(--gold); }
+.sdot.gold.on { background: var(--gold); }
+.sdot.today { border-color: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.sdot.gold.today { border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.wheel-wrap.golden .wheel-disc { filter: drop-shadow(0 0 10px rgba(255, 207, 90, .8)); }
+.btn-golden { background: linear-gradient(135deg, #ffe08a, #ffb627); color: #2b1a00; }
+@media (prefers-reduced-motion: no-preference) {
+  .wheel-wrap.golden { animation: golden-pulse 1.8s ease-in-out infinite; }
+}
+@keyframes golden-pulse { 50% { transform: scale(1.03); } }

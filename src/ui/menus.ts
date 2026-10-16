@@ -26,7 +26,7 @@ import { FERTILIZE_COOLDOWN_HOURS, FERTILIZE_HOURS, GARDEN_GEN, SEEDS, fertilize
 import { BADGE_GOALS, BADGE_MINUTES, BADGE_NAMES, GOLD_TIER, PLATINUM_CRYSTALS, badgeCount, EVENT_AD_MINUTES, EVENT_GENS, badgeReady, badgeReward, buyEventGen, claimBadge, currentEvent, eventAdBoost, eventAdReady, eventPrice, eventRate, eventTap, eventTapOnce, eventDay, eventTheme, eventTimeLeft } from '../core/event.js';
 import { FORGE_GEN, REFILL_MINUTES, SPELLS, STOKE_COOLDOWN_HOURS, cast, heatFullIn, maxHeat, spellById, stoke, stokeReady, syncHeat } from '../core/forge.js';
 import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood, creditValue, holdSize, insiderTip, maxBuy, nextTickIn, sellGood, syncMarket, tipReady, type GoodState } from '../core/market.js';
-import { AD_SPINS_PER_DAY, SLICES, adSpinsLeft, freeSpinReady, sliceValue, spin } from '../core/wheel.js';
+import { AD_SPINS_PER_DAY, GOLDEN_MULT, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
 import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
 import { claimMission, describeMission, missionDone, missionProgress, missionReward, swapMission } from '../core/missions.js';
@@ -250,7 +250,7 @@ function askReminders(ctx: Ctx): void {
 
 const SLICE_COLORS = ['#3b4cc0', '#ff7ad9', '#2a9d8f', '#ffcf5a', '#6b3cff', '#5ef0ff', '#e76f51', '#ffd700'];
 
-function wheelSvg(rot: number): string {
+function wheelSvg(rot: number, golden = false): string {
   const r = 92;
   const pt = (deg: number, rad = r): string => {
     const a = (deg * Math.PI) / 180;
@@ -264,17 +264,18 @@ function wheelSvg(rot: number): string {
         ? `<text transform="rotate(${mid + 180} 100 100)" x="100" y="171" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(x.label)}</text>`
         : `<text transform="rotate(${mid} 100 100)" x="100" y="34" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(x.label)}</text>`}`;
   }).join('');
-  return `<div class="wheel-wrap"><svg class="wheel-disc" viewBox="0 0 200 200" style="transform:rotate(${rot}deg)" aria-hidden="true">
+  return `<div class="wheel-wrap${golden ? ' golden' : ''}"><svg class="wheel-disc" viewBox="0 0 200 200" style="transform:rotate(${rot}deg)" aria-hidden="true">
       <circle cx="100" cy="100" r="96" fill="#0c0f23"/>${slices}
       <circle cx="100" cy="100" r="16" fill="#141937" stroke="#ffcf5a" stroke-width="3"/></svg>
     <i class="wheel-pin"></i></div>`;
 }
 
-function prizeText(ctx: Ctx, i: number, amount: number): string {
+function prizeText(ctx: Ctx, i: number, amount: number, golden = false): string {
   const x = SLICES[i];
-  if (x.kind === 'hyper') return `Hyperdrive +${x.minutes} minutes`;
-  if (x.kind === 'comet') return 'A comet is on its way';
-  if (x.kind === 'crystal' && !amount) return '+1 Quasar Crystal';
+  const mult = golden ? GOLDEN_MULT : 1;
+  if (x.kind === 'hyper') return `Hyperdrive +${x.minutes * mult} minutes`;
+  if (x.kind === 'comet') return amount ? `A comet is on its way, and +${fmt(amount)} Stardust` : 'A comet is on its way';
+  if (x.kind === 'crystal' && !amount) return `+${mult} Quasar Crystal${mult > 1 ? 's' : ''}`;
   return `+${fmt(amount)} Stardust${i === 7 ? ', the jackpot!' : ''}`;
 }
 
@@ -291,15 +292,25 @@ export function openHyperdrive(ctx: Ctx): void {
       : frenzyOn ? `Active: ${Math.ceil(frenzyOn.endsAt - s.time)}s left.`
       : wait > 0 ? `Recharging: ${fmtTime(wait)}.` : '';
     const free = freeSpinReady(s);
+    const golden = goldenReady(s);
     const adLeft = adSpinsLeft(s);
-    const spinBtn = free ? '<button class="btn btn-primary" data-spin="free">Spin free</button>'
+    // Streak dots: days already spun this week of the streak, today's glowing while unused.
+    const streak = currentStreak(s);
+    const filled = streak % STREAK_DAYS === 0 && streak > 0 && !free ? STREAK_DAYS : streak % STREAK_DAYS;
+    const dots = Array.from({ length: STREAK_DAYS }, (_, i) => `<i class="sdot${i < filled ? ' on' : ''}${free && i === filled ? ' today' : ''}${i === STREAK_DAYS - 1 ? ' gold' : ''}"></i>`).join('');
+    const streakLine = `<div class="wheel-streak" aria-label="Spin streak: ${streak} day${streak === 1 ? '' : 's'} in a row">${dots}</div>
+          <p class="dim small">${golden ? 'Day 7: a Golden Orbit. Prizes doubled, jackpot six times as likely.'
+            : !free && streak > 0 && streak % STREAK_DAYS === 0 ? 'Golden Orbit claimed. Keep the streak going for the next one.'
+            : `Spin ${STREAK_DAYS} days in a row for a Golden Orbit. Streak: ${streak} day${streak === 1 ? '' : 's'}.`}</p>`;
+    const spinBtn = free ? `<button class="btn btn-primary${golden ? ' btn-golden' : ''}" data-spin="free">${golden ? 'Spin Golden Orbit' : 'Spin free'}</button>`
       : adLeft > 0 ? `<button class="btn ${rewardedAvailable() ? 'btn-primary' : 'btn-plain'}" data-spin="ad" ${rewardedAvailable() ? '' : 'disabled'}>Ad spin: ${adLeft} left</button>`
       : '<p class="dim small">Next free spin tomorrow.</p>';
     return `<div class="boosts">
       <div class="wheel-card">
-        ${wheelSvg(rot)}
-        <div class="wheel-side"><b>Lucky Orbit</b>
+        ${wheelSvg(rot, golden)}
+        <div class="wheel-side"><b>${golden ? 'Golden Orbit' : 'Lucky Orbit'}</b>
           <p>One free spin every day and ${AD_SPINS_PER_DAY} more with an ad. Up to 8 hours of production, Hyperdrive, comets and crystals.</p>
+          ${streakLine}
           ${spinBtn}</div>
       </div>
       ${mult > 1 ? '<p class="ev-pass-on">Double weekend: boosts last twice as long while the weekend event runs.</p>' : ''}
@@ -343,7 +354,7 @@ export function openHyperdrive(ctx: Ctx): void {
       busy = false;
       sfxAchievement();
       haptic('medium');
-      toast(`<div class="t-ico">${icon('gift')}</div><div><b>Lucky Orbit</b><br>${esc(prizeText(ctx, r.slice, r.amount))}</div>`, 'good');
+      toast(`<div class="t-ico">${icon('gift')}</div><div><b>${r.golden ? 'Golden Orbit' : 'Lucky Orbit'}</b><br>${esc(prizeText(ctx, r.slice, r.amount, r.golden))}</div>`, 'good');
       ctx.recalc();
       ctx.dirty();
       if (el.isConnected) body.innerHTML = render();
