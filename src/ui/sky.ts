@@ -70,6 +70,15 @@ export class Sky {
     for (let i = 0; i < 20; i++) this.rockShape.push(0.82 + Math.random() * 0.22);
     for (let i = 0; i < 9; i++) this.craters.push([Math.random() * TAU, Math.random() * 0.75, 0.08 + Math.random() * 0.13]);
     canvas.addEventListener('pointerdown', (e) => this.pointer(e));
+    // Screen readers and keyboards: activating the canvas taps the body's centre.
+    canvas.addEventListener('click', (e) => {
+      if (e.detail === 0) this.tapAt(this.center[0], this.center[1]);
+    });
+    canvas.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      this.tapAt(this.center[0], this.center[1]);
+    });
     new ResizeObserver(() => this.resize()).observe(canvas);
     this.resize();
   }

@@ -70,7 +70,7 @@ export class UpgradesPanel implements Panel {
           <div class="upg-card" data-id="${u.id}">
             <div class="upg-ico">${icon(u.icon)}</div>
             <div class="upg-text"><div class="upg-name">${esc(u.name)}</div><div class="upg-desc">${esc(u.desc)}</div></div>
-            <button class="btn btn-buy" data-buy="${u.id}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
+            <button class="btn btn-buy" data-buy="${u.id}" aria-label="Buy ${esc(u.name)} for ${fmt(upgradePrice(d, u))} Stardust"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
           </div>`).join('')
         : `<p class="empty">${d.noUpgrades ? 'Upgrades cannot be bought in this anomaly.' : 'No upgrades right now. Buy more generators to unlock new ones.'}</p>`;
       const bought = UPGRADES.filter((u) => s.upgrades[u.id]);

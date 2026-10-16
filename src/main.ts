@@ -56,7 +56,7 @@ function layout(): void {
       <button class="icon-btn" id="btn-settings" aria-label="Settings">${icon('gear')}</button>
     </header>
     <section class="sky-wrap">
-      <canvas id="sky" aria-label="Celestial body. Tap to harvest Stardust."></canvas>
+      <canvas id="sky" role="button" tabindex="0" aria-label="Celestial body. Tap to harvest Stardust."></canvas>
       <div class="stage-label" id="stage-label"></div>
       <div class="toasts" id="toasts" aria-live="polite"></div>
       <div class="buffs" id="buffs"></div>

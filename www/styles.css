@@ -848,3 +848,10 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .wheel-side p { margin: 0; font-size: 12px; line-height: 1.35; color: var(--dim); }
 
 .link { color: var(--cyan); text-decoration: underline; }
+
+/* Larger touch areas (Android asks for 48 dp) without changing how buttons look. */
+.icon-btn, .chip, .btn-buy, .crystal-chip { position: relative; }
+.icon-btn::before { content: ''; position: absolute; inset: -3px; }
+.chip::before, .btn-buy::before, .crystal-chip::before { content: ''; position: absolute; inset: -7px -2px; }
+.hyper-btn::before { content: ''; position: absolute; inset: -6px -2px; }
+#sky:focus-visible { outline: 3px solid var(--cyan); outline-offset: -3px; }

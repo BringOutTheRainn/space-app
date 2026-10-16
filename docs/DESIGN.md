@@ -185,6 +185,11 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    Battery saver in Settings: the loop runs at about 30 fps and the sky draws at 1x density. The game
    watches the first 20 s of play once and turns it on, with a toast, when frames are slower than
    45 ms (under about 22 fps).
+   Run 4: accessibility. The sky canvas is a focusable button (Enter, Space or a screen reader's
+   double-tap harvests at the centre), upgrade buy buttons read "Buy <name> for <price> Stardust",
+   and small buttons (top icons, buy chips, upgrade buy buttons, crystals, Hyperdrive) get an
+   invisible larger touch area close to Android's 48 dp. Contrast and button names were checked on
+   the Build, Upgrades and Settings screens; none failed.
 
 ## Research log
 
