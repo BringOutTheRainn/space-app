@@ -15,7 +15,7 @@ import { canCollapse, collapse, DM_SCALE, earningsForNextDarkMatter, pendingDark
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
-import { $, confirmModal, esc, openModal, setText, toast, toggleClass } from './dom.js';
+import { $, confirmModal, esc, openModal, setHidden, setText, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { showInterstitial } from './ads.js';
@@ -435,7 +435,7 @@ export class ProbesPanel implements Panel {
       if (bar) bar.style.width = `${(frac * 100).toFixed(1)}%`;
       if (left <= 0) ready = true;
     });
-    ($('#btn-collect', this.root) as HTMLButtonElement).hidden = !ready;
+    setHidden(($('#btn-collect', this.root) as HTMLButtonElement), !ready);
   }
 }
 

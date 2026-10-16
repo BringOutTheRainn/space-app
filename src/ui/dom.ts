@@ -17,6 +17,11 @@ export function setText(el: HTMLElement, text: string): void {
   if (el.textContent !== text) el.textContent = text;
 }
 
+/** Shows or hides an element, touching the DOM only when that changes. */
+export function setHidden(el: HTMLElement, hidden: boolean): void {
+  if (el.hidden !== hidden) el.hidden = hidden;
+}
+
 export function toggleClass(el: Element, cls: string, on: boolean): void {
   if (el.classList.contains(cls) !== on) el.classList.toggle(cls, on);
 }

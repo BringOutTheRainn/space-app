@@ -16,7 +16,7 @@ import { newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
-import { $, closeModal, esc, modalOpen, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
+import { $, closeModal, esc, modalOpen, setHidden, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
 import { VERSION, applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
@@ -332,7 +332,7 @@ function start(): void {
     const top = s.buffs.find((b) => b.kind === 'well') ?? s.buffs.find((b) => b.kind === 'horizon') ?? s.buffs.find((b) => b.kind === 'rush') ?? s.buffs.find((b) => b.kind === 'supernova' || b.kind === 'frenzy');
     sky.aura = !top ? 'none' : top.kind === 'frenzy' ? 'supernova' : top.kind;
 
-    dailyBtn.hidden = !dailyReady(s) || s.tapsAll < 10;
+    setHidden(dailyBtn, !dailyReady(s) || s.tapsAll < 10);
 
     // Quasar Crystals grow in real time, including time away.
     const grown = growCrystals(s);
@@ -344,11 +344,11 @@ function start(): void {
     // Missions start once the first drone is built.
     const missionsOn = s.generators[0] > 0 || s.collapses > 0;
     if (missionsOn) ensureMissions(s, d);
-    missionBtn.hidden = !missionsOn;
+    setHidden(missionBtn, !missionsOn);
     // Checking the contract also starts a new week's one as soon as the week turns.
     const contractReady = contractClaimable(s);
     const ready = claimableMissions(s) + (missionsOn ? contractReady + passClaimable(s) : 0);
-    missionCount.hidden = ready === 0;
+    setHidden(missionCount, ready === 0);
     setText(missionCount, String(ready));
     toggleClass(missionBtn, 'ready', ready > 0);
 
@@ -358,7 +358,7 @@ function start(): void {
 
     // Weekend event: Friday to Sunday, once the player has a real economy.
     const ev = currentEvent(s);
-    eventBtn.hidden = !ev;
+    setHidden(eventBtn, !ev);
     if (ev) {
       const badge = badgeReady(ev);
       toggleClass(eventBtn, 'ready', badge);
@@ -368,14 +368,14 @@ function start(): void {
     // Hyperdrive (rewarded ad) button, offered once the player is hooked.
     const hyperLeft = hyperRemainingMs(s);
     if (d.hyper && hyperLeft <= 0) ctx.recalc();
-    hyperBtn.hidden = !AD_CONFIG.enabled || (s.generators[1] === 0 && s.collapses === 0);
+    setHidden(hyperBtn, !AD_CONFIG.enabled || (s.generators[1] === 0 && s.collapses === 0));
     toggleClass(hyperBtn, 'on', hyperLeft > 0);
     toggleClass(hyperBtn, 'spin-ready', freeSpinReady(s));
     setText(hyperText, hyperLeft > 0 ? fmtTime(hyperLeft / 1000) : 'x2');
 
     // Tabs: Cosmos shows a lock until unlocked, Probes only once bought.
     const probeTab = document.querySelector<HTMLElement>('[data-tab="probes"]')!;
-    probeTab.hidden = !d.expeditions;
+    setHidden(probeTab, !d.expeditions);
     toggleClass(document.querySelector('[data-tab="cosmos"]')!, 'locked', !cosmosUnlocked(ctx));
     badge('upgrades', !d.noUpgrades && availableUpgrades(s).some((u) => upgradePrice(d, u) <= s.stardust));
     badge('cosmos', canCollapse(s) && s.collapses === 0);
@@ -392,7 +392,7 @@ function start(): void {
 
   function badge(tab: string, on: boolean): void {
     const b = document.querySelector<HTMLElement>(`[data-tab="${tab}"] .badge`);
-    if (b) b.hidden = !on;
+    if (b) setHidden(b, !on);
   }
 
   // ---------------------------------------------------------------- hints

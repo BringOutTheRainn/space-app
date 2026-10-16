@@ -6,7 +6,7 @@ import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorR
 import { fmt, fmtPercent, fmtRate } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
 import type { BuyAmount, Ctx, Panel } from './ctx.js';
-import { $, esc, setText, toast, toggleClass } from './dom.js';
+import { $, esc, setHidden, setText, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { crystalsUnlocked } from '../core/crystals.js';
@@ -161,18 +161,18 @@ export class BuildPanel implements Panel {
       toggleClass(b, 'on', String(ctx.buyAmount) === b.dataset.amt);
     });
     const chip = this.root.querySelector<HTMLElement>('[data-crystals]')!;
-    chip.hidden = !crystalsUnlocked(s);
+    setHidden(chip, !crystalsUnlocked(s));
     setText(chip.querySelector<HTMLElement>('.crystal-n')!, String(s.crystals));
     toggleClass(chip, 'ready', s.crystals > 0);
     // Minigames opened by crystal levels.
     const garden = this.root.querySelector<HTMLElement>('[data-garden]')!;
-    garden.hidden = !gardenUnlocked(s);
+    setHidden(garden, !gardenUnlocked(s));
     const ripe = garden.hidden ? 0 : readyPlots(s);
     const planted = s.garden.slice(0, plotCount(s)).filter(Boolean).length;
     setText(garden.querySelector<HTMLElement>('.garden-sub')!, ripe ? t('{n} ready', { n: ripe }) : planted ? t('{n} growing', { n: planted }) : t('Plots empty'));
     toggleClass(garden, 'ready', ripe > 0);
     const forge = this.root.querySelector<HTMLElement>('[data-forge]')!;
-    forge.hidden = !forgeUnlocked(s);
+    setHidden(forge, !forgeUnlocked(s));
     if (!forge.hidden) {
       const heat = Math.floor(syncHeat(s));
       const max = maxHeat(s);
@@ -180,7 +180,7 @@ export class BuildPanel implements Panel {
       toggleClass(forge, 'ready', heat >= max);
     }
     const market = this.root.querySelector<HTMLElement>('[data-market]')!;
-    market.hidden = !marketUnlocked(s);
+    setHidden(market, !marketUnlocked(s));
     if (!market.hidden) {
       const m = syncMarket(s)!;
       // Flag a bargain: any good well under its resting price.
@@ -189,11 +189,11 @@ export class BuildPanel implements Panel {
       setText(market.querySelector<HTMLElement>('.market-sub')!, cheap >= 0 ? t('{good} cheap', { good: t(GOODS[cheap].short) }) : held ? t('{n} held', { n: held }) : t('Prices steady'));
       toggleClass(market, 'ready', cheap >= 0);
     }
-    this.root.querySelector<HTMLElement>('.mini-row')!.hidden = garden.hidden && forge.hidden && market.hidden;
+    setHidden(this.root.querySelector<HTMLElement>('.mini-row')!, !gardenUnlocked(s) && !forgeUnlocked(s) && !marketUnlocked(s));
     const auto = this.root.querySelector<HTMLElement>('[data-auto]')!;
-    auto.hidden = !d.autoBuy;
+    setHidden(auto, !d.autoBuy);
     toggleClass(auto, 'on', s.autoBuyOn);
-    auto.setAttribute('aria-pressed', String(s.autoBuyOn));
+    if (auto.getAttribute('aria-pressed') !== String(s.autoBuyOn)) auto.setAttribute('aria-pressed', String(s.autoBuyOn));
 
     // Upgrade strip: every unlocked upgrade, cheapest first.
     const ups = d.noUpgrades ? [] : availableUpgrades(s).slice(0, 24);

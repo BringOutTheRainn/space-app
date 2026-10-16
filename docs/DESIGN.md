@@ -403,6 +403,14 @@ save or a hand-edited import) stopped the game at start-up. Loading now puts the
 list, record, text or flag of the wrong type and drops malformed buffs, expeditions and missions. A
 test corrupts each field in turn (7 bad values, 2 levels deep) and checks the save still loads and plays.
 
+**Run 18. Low-end performance re-check.** With a late-game save (12 generator types, minigames, probes)
+every tab holds 60 fps at full CPU speed, and script plus style work stays near 2 ms a frame. With the
+CPU slowed 6x in a headless browser, the Build tab runs at about 15 fps and other tabs at 30; nearly
+all of that is software painting, which a phone's GPU does instead, so it overstates the cost. One
+waste was found and fixed: the slow refresh re-set the same `hidden` flags (daily gift, missions badge,
+tab badges, minigame cards, the Auto chip) about 25 times a second, each one a DOM change. `setHidden`
+now writes only when the value changes, so an idle screen makes no DOM changes at all.
+
 ### Backlog from research (best first)
 1. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 2. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
