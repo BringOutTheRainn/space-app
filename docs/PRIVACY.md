@@ -12,6 +12,9 @@ services inside it collect, and why.
   it. You can copy your progress out with Settings, Copy save code.
 - **Reminders** are optional. If you turn them on, the game schedules notifications on your phone only.
   No push server is involved.
+- **Error reports**: if the game hits an unexpected error, a short technical note (the error and your
+  phone's browser version) is kept on your phone. It is only shared if you copy it from Settings and
+  send it yourself.
 - The game has **no accounts, no sign-in and no analytics** of its own.
 
 ## Ads (Google AdMob)
