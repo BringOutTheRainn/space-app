@@ -9,6 +9,7 @@ import type { Plot } from './garden.js';
 import type { EventState } from './event.js';
 import type { PassState } from './pass.js';
 import type { MarketState } from './market.js';
+import type { LangSetting } from '../i18n/index.js';
 
 export const SAVE_VERSION = 1;
 
@@ -33,6 +34,8 @@ export interface Settings {
   saver: boolean;
   /** True once the game has offered or switched on battery saver by itself. */
   saverAuto: boolean;
+  /** 'auto' follows the phone's language where the game is fully translated. */
+  lang: LangSetting;
 }
 
 export interface Expedition {
@@ -242,7 +245,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false, saver: false, saverAuto: false },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false, saver: false, saverAuto: false, lang: 'auto' },
   };
 }
 

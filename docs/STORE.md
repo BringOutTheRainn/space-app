@@ -48,6 +48,8 @@ asteroid grows into a moon, a planet, a star and finally a black hole.
 
 Contains ads and optional in-app purchases.
 
+Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in `docs/STORE-es-pt.md`.
+
 ## Graphics
 
 | Asset | File |

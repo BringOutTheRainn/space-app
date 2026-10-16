@@ -37,6 +37,7 @@ import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackBu
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 import { maybeAskRating } from './ui/rating.js';
+import { setLanguage, t } from './i18n/index.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -51,31 +52,31 @@ function layout(): void {
     <header class="top">
       <div class="bank">
         <div class="amount-row"><span class="sd-dot big"></span><span class="amount" id="amount">0</span></div>
-        <div class="rate" id="rate">0 per second</div>
+        <div class="rate" id="rate">${t('{n} per second', { n: 0 })}</div>
       </div>
-      <button class="icon-btn shop-btn" id="btn-shop" aria-label="Shop">${icon('cart')}</button>
-      <button class="icon-btn" id="btn-stats" aria-label="Stats">${icon('chart')}</button>
-      <button class="icon-btn" id="btn-settings" aria-label="Settings">${icon('gear')}</button>
+      <button class="icon-btn shop-btn" id="btn-shop" aria-label="${t('Shop')}">${icon('cart')}</button>
+      <button class="icon-btn" id="btn-stats" aria-label="${t('Stats')}">${icon('chart')}</button>
+      <button class="icon-btn" id="btn-settings" aria-label="${t('Settings')}">${icon('gear')}</button>
     </header>
     <section class="sky-wrap">
-      <canvas id="sky" role="button" tabindex="0" aria-label="Celestial body. Tap to harvest Stardust."></canvas>
+      <canvas id="sky" role="button" tabindex="0" aria-label="${t('Celestial body. Tap to harvest Stardust.')}"></canvas>
       <div class="stage-label" id="stage-label"></div>
       <div class="toasts" id="toasts" aria-live="polite"></div>
       <div class="buffs" id="buffs"></div>
-      <button class="gift-btn" id="btn-daily" hidden aria-label="Daily reward">${icon('gift')}</button>
-      <button class="event-btn" id="btn-event" hidden aria-label="Weekend event">${icon('rift')}<span class="event-text" id="event-text">Event</span></button>
-      <button class="mission-btn" id="btn-missions" hidden aria-label="Missions">${icon('mission')}<i class="mission-count" id="mission-count" hidden></i></button>
-      <button class="hyper-btn" id="btn-hyper" hidden aria-label="Hyperdrive"><span class="hyper-ico">${icon('probe')}</span><span class="hyper-text" id="hyper-text">x2</span></button>
+      <button class="gift-btn" id="btn-daily" hidden aria-label="${t('Daily reward')}">${icon('gift')}</button>
+      <button class="event-btn" id="btn-event" hidden aria-label="${t('Weekend event')}">${icon('rift')}<span class="event-text" id="event-text">${t('Event')}</span></button>
+      <button class="mission-btn" id="btn-missions" hidden aria-label="${t('Missions')}">${icon('mission')}<i class="mission-count" id="mission-count" hidden></i></button>
+      <button class="hyper-btn" id="btn-hyper" hidden aria-label="${t('Hyperdrive')}"><span class="hyper-ico">${icon('probe')}</span><span class="hyper-text" id="hyper-text">x2</span></button>
       <div class="tap-info" id="tap-info"></div>
       <div class="hint" id="hint" hidden></div>
       <div class="ticker" aria-hidden="true"><div class="ticker-text" id="ticker"></div></div>
     </section>
     <section class="panel">
       <div class="tab-bodies">
-        ${TABS.map((t) => `<div class="tab-body" id="tab-${t.id}" hidden></div>`).join('')}
+        ${TABS.map((tab) => `<div class="tab-body" id="tab-${tab.id}" hidden></div>`).join('')}
       </div>
       <nav class="tabs" role="tablist">
-        ${TABS.map((t) => `<button class="tab" role="tab" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span><i class="badge" hidden></i></button>`).join('')}
+        ${TABS.map((tab) => `<button class="tab" role="tab" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden></i></button>`).join('')}
       </nav>
     </section>
     <div id="modals"></div>`;
@@ -105,10 +106,10 @@ function loadState(): GameState {
 }
 
 function start(): void {
+  const state = loadState();
+  setLanguage(state.settings.lang);
   installIcons();
   layout();
-
-  const state = loadState();
   let lastBackupAt = 0;
   // On Android, wait until the preferences copy has been checked before
   // writing over it, in case localStorage was cleared and this is a fresh state.
@@ -121,7 +122,7 @@ function start(): void {
   const sky = new Sky($('#sky') as HTMLCanvasElement, {
     onTap: (x, y) => {
       if (ctx.d.noTaps) {
-        if (Math.random() < 0.2) sky.floatText(x, y, 'Hands tied!', '#ff5f7a', 18);
+        if (Math.random() < 0.2) sky.floatText(x, y, t('Hands tied!'), '#ff5f7a', 18);
         return null;
       }
       const amount = tap(ctx.s, ctx.d);
@@ -292,9 +293,9 @@ function start(): void {
       sfxAchievement();
       for (const id of fresh.slice(0, 3)) {
         const a = ACHIEVEMENT_BY_ID[id];
-        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>Achievement: ${esc(a.name)}</b><br>${esc(a.desc)}</div>`, 'trophy', 4000);
+        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(t(a.name)) })}</b><br>${esc(t(a.desc))}</div>`, 'trophy', 4000);
       }
-      if (fresh.length > 3) toast(`and ${fresh.length - 3} more achievements!`, 'trophy');
+      if (fresh.length > 3) toast(t('and {n} more achievements!', { n: fresh.length - 3 }), 'trophy');
       rebuildAll = true;
     }
 
@@ -305,7 +306,7 @@ function start(): void {
       ctx.recalc();
       sfxAchievement();
       haptic('heavy');
-      toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>Anomaly complete: ${esc(a.name)}</b><br>${esc(a.rewardText)} The rule is lifted.</div>`, 'good', 6000);
+      toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('Anomaly complete: {name}', { name: esc(t(a.name)) })}</b><br>${t('{reward} The rule is lifted.', { reward: esc(t(a.rewardText)) })}</div>`, 'good', 6000);
       rebuildAll = true;
     }
 
@@ -314,14 +315,14 @@ function start(): void {
     sky.setStage(stage);
     sky.setDrones(s.generators[0]);
     sky.setOwned(s.generators);
-    setText(stageEl, s.anomaly ? `${STAGES[stage].name} · ${ANOMALY_BY_ID[s.anomaly]?.name ?? ''}` : STAGES[stage].name);
+    setText(stageEl, s.anomaly ? `${t(STAGES[stage].name)} · ${t(ANOMALY_BY_ID[s.anomaly]?.name ?? '')}` : t(STAGES[stage].name));
     toggleClass(stageEl, 'anomaly', !!s.anomaly);
-    setText(tapInfo, d.noTaps ? 'Tapping is disabled' : `${fmt(d.tap, 1)} per tap`);
+    setText(tapInfo, d.noTaps ? t('Tapping is disabled') : t('{n} per tap', { n: fmt(d.tap, 1) }));
 
     // Buff chips.
     const buffHtml = s.buffs.map((b) => {
       const left = Math.max(0, b.endsAt - s.time);
-      const label = { rush: 'Rush x7', supernova: 'Tap x777', well: 'Well x0.5', horizon: 'Horizon x66', frenzy: 'Frenzy x10' }[b.kind];
+      const label = t({ rush: 'Rush x7', supernova: 'Tap x777', well: 'Well x0.5', horizon: 'Horizon x66', frenzy: 'Frenzy x10' }[b.kind]);
       return `<div class="buff buff-${b.kind}"><span>${label}</span><b>${Math.ceil(left)}s</b><i style="width:${(left / b.duration) * 100}%"></i></div>`;
     }).join('');
     if (buffsEl.innerHTML !== buffHtml) buffsEl.innerHTML = buffHtml;
@@ -333,7 +334,7 @@ function start(): void {
     // Quasar Crystals grow in real time, including time away.
     const grown = growCrystals(s);
     if (grown > 0) {
-      toast(`<div class="t-ico">${icon('crystal')}</div><div><b>${grown > 1 ? `${grown} Quasar Crystals formed` : 'A Quasar Crystal formed'}</b><br>Spend it on the Build tab to level up a generator.</div>`, 'good', 5000);
+      toast(`<div class="t-ico">${icon('crystal')}</div><div><b>${grown > 1 ? t('{n} Quasar Crystals formed', { n: grown }) : t('A Quasar Crystal formed')}</b><br>${t('Spend it on the Build tab to level up a generator.')}</div>`, 'good', 5000);
       rebuildAll = true;
     }
 
@@ -358,7 +359,7 @@ function start(): void {
     if (ev) {
       const badge = badgeReady(ev);
       toggleClass(eventBtn, 'ready', badge);
-      setText(eventText, badge ? 'Badge!' : fmtTime(eventTimeLeft() / 1000));
+      setText(eventText, badge ? t('Badge!') : fmtTime(eventTimeLeft() / 1000));
     }
 
     // Hyperdrive (rewarded ad) button, offered once the player is hooked.
@@ -406,16 +407,16 @@ function start(): void {
     const { s } = ctx;
     const seen = s.seenHints;
     toggleClass(document.querySelector('.gen[data-gen="0"]')!, 'pulse', s.generators[0] === 0 && s.stardust >= 15);
-    if (s.tapsAll < 5) return showHint('tap', 'Tap the asteroid to harvest Stardust');
-    if (s.generators[0] === 0 && s.stardust >= 15 && !seen.buy) return showHint('buy', 'Buy a Mining Drone below. It mines for you.');
+    if (s.tapsAll < 5) return showHint('tap', t('Tap the asteroid to harvest Stardust'));
+    if (s.generators[0] === 0 && s.stardust >= 15 && !seen.buy) return showHint('buy', t('Buy a Mining Drone below. It mines for you.'));
     if (s.generators[0] > 0) seen.buy = true;
-    if (sky.hasComet && !seen.comet) return showHint('comet', 'A comet! Tap it quickly for a boost');
+    if (sky.hasComet && !seen.comet) return showHint('comet', t('A comet! Tap it quickly for a boost'));
     if (!sky.hasComet && s.cometsAll > 0) seen.comet = true;
     if (!seen.upgrade && Object.keys(s.upgrades).length === 0 && availableUpgrades(s).some((u) => upgradePrice(ctx.d, u) <= s.stardust)) {
-      return showHint('upgrade', 'An upgrade is ready. Tap it in the strip above your generators.');
+      return showHint('upgrade', t('An upgrade is ready. Tap it in the strip above your generators.'));
     }
     if (Object.keys(s.upgrades).length > 0) seen.upgrade = true;
-    if (!seen.cosmos && canCollapse(s)) return showHint('cosmos', 'Dark Matter is ready. Open Cosmos to collapse.');
+    if (!seen.cosmos && canCollapse(s)) return showHint('cosmos', t('Dark Matter is ready. Open Cosmos to collapse.'));
     if (s.collapses > 0) seen.cosmos = true;
     if (hintId) {
       hintId = '';
@@ -464,7 +465,7 @@ function start(): void {
       recordError('frame', e);
       if (!frameErrorShown) {
         frameErrorShown = true;
-        toast('Something went wrong, but your progress is safe. Settings has an error report.', 'bad', 5000);
+        toast(t('Something went wrong, but your progress is safe. Settings has an error report.'), 'bad', 5000);
       }
     }
     requestAnimationFrame(frame);
@@ -484,7 +485,7 @@ function start(): void {
         if (sorted[sorted.length >> 1] > SLOW_FRAME_MS) {
           ctx.s.settings.saver = true;
           applySettings(ctx);
-          toast('Battery saver is on to keep things smooth. You can change it in Settings.', 'info', 5000);
+          toast(t('Battery saver is on to keep things smooth. You can change it in Settings.'), 'info', 5000);
         }
         ctx.save();
       }
@@ -528,7 +529,7 @@ function start(): void {
       shownAmount += (s.stardust - shownAmount) * Math.min(1, dt * 12);
       if (Math.abs(s.stardust - shownAmount) < 1 || s.stardust < shownAmount) shownAmount = s.stardust;
       setText(amountEl, fmt(shownAmount));
-      setText(rateEl, `${fmtRate(ctx.d.sps)} per second`);
+      setText(rateEl, t('{n} per second', { n: fmtRate(ctx.d.sps) }));
       toggleClass(rateEl, 'boosted', ctx.d.prodBuff > 1);
       toggleClass(rateEl, 'nerfed', ctx.d.prodBuff < 1);
 
@@ -557,7 +558,7 @@ function start(): void {
       const found = pickSave(text, null);
       if (found && found.state.earnedAll > ctx.s.earnedAll) {
         ctx.replaceState(found.state);
-        toast('Progress restored from the phone backup.', 'good');
+        toast(t('Progress restored from the phone backup.'), 'good');
       }
     });
   }
@@ -578,9 +579,8 @@ try {
   // Startup failed: show what happened instead of a blank screen. The save is untouched.
   recordError('start', e);
   hideSplash();
-  document.body.innerHTML = `<div class="crash"><h2>Stardust Empire could not start</h2>
-    <p>Your progress is still saved on this phone. Please close the game and open it again. If this keeps
-    happening, copy the report below and send it to the developer.</p>
+  document.body.innerHTML = `<div class="crash"><h2>${t('Stardust Empire could not start')}</h2>
+    <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')}</p>
     <textarea class="code" readonly>${esc(errorReport(VERSION))}</textarea></div>`;
 }
 

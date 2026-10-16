@@ -2,6 +2,7 @@
 
 import { markRatingDone } from '../core/rating.js';
 import { noteHappyMoment, openPlayPage } from './rating.js';
+import { AUTO_LANGS, LANG_NAMES, currentLang, t, type Lang, type LangSetting } from '../i18n/index.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES } from '../data/upgrades.js';
@@ -84,6 +85,14 @@ function toggleRow(id: string, label: string, on: boolean): string {
   return `<label class="toggle"><span>${label}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><span class="switch"></span></label>`;
 }
 
+function languageRow(setting: LangSetting): string {
+  const opts: Array<[LangSetting, string]> = [['auto', t('Device language')], ...(Object.keys(LANG_NAMES) as Lang[]).map((l): [LangSetting, string] => [l, LANG_NAMES[l]])];
+  const partial = currentLang() !== 'en' && !AUTO_LANGS.includes(currentLang());
+  return `<label class="toggle lang-row"><span>${t('Language')}</span><select id="set-lang" class="select">
+    ${opts.map(([v, name]) => `<option value="${v}"${v === setting ? ' selected' : ''}>${name}</option>`).join('')}</select></label>
+    ${partial ? `<p class="dim small">${t('Some text is still in English.')}</p>` : ''}`;
+}
+
 export function applySettings(ctx: Ctx): void {
   const st = ctx.s.settings;
   setSound(st.sound);
@@ -97,24 +106,25 @@ export function applySettings(ctx: Ctx): void {
 export function openSettings(ctx: Ctx): void {
   const st = ctx.s.settings;
   const el = openModal({
-    title: 'Settings',
+    title: t('Settings'),
     body: `
-      ${toggleRow('set-sound', 'Sound effects', st.sound)}
-      ${toggleRow('set-music', 'Ambient music', st.music)}
-      ${toggleRow('set-vibration', 'Vibration', st.vibration)}
-      ${toggleRow('set-particles', 'Particles', st.particles)}
-      ${toggleRow('set-saver', 'Battery saver (30 fps, lighter sky)', st.saver)}
-      ${toggleRow('set-sci', 'Scientific notation', st.numberStyle === 'scientific')}
-      ${notificationsSupported() ? toggleRow('set-notify', 'Reminders (storage full, probes back, daily drop)', st.notifications) : ''}
-      <h3 class="section-title">Save</h3>
-      <p class="dim">Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.</p>
-      <div class="btn-row"><button class="btn btn-plain" id="btn-export">Copy save code</button><button class="btn btn-plain" id="btn-import">Load save code</button></div>
-      ${hasErrors() ? '<h3 class="section-title">Problems</h3><p class="dim">The game caught an error. If something looked wrong, copy this report and send it to the developer.</p><button class="btn btn-plain" id="btn-errors">Copy error report</button>' : ''}
-      ${adPrivacyOptionsAvailable() ? '<h3 class="section-title">Ads</h3><button class="btn btn-plain" id="btn-ad-privacy">Ad privacy choices</button>' : ''}
-      ${isNative() ? '<button class="btn btn-plain" id="btn-rate">Rate on Google Play</button>' : ''}
-      <h3 class="section-title">Danger zone</h3>
-      <button class="btn btn-danger" id="btn-reset">Erase all progress</button>
-      <p class="dim small">Stardust Empire ${VERSION} · <a class="link" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy policy</a></p>`,
+      ${toggleRow('set-sound', t('Sound effects'), st.sound)}
+      ${toggleRow('set-music', t('Ambient music'), st.music)}
+      ${toggleRow('set-vibration', t('Vibration'), st.vibration)}
+      ${toggleRow('set-particles', t('Particles'), st.particles)}
+      ${toggleRow('set-saver', t('Battery saver (30 fps, lighter sky)'), st.saver)}
+      ${toggleRow('set-sci', t('Scientific notation'), st.numberStyle === 'scientific')}
+      ${notificationsSupported() ? toggleRow('set-notify', t('Reminders (storage full, probes back, daily drop)'), st.notifications) : ''}
+      ${languageRow(st.lang)}
+      <h3 class="section-title">${t('Save')}</h3>
+      <p class="dim">${t('Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.')}</p>
+      <div class="btn-row"><button class="btn btn-plain" id="btn-export">${t('Copy save code')}</button><button class="btn btn-plain" id="btn-import">${t('Load save code')}</button></div>
+      ${hasErrors() ? `<h3 class="section-title">${t('Problems')}</h3><p class="dim">${t('The game caught an error. If something looked wrong, copy this report and send it to the developer.')}</p><button class="btn btn-plain" id="btn-errors">${t('Copy error report')}</button>` : ''}
+      ${adPrivacyOptionsAvailable() ? `<h3 class="section-title">${t('Ads')}</h3><button class="btn btn-plain" id="btn-ad-privacy">${t('Ad privacy choices')}</button>` : ''}
+      ${isNative() ? `<button class="btn btn-plain" id="btn-rate">${t('Rate on Google Play')}</button>` : ''}
+      <h3 class="section-title">${t('Danger zone')}</h3>
+      <button class="btn btn-danger" id="btn-reset">${t('Erase all progress')}</button>
+      <p class="dim small">Stardust Empire ${VERSION} · <a class="link" href="${PRIVACY_URL}" target="_blank" rel="noopener">${t('Privacy policy')}</a></p>`,
   });
   const bind = (id: string, fn: (on: boolean) => void): void => {
     el.querySelector<HTMLInputElement>('#' + id)!.addEventListener('change', (e) => {
@@ -136,6 +146,12 @@ export function openSettings(ctx: Ctx): void {
     st.saverAuto = true;
   });
   bind('set-sci', (on) => (st.numberStyle = on ? 'scientific' : 'short'));
+  el.querySelector<HTMLSelectElement>('#set-lang')!.addEventListener('change', (e) => {
+    st.lang = (e.target as HTMLSelectElement).value as LangSetting;
+    ctx.save();
+    // Every screen is drawn in the chosen language at start, so restart the page.
+    location.reload();
+  });
   el.querySelector<HTMLInputElement>('#set-notify')?.addEventListener('change', (e) => {
     const box = e.target as HTMLInputElement;
     if (!box.checked) {
@@ -146,7 +162,7 @@ export function openSettings(ctx: Ctx): void {
     void requestNotifications().then((ok) => {
       st.notifications = ok;
       box.checked = ok;
-      if (!ok) toast('Notifications are blocked. You can allow them in your phone settings.', 'info');
+      if (!ok) toast(t('Notifications are blocked. You can allow them in your phone settings.'), 'info');
       ctx.save();
     });
   });
@@ -154,34 +170,34 @@ export function openSettings(ctx: Ctx): void {
   el.querySelector('#btn-rate')?.addEventListener('click', () => { markRatingDone(ctx.s); ctx.save(); openPlayPage(); });
   el.querySelector('#btn-errors')?.addEventListener('click', async () => {
     const report = errorReport(VERSION);
-    if (await copyText(report)) toast('Error report copied', 'good');
-    else openModal({ title: 'Error report', body: `<textarea class="code" readonly>${esc(report)}</textarea>` });
+    if (await copyText(report)) toast(t('Error report copied'), 'good');
+    else openModal({ title: t('Error report'), body: `<textarea class="code" readonly>${esc(report)}</textarea>` });
   });
   el.querySelector('#btn-ad-privacy')?.addEventListener('click', () => void showAdPrivacyOptions());
   el.querySelector('#btn-export')!.addEventListener('click', async () => {
     ctx.save();
     const code = exportSave(ctx.s);
     const ok = await copyText(code);
-    if (ok) toast('Save code copied to the clipboard.', 'good');
-    else openModal({ title: 'Your save code', body: `<p class="dim">Copy all of this text and keep it somewhere safe.</p><textarea class="code" readonly>${esc(code)}</textarea>` });
+    if (ok) toast(t('Save code copied to the clipboard.'), 'good');
+    else openModal({ title: t('Your save code'), body: `<p class="dim">${t('Copy all of this text and keep it somewhere safe.')}</p><textarea class="code" readonly>${esc(code)}</textarea>` });
   });
   el.querySelector('#btn-import')!.addEventListener('click', () => {
     openModal({
-      title: 'Load save code',
-      body: '<p class="dim">Paste a save code. This replaces your current progress.</p><textarea class="code" id="import-text" placeholder="Paste here"></textarea>',
+      title: t('Load save code'),
+      body: `<p class="dim">${t('Paste a save code. This replaces your current progress.')}</p><textarea class="code" id="import-text" placeholder="${t('Paste here')}"></textarea>`,
       buttons: [
-        { label: 'Cancel' },
+        { label: t('Cancel') },
         {
-          label: 'Load', kind: 'primary', onClick: (root) => {
+          label: t('Load'), kind: 'primary', onClick: (root) => {
             const text = root.querySelector<HTMLTextAreaElement>('#import-text')!.value;
             try {
               const s = importSave(text);
               ctx.replaceState(s);
               closeModal(el);
-              toast('Save loaded.', 'good');
+              toast(t('Save loaded.'), 'good');
               return true;
             } catch {
-              toast('That save code did not work. Check it was copied completely.', 'bad');
+              toast(t('That save code did not work. Check it was copied completely.'), 'bad');
               return false;
             }
           },
@@ -190,11 +206,11 @@ export function openSettings(ctx: Ctx): void {
     });
   });
   el.querySelector('#btn-reset')!.addEventListener('click', () => {
-    confirmModal('Erase everything?', 'This deletes all progress, including Dark Matter and achievements. It cannot be undone.', 'Erase', () => {
-      confirmModal('Really erase?', 'Last chance. Your whole empire will be gone.', 'Yes, erase it all', () => {
+    confirmModal(t('Erase everything?'), t('This deletes all progress, including Dark Matter and achievements. It cannot be undone.'), t('Erase'), () => {
+      confirmModal(t('Really erase?'), t('Last chance. Your whole empire will be gone.'), t('Yes, erase it all'), () => {
         ctx.replaceState(newState());
         closeModal(el);
-        toast('A fresh start.', 'info');
+        toast(t('A fresh start.'), 'info');
       }, true);
     }, true);
   });
@@ -202,26 +218,26 @@ export function openSettings(ctx: Ctx): void {
 
 export function showOffline(ctx: Ctx, seconds: number, earned: number): void {
   if (earned <= 0 || seconds < 60) return;
-  const buttons: Parameters<typeof openModal>[0]['buttons'] = [{ label: 'Collect', kind: rewardedAvailable() ? 'plain' : 'primary' }];
+  const buttons: Parameters<typeof openModal>[0]['buttons'] = [{ label: t('Collect'), kind: rewardedAvailable() ? 'plain' : 'primary' }];
   if (rewardedAvailable()) {
     buttons.push({
-      label: 'Watch ad: x2', kind: 'primary', onClick: () => {
-        void showRewarded('double your offline Stardust').then((ok) => {
+      label: t('Watch ad: x2'), kind: 'primary', onClick: () => {
+        void showRewarded(t('double your offline Stardust')).then((ok) => {
           if (!ok) return;
           earn(ctx.s, earned);
           ctx.s.adsWatched++;
           ctx.save();
           ctx.sky.floatCenter(`+${fmt(earned)}`, '#ffcf5a', 30);
-          toast(`<div class="t-ico">${icon('gift')}</div><div><b>Doubled!</b><br>+${fmt(earned)} more Stardust</div>`, 'good');
+          toast(`<div class="t-ico">${icon('gift')}</div><div><b>${t('Doubled!')}</b><br>${t('+{n} more Stardust', { n: fmt(earned) })}</div>`, 'good');
         });
       },
     });
   }
   openModal({
-    title: 'Welcome back!',
+    title: t('Welcome back!'),
     body: `<div class="offline"><div class="big-ico">${icon('drone')}</div>
-      <p>While you were away for <b>${fmtTime(seconds)}</b>, your empire harvested</p>
-      <p class="offline-amount"><span class="sd-dot big"></span>${fmt(earned)}</p><p class="dim">Stardust</p></div>`,
+      <p>${t('While you were away for <b>{time}</b>, your empire harvested', { time: fmtTime(seconds) })}</p>
+      <p class="offline-amount"><span class="sd-dot big"></span>${fmt(earned)}</p><p class="dim">${t('Stardust')}</p></div>`,
     buttons,
     onClose: () => { if (seconds >= 1800) askReminders(ctx); },
   });
@@ -234,17 +250,17 @@ function askReminders(ctx: Ctx): void {
   s.seenHints.notifyAsk = true;
   ctx.save();
   openModal({
-    title: 'Want a heads-up?',
+    title: t('Want a heads-up?'),
     body: `<div class="offline"><div class="big-ico">${icon('drone')}</div>
-      <p>Get a ping when your storage is full, a probe is back, or your daily drop is waiting. Nothing else.</p></div>`,
+      <p>${t('Get a ping when your storage is full, a probe is back, or your daily drop is waiting. Nothing else.')}</p></div>`,
     buttons: [
-      { label: 'No thanks' },
+      { label: t('No thanks') },
       {
-        label: 'Yes, remind me', kind: 'primary', onClick: () => {
+        label: t('Yes, remind me'), kind: 'primary', onClick: () => {
           void requestNotifications().then((ok) => {
             s.settings.notifications = ok;
             ctx.save();
-            if (ok) toast('Reminders on. Change this any time in Settings.', 'good');
+            if (ok) toast(t('Reminders on. Change this any time in Settings.'), 'good');
           });
         },
       },

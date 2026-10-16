@@ -974,3 +974,31 @@ test('saves survive a bad number, and the backup is used when the main save is u
   assert.equal(pickSave('garbage', 'also garbage', 0), null);
   assert.equal(pickSave(null, null, 0), null);
 });
+
+test('Spanish and Portuguese cover the same text with the same placeholders', async () => {
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  const holes = (s) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+  assert.deepEqual(Object.keys(ES).sort(), Object.keys(PT).sort());
+  for (const dict of [ES, PT]) {
+    for (const [en, tr] of Object.entries(dict)) {
+      assert.ok(tr.trim(), `empty translation for ${en}`);
+      assert.equal(holes(tr), holes(en), `placeholders differ for ${en}`);
+    }
+  }
+  for (const g of GENERATORS) assert.ok(ES[g.name] && PT[g.name] && ES[g.flavor] && PT[g.flavor], g.name);
+});
+
+test('language setting falls back to English and fills placeholders', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  assert.equal(i18n.resolveLang('es', 'en'), 'es');
+  assert.equal(i18n.resolveLang('auto', 'fr'), 'en');
+  assert.equal(i18n.resolveLang('auto', 'es'), i18n.AUTO_LANGS.includes('es') ? 'es' : 'en');
+  i18n.setLanguage('pt');
+  assert.equal(i18n.t('{n} per second', { n: '5' }), '5 por segundo');
+  assert.equal(i18n.t('Not a real string'), 'Not a real string');
+  assert.ok(i18n.missingText().includes('Not a real string'));
+  i18n.setLanguage('en');
+  assert.equal(i18n.t('{n} per tap', { n: 2 }), '2 per tap');
+  assert.equal(newState().settings.lang, 'auto');
+});

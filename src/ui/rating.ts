@@ -5,6 +5,7 @@ import { markRatingAsked, markRatingDone, shouldAskRating } from '../core/rating
 import type { Ctx } from './ctx.js';
 import { modalOpen, openModal } from './dom.js';
 import { isNative } from './platform.js';
+import { t } from '../i18n/index.js';
 
 export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.bringouttherainn.stardustempire';
 
@@ -35,12 +36,12 @@ export function maybeAskRating(ctx: Ctx, now = Date.now()): void {
 
 export function showRatingPrompt(ctx: Ctx): void {
   openModal({
-    title: 'Enjoying Stardust Empire?',
-    body: '<p>A rating on Google Play helps other players find the game. It only takes a moment.</p>',
+    title: t('Enjoying Stardust Empire?'),
+    body: `<p>${t('A rating on Google Play helps other players find the game. It only takes a moment.')}</p>`,
     buttons: [
-      { label: 'Rate on Google Play', kind: 'primary', onClick: () => { markRatingDone(ctx.s); ctx.save(); openPlayPage(); } },
-      { label: 'Not now', kind: 'plain' },
-      { label: "Don't ask again", kind: 'plain', onClick: () => { markRatingDone(ctx.s); ctx.save(); } },
+      { label: t('Rate on Google Play'), kind: 'primary', onClick: () => { markRatingDone(ctx.s); ctx.save(); openPlayPage(); } },
+      { label: t('Not now'), kind: 'plain' },
+      { label: t("Don't ask again"), kind: 'plain', onClick: () => { markRatingDone(ctx.s); ctx.save(); } },
     ],
   });
 }

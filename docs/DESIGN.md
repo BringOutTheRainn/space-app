@@ -209,6 +209,15 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    times in total, and "Don't ask again" stops it for good. Rating is never rewarded (Play policy).
    It opens the store page; the native In-App Review API is a later upgrade because it needs a
    Capacitor plugin. Settings also has a "Rate on Google Play" button on the phone.
+   Run 9 (backlog #1, part 1): **Spanish and Portuguese.** Text is looked up by its English wording
+   (`t()` in `src/i18n/`), so anything untranslated stays English. Translated so far: the main screen,
+   hints, the Build tab, all 14 generators, stage names, Settings, the welcome-back and reminder
+   dialogs and the rating prompt. Settings has a Language picker (Device language, English, Español,
+   Português); picking one reloads the page. "Device language" stays English until a language is
+   complete (`AUTO_LANGS`), so nobody gets a half-translated game by surprise; Settings says "Some
+   text is still in English" meanwhile. The Play listing is translated in `docs/STORE-es-pt.md`
+   (es-419 and pt-BR). Still English: upgrades, achievements, cosmic upgrades, anomalies, probes,
+   missions, contracts, the shop, the minigames, events, the Star Pass, stats and the news ticker.
 
 ## Research log
 
@@ -354,7 +363,8 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. Spanish and Portuguese text: the largest Play audiences for idle games after English.
+1. Finish Spanish and Portuguese: data files (upgrades, achievements, cosmic, anomalies, expeditions,
+   news), then the menus and shop, then turn on `AUTO_LANGS` for both.
 2. Welcome-back summary that lists what each system did while away (probes, garden, market).
 3. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 4. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

@@ -1,5 +1,7 @@
 // Tiny DOM helpers: element lookup, toasts and modals.
 
+import { t } from '../i18n/index.js';
+
 export function $(sel: string, root: ParentNode = document): HTMLElement {
   const el = root.querySelector(sel);
   if (!el) throw new Error(`Missing element ${sel}`);
@@ -52,10 +54,10 @@ export function openModal(opts: ModalOptions): HTMLElement {
   const root = document.getElementById('modals')!;
   const el = document.createElement('div');
   el.className = 'modal-backdrop';
-  const buttons = opts.buttons ?? [{ label: 'Close', kind: 'primary' }];
+  const buttons = opts.buttons ?? [{ label: t('Close'), kind: 'primary' }];
   el.innerHTML = `
     <div class="modal${opts.wide ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(opts.title)}">
-      <div class="modal-head"><h2>${esc(opts.title)}</h2>${opts.dismissable === false ? '' : '<button class="modal-x" aria-label="Close">✕</button>'}</div>
+      <div class="modal-head"><h2>${esc(opts.title)}</h2>${opts.dismissable === false ? '' : `<button class="modal-x" aria-label="${t('Close')}">✕</button>`}</div>
       <div class="modal-body">${opts.body}</div>
       <div class="modal-buttons">${buttons.map((b, i) => `<button class="btn btn-${b.kind ?? 'plain'}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>
     </div>`;
@@ -105,7 +107,7 @@ export function confirmModal(title: string, body: string, yes: string, onYes: ()
     title,
     body: `<p>${body}</p>`,
     buttons: [
-      { label: 'Cancel', kind: 'plain' },
+      { label: t('Cancel'), kind: 'plain' },
       { label: yes, kind: danger ? 'danger' : 'primary', onClick: () => onYes() },
     ],
   });
