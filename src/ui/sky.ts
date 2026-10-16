@@ -60,6 +60,8 @@ export class Sky {
   aura: 'none' | 'rush' | 'horizon' | 'well' | 'supernova' = 'none';
   /** Canvas filter for the bought planet skin. */
   private bodyFilter = 'none';
+  /** The Golden Halo sky trail, earned on a long spin streak. */
+  halo = false;
 
   setSkin(id: string): void {
     this.bodyFilter = SKINS.find((k) => k.id === id)?.filter ?? 'none';
@@ -298,6 +300,7 @@ export class Sky {
     const r = this.radius;
     this.drawEmpire(cx, cy);
     this.drawAura(cx, cy, r);
+    if (this.halo) this.drawHalo(cx, cy, r, true);
     const sq = Math.sin(this.squash * Math.PI) * 0.05;
     g.save();
     g.translate(cx, cy);
@@ -306,6 +309,7 @@ export class Sky {
     this.drawBody(r);
     g.filter = 'none';
     g.restore();
+    if (this.halo) this.drawHalo(cx, cy, r, false);
     this.drawDrones(cx, cy, r);
 
     if (this.stageFlash > 0) {
@@ -335,6 +339,55 @@ export class Sky {
       g.fillText(f.text, f.x, f.y);
     }
     g.globalAlpha = 1;
+  }
+
+  /**
+   * Golden Halo: two sparks on a tilted orbit, each dragging a fading trail.
+   * Drawn in two passes so the far half of the orbit passes behind the body.
+   */
+  private drawHalo(cx: number, cy: number, r: number, back: boolean): void {
+    const g = this.ctx;
+    const rx = r * 1.22;
+    const ry = r * 0.34;
+    const tilt = -0.32;
+    const cos = Math.cos(tilt);
+    const sin = Math.sin(tilt);
+    const at = (a: number): [number, number] => {
+      const x = Math.cos(a) * rx;
+      const y = Math.sin(a) * ry;
+      return [cx + x * cos - y * sin, cy + x * sin + y * cos];
+    };
+    // sin(a) < 0 is the far side of the orbit.
+    const far = (a: number): boolean => Math.sin(a) < 0;
+    g.lineCap = 'round';
+    for (let k = 0; k < 2; k++) {
+      const head = this.t * 0.9 + k * Math.PI;
+      const steps = 26;
+      for (let i = steps; i > 0; i--) {
+        const a0 = head - (i / steps) * 2.2;
+        const a1 = head - ((i - 1) / steps) * 2.2;
+        if (far((a0 + a1) / 2) !== back) continue;
+        const [x0, y0] = at(a0);
+        const [x1, y1] = at(a1);
+        const f = 1 - i / steps;
+        g.strokeStyle = `rgba(255,${200 + Math.round(f * 40)},${90 + Math.round(f * 80)},${(0.15 + f * f * 0.85).toFixed(3)})`;
+        g.lineWidth = 1.5 + f * 4;
+        g.beginPath();
+        g.moveTo(x0, y0);
+        g.lineTo(x1, y1);
+        g.stroke();
+      }
+      if (far(head) !== back) continue;
+      const [hx, hy] = at(head);
+      const glow = g.createRadialGradient(hx, hy, 0, hx, hy, 11);
+      glow.addColorStop(0, 'rgba(255,248,210,0.95)');
+      glow.addColorStop(0.4, 'rgba(255,205,90,0.55)');
+      glow.addColorStop(1, 'rgba(255,190,60,0)');
+      g.fillStyle = glow;
+      g.beginPath();
+      g.arc(hx, hy, 11, 0, TAU);
+      g.fill();
+    }
   }
 
   /** Your other generators drift around the edge of the sky. */

@@ -879,3 +879,5 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
   .wheel-wrap.golden { animation: golden-pulse 1.8s ease-in-out infinite; }
 }
 @keyframes golden-pulse { 50% { transform: scale(1.03); } }
+.shop-halo { margin-top: 10px; }
+.halo-swatch { flex: none; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #3e5fa8 0 34%, transparent 36%), radial-gradient(ellipse 50% 18% at 50% 50%, transparent 72%, #ffd36a 76%, transparent 86%); }

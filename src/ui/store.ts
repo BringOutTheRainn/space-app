@@ -8,6 +8,7 @@ import { crystalsUnlocked } from '../core/crystals.js';
 import { currentEvent, eventActive, eventTimeLeft } from '../core/event.js';
 import { currentPass, seasonTimeLeft } from '../core/pass.js';
 import { fmt, fmtTime } from '../core/format.js';
+import { HALO_STREAK } from '../core/wheel.js';
 import {
   STARTER_PCT, SUPPORTER_MULT, VAULT_CAP_HOURS, VAULT_HOURS_PER_CRYSTAL, VAULT_RATE,
   canBuy, fillVault, grant, owns, setSkin, starterOfferLeft, vaultValue,
@@ -249,7 +250,11 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
       return `<div class="shop-skin${using ? ' using' : ''}"><span class="skin-swatch" style="background:radial-gradient(circle at 35% 30%, ${k.swatch[0]}, ${k.swatch[1]})"></span>
         <b>${esc(t(k.name))}</b>${using ? `<span class="shop-owned">${t('In use')}</span>` : have ? `<button class="btn btn-plain shop-buy" data-skin="${k.id}">${t('Use')}</button>` : 'exclusive' in k && k.exclusive ? `<span class="dim small shop-owned-note">${t('Star Pass reward')}</span>` : buyButton(ctx, `skin_${k.id}`)}</div>`;
     }).join('');
-    parts.push(`<div class="shop-card"><div class="shop-head"><b>${t('Planet skins')}</b><span class="dim small">${t('Looks only')}</span></div><div class="shop-skins">${skins}</div></div>`);
+    const halo = s.haloEarned
+      ? `<button class="btn btn-plain shop-buy" data-halo aria-pressed="${s.haloOn}">${s.haloOn ? t('Hide') : t('Show')}</button>`
+      : `<span class="dim small shop-owned-note">${t('{n}-day spin streak', { n: HALO_STREAK })}</span>`;
+    parts.push(`<div class="shop-card"><div class="shop-head"><b>${t('Planet skins')}</b><span class="dim small">${t('Looks only')}</span></div><div class="shop-skins">${skins}</div>
+      <div class="shop-row shop-halo"><span class="halo-swatch" aria-hidden="true"></span><div class="shop-main"><b>${t('Golden Halo')}</b><span>${t('A golden sky trail that circles your world.')}</span></div>${halo}</div></div>`);
 
     if (isNative()) parts.push(`<button class="btn btn-plain btn-wide" data-restore="1">${t('Restore purchases')}</button>`);
     if (!storeIsLive()) parts.push(`<p class="dim small">${isNative() ? t('The store could not be reached, so prices may be out of date.') : t('Browser preview: purchases here are tests and nothing is charged.')}</p>`);
@@ -261,7 +266,7 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-skin],[data-restore]');
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-skin],[data-halo],[data-restore]');
     if (!el2 || el2.disabled || busy) return;
     if (el2.dataset.skin) {
       if (setSkin(ctx.s, el2.dataset.skin)) {
@@ -269,6 +274,14 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
         haptic('light');
         ctx.save();
       }
+      redraw();
+      return;
+    }
+    if (el2.dataset.halo !== undefined) {
+      ctx.s.haloOn = !ctx.s.haloOn;
+      ctx.sky.halo = ctx.s.haloEarned && ctx.s.haloOn;
+      haptic('light');
+      ctx.save();
       redraw();
       return;
     }

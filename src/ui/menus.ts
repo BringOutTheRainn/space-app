@@ -29,7 +29,7 @@ import { FERTILIZE_COOLDOWN_HOURS, FERTILIZE_HOURS, GARDEN_GEN, SEEDS, fertilize
 import { BADGE_GOALS, BADGE_MINUTES, BADGE_NAMES, GOLD_TIER, PLATINUM_CRYSTALS, badgeCount, EVENT_AD_MINUTES, EVENT_GENS, badgeReady, badgeReward, buyEventGen, claimBadge, currentEvent, eventAdBoost, eventAdReady, eventPrice, eventRate, eventTap, eventTapOnce, eventDay, eventTheme, eventTimeLeft } from '../core/event.js';
 import { FORGE_GEN, REFILL_MINUTES, SMELT_FAIL, SMELT_MINUTES, SPELLS, STOKE_COOLDOWN_HOURS, cast, heatFullIn, maxHeat, spellById, stoke, stokeReady, syncHeat } from '../core/forge.js';
 import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood, creditValue, holdSize, insiderTip, maxBuy, nextTickIn, sellGood, syncMarket, tipReady, type GoodState } from '../core/market.js';
-import { AD_SPINS_PER_DAY, GOLDEN_MULT, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
+import { AD_SPINS_PER_DAY, GOLDEN_MULT, HALO_STREAK, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
 import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
 import type { AwayReport } from '../core/away.js';
@@ -103,6 +103,7 @@ export function applySettings(ctx: Ctx): void {
   setVibration(st.vibration);
   setNumberStyle(st.numberStyle);
   ctx.sky.particlesOn = st.particles;
+  ctx.sky.halo = ctx.s.haloEarned && ctx.s.haloOn;
   ctx.sky.setLowRes(st.saver);
 }
 
@@ -342,7 +343,8 @@ export function openHyperdrive(ctx: Ctx): void {
     const streakLine = `<div class="wheel-streak" aria-label="${esc(t('Spin streak: {days} in a row', { days }))}">${dots}</div>
           <p class="dim small">${golden ? t('Day 7: a Golden Orbit. Prizes doubled, jackpot six times as likely.')
             : !free && streak > 0 && streak % STREAK_DAYS === 0 ? t('Golden Orbit claimed. Keep the streak going for the next one.')
-            : t('Spin {n} days in a row for a Golden Orbit. Streak: {days}.', { n: STREAK_DAYS, days })}</p>`;
+            : t('Spin {n} days in a row for a Golden Orbit. Streak: {days}.', { n: STREAK_DAYS, days })}</p>
+          ${s.haloEarned ? '' : `<p class="dim small">${t('Reach a {n}-day streak to earn the Golden Halo, a sky trail around your world.', { n: HALO_STREAK })}</p>`}`;
     const spinBtn = free ? `<button class="btn btn-primary${golden ? ' btn-golden' : ''}" data-spin="free">${golden ? t('Spin Golden Orbit') : t('Spin free')}</button>`
       : adLeft > 0 ? `<button class="btn ${rewardedAvailable() ? 'btn-primary' : 'btn-plain'}" data-spin="ad" ${rewardedAvailable() ? '' : 'disabled'}>${t('Ad spin: {n} left', { n: adLeft })}</button>`
       : `<p class="dim small">${t('Next free spin tomorrow.')}</p>`;
@@ -397,6 +399,10 @@ export function openHyperdrive(ctx: Ctx): void {
       haptic('medium');
       if (r.golden || r.slice === 7) noteHappyMoment();
       toast(`<div class="t-ico">${icon('gift')}</div><div><b>${r.golden ? t('Golden Orbit') : t('Lucky Orbit')}</b><br>${esc(prizeText(ctx, r.slice, r.amount, r.golden))}</div>`, 'good');
+      if (r.halo) {
+        ctx.sky.halo = true;
+        toast(`<div class="t-ico">${icon('cosmos')}</div><div><b>${t('Golden Halo earned')}</b><br>${t('{n} days in a row. It now circles your world; turn it off in the Shop.', { n: r.streak })}</div>`, 'good');
+      }
       ctx.recalc();
       ctx.dirty();
       if (el.isConnected) body.innerHTML = render();

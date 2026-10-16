@@ -411,7 +411,14 @@ waste was found and fixed: the slow refresh re-set the same `hidden` flags (dail
 tab badges, minigame cards, the Auto chip) about 25 times a second, each one a DOM change. `setHidden`
 now writes only when the value changes, so an idle screen makes no DOM changes at all.
 
+**Run 19. Golden Halo.** A long-term goal for the daily wheel: a free-spin streak of 28 days (the
+fourth Golden Orbit in a row) earns the Golden Halo, two golden sparks on a tilted orbit around the
+celestial body, each with a fading trail. The far half of the orbit passes behind the body. It is
+earned once, turns on at once with its own toast, and the Shop's skins card has a Show/Hide button
+for it (before it is earned, the card says what earns it). The wheel says how to earn it until then.
+It is looks only and works with every skin. Spanish and Portuguese text added; a test covers the
+28th day, ad spins not counting, earning it once, the off switch sticking, and older saves.
+
 ### Backlog from research (best first)
-1. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
-2. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
+1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

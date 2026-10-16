@@ -771,6 +771,31 @@ test('lucky orbit streak: seven days in a row gives a golden spin, a missed day 
   assert.ok(golden >= normal * 4, `jackpot ${normal} -> ${golden}`);
 });
 
+test('a 28-day spin streak earns the Golden Halo once; ad spins and broken streaks do not', async () => {
+  const w = await import('../www/js/core/wheel.js');
+  const day = (n) => new Date(2026, 9, 1 + n, 12).getTime();
+  const s = newState(day(0));
+  const d = computeDerived(s, 0);
+  for (let n = 0; n < w.HALO_STREAK - 1; n++) {
+    assert.equal(w.spin(s, d, false, day(n), () => 0.5).halo, false);
+    w.spin(s, d, true, day(n), () => 0.5);
+  }
+  assert.equal(s.haloEarned, false, 'not before day 28');
+  const r = w.spin(s, d, false, day(w.HALO_STREAK - 1), () => 0.5);
+  assert.equal(r.halo, true);
+  assert.equal(r.golden, true, 'day 28 is also a Golden Orbit');
+  assert.ok(s.haloEarned && s.haloOn);
+  s.haloOn = false;
+  assert.equal(w.spin(s, d, false, day(w.HALO_STREAK), () => 0.5).halo, false, 'earned only once');
+  assert.equal(s.haloOn, false, 'turning it off sticks');
+  // A save from before the halo existed loads with it unearned.
+  const old = JSON.parse(serialize(newState(day(0))));
+  delete old.haloEarned; delete old.haloOn;
+  const back = deserialize(JSON.stringify(old));
+  assert.equal(back.haloEarned, false);
+  assert.equal(back.haloOn, false);
+});
+
 test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
   const r = await import('../www/js/core/rating.js');
   const DAY = 86400000;

@@ -14,6 +14,8 @@ export const STREAK_DAYS = 7;
 /** On a golden spin the jackpot is six times as likely and every prize is doubled. */
 export const GOLDEN_JACKPOT_WEIGHT = 12;
 export const GOLDEN_MULT = 2;
+/** Four Golden Orbits in a row earn the Golden Halo, a sky trail around the body. */
+export const HALO_STREAK = 28;
 const JACKPOT = 7;
 
 export type SliceKind = 'stardust' | 'hyper' | 'comet' | 'crystal';
@@ -101,6 +103,8 @@ export interface SpinResult {
   golden: boolean;
   /** Days in a row after this spin. */
   streak: number;
+  /** This spin earned the Golden Halo. */
+  halo: boolean;
 }
 
 /** Spins the wheel: the free spin first, then ad spins. Null when none are left. */
@@ -108,6 +112,7 @@ export function spin(s: GameState, d: Derived, viaAd: boolean, now = Date.now(),
   sync(s, now);
   if (viaAd ? adSpinsLeft(s, now) <= 0 : !s.wheelFree) return null;
   let golden = false;
+  let halo = false;
   if (viaAd) {
     s.wheelAds++;
     s.adsWatched++;
@@ -116,6 +121,11 @@ export function spin(s: GameState, d: Derived, viaAd: boolean, now = Date.now(),
     s.wheelStreak = nextStreak(s, now);
     s.wheelStreakDay = dayNumber(now);
     golden = s.wheelStreak % STREAK_DAYS === 0;
+    if (s.wheelStreak >= HALO_STREAK && !s.haloEarned) {
+      s.haloEarned = true;
+      s.haloOn = true;
+      halo = true;
+    }
   }
   s.wheelSpins++;
   const mult = golden ? GOLDEN_MULT : 1;
@@ -150,5 +160,5 @@ export function spin(s: GameState, d: Derived, viaAd: boolean, now = Date.now(),
       earn(s, amount);
       break;
   }
-  return { slice: i, amount, golden, streak: currentStreak(s, now) };
+  return { slice: i, amount, golden, streak: currentStreak(s, now), halo };
 }

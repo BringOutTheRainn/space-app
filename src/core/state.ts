@@ -147,6 +147,9 @@ export interface GameState {
   purchases: Record<string, number>;
   /** Celestial body skin id, or 'default'. */
   skin: string;
+  /** Golden Halo sky trail: earned on a 28-day spin streak, and whether it is shown. */
+  haloEarned: boolean;
+  haloOn: boolean;
   /** Hours of production saved in the Stardust Vault. */
   vaultHours: number;
   /** Real-time ms of the last vault fill; 0 until it starts. */
@@ -237,6 +240,8 @@ export function newState(now = Date.now()): GameState {
     rateDone: false,
     purchases: {},
     skin: 'default',
+    haloEarned: false,
+    haloOn: false,
     vaultHours: 0,
     vaultAt: 0,
     vaultsOpened: 0,
