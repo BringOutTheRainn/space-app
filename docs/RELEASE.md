@@ -71,7 +71,9 @@ interaction data to show and measure ads. In the Play Console data safety form, 
 Reminder notifications are opt-in, scheduled on the device only, and need the Android 13 notification
 permission (the build adds it). No push server is involved.
 
-The privacy policy page must name AdMob and link https://policies.google.com/technologies/partner-sites.
+The privacy policy is `docs/PRIVACY.md`; use its GitHub address as the Play Console privacy policy URL:
+https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md (Settings in the game links to it).
+It names AdMob and links https://policies.google.com/technologies/partner-sites.
 The app asks for consent in the EEA and UK through Google's consent form (configure a GDPR message in
 AdMob under Privacy & messaging).
 

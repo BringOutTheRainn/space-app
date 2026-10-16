@@ -132,6 +132,10 @@ rare "Relics" that give permanent small multipliers. Gives players a reason to c
 
 Auto-save every 10 s and when the app goes to the background, to local storage. Saves are versioned
 JSON with migrations. Export/import a save string from Settings. Hard reset with confirmation.
+A second backup copy is written every 5 minutes; if the main save cannot be read, the game loads the
+backup and keeps the broken copy under a `-broken-<time>` key. Non-finite numbers (NaN, Infinity) are
+reset on load and before every save. On Android a third copy goes to Capacitor Preferences, which
+survives the WebView clearing its storage, and is restored on start when it is further ahead.
 
 ## Monetization: ads (built)
 
@@ -170,6 +174,9 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    production per real hour up to 12 h, $2.99 to open), four planet skins ($0.99 each), a one-time
    starter pop-up after 20 minutes of play, Restore purchases. AdMob mediation adapters can be added
    from a CI variable. Setup steps are in docs/RELEASE.md. Star Pass ($4.99 per 4-week season, run 9).
+9. **Launch sprint (Oct 16 to 19, Google Play, personal account)**: target API 36, save safety
+   (backup, number repair, native copy), privacy policy (docs/PRIVACY.md, linked in Settings), then
+   balance, first-time experience, low-end performance, accessibility, store listing and compliance.
 
 ## Research log
 

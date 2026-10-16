@@ -879,3 +879,31 @@ test('lucky orbit gives one free spin a day and two ad spins, and goods are sold
   assert.equal(m.goods[0].held, 0);
   assert.ok(s.earnedAll > earnedBefore, 'profit counted');
 });
+
+test('saves survive a bad number, and the backup is used when the main save is unreadable', async () => {
+  const { repairNumbers, pickSave } = await import('../www/js/core/save.js');
+  const s = newState(0);
+  s.generators[0] = 5;
+  s.earnedAll = 1234;
+  s.stardust = NaN;
+  s.crystals = Infinity;
+  const fixed = repairNumbers(s, 0);
+  assert.deepEqual(fixed.sort(), ['crystals', 'stardust']);
+  assert.equal(s.stardust, 0);
+  assert.equal(s.earnedAll, 1234, 'good fields kept');
+  // A NaN written by JSON becomes null; the rest of the save still loads.
+  const raw = JSON.parse(serialize(s));
+  raw.stardust = null;
+  raw.darkMatter = null;
+  const back = deserialize(JSON.stringify(raw), 0);
+  assert.equal(back.stardust, 0);
+  assert.equal(back.darkMatter, 0);
+  assert.equal(back.earnedAll, 1234);
+  assert.equal(back.generators[0], 5);
+  // Main save corrupted: fall back to the backup.
+  const good = serialize(s);
+  assert.equal(pickSave('{"stardust": 1', good, 0).from, 'backup');
+  assert.equal(pickSave(good, null, 0).from, 'main');
+  assert.equal(pickSave('garbage', 'also garbage', 0), null);
+  assert.equal(pickSave(null, null, 0), null);
+});

@@ -31,6 +31,7 @@ import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimabl
 import { claimMission, describeMission, missionDone, missionProgress, missionReward, swapMission } from '../core/missions.js';
 
 export const VERSION = '1.0.0';
+export const PRIVACY_URL = 'https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md';
 
 export function openStats(ctx: Ctx): void {
   const render = (): string => {
@@ -105,7 +106,7 @@ export function openSettings(ctx: Ctx): void {
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">Copy save code</button><button class="btn btn-plain" id="btn-import">Load save code</button></div>
       <h3 class="section-title">Danger zone</h3>
       <button class="btn btn-danger" id="btn-reset">Erase all progress</button>
-      <p class="dim small">Stardust Empire ${VERSION}</p>`,
+      <p class="dim small">Stardust Empire ${VERSION} · <a class="link" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy policy</a></p>`,
   });
   const bind = (id: string, fn: (on: boolean) => void): void => {
     el.querySelector<HTMLInputElement>('#' + id)!.addEventListener('change', (e) => {

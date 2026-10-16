@@ -76,3 +76,24 @@ export async function copyText(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * A copy of the save in Android's app preferences (Capacitor Preferences).
+ * The WebView's localStorage can be cleared under storage pressure; this copy
+ * is not. Does nothing in a browser.
+ */
+export function nativeSaveWrite(key: string, value: string): void {
+  const p = plugin('Preferences');
+  if (p && typeof p.set === 'function') (p.set as (o: { key: string; value: string }) => Promise<void>)({ key, value }).catch(() => undefined);
+}
+
+export async function nativeSaveRead(key: string): Promise<string | null> {
+  const p = plugin('Preferences');
+  if (!p || typeof p.get !== 'function') return null;
+  try {
+    const r = await (p.get as (o: { key: string }) => Promise<{ value: string | null }>)({ key });
+    return r.value ?? null;
+  } catch {
+    return null;
+  }
+}

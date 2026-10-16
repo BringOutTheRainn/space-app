@@ -8,6 +8,9 @@ import { GOODS, HISTORY } from './market.js';
 import { newState, SAVE_VERSION, type GameState } from './state.js';
 
 export const SAVE_KEY = 'stardust-empire-save';
+/** A second copy, refreshed every few minutes, used if the main save is unreadable. */
+export const BACKUP_KEY = SAVE_KEY + '-backup';
+export const BACKUP_EVERY_MS = 5 * 60000;
 
 export function serialize(s: GameState): string {
   return JSON.stringify(s);
@@ -18,10 +21,44 @@ type Migration = (raw: Record<string, unknown>) => void;
 // MIGRATIONS[n] upgrades a version n save to version n + 1.
 const MIGRATIONS: Record<number, Migration> = {};
 
+/**
+ * Puts back any top-level number that is not finite (NaN, Infinity or null)
+ * with its starting value, so one bad value cannot break every later save.
+ * Returns the names of the fields it fixed.
+ */
+export function repairNumbers(s: GameState, now = Date.now()): string[] {
+  const base = newState(now) as unknown as Record<string, unknown>;
+  const st = s as unknown as Record<string, unknown>;
+  const fixed: string[] = [];
+  for (const k of Object.keys(base)) {
+    if (typeof base[k] === 'number' && !(typeof st[k] === 'number' && Number.isFinite(st[k]))) {
+      st[k] = base[k];
+      fixed.push(k);
+    }
+  }
+  return fixed;
+}
+
+/** The first readable save among the main copy and the backup, or null. */
+export function pickSave(main: string | null, backup: string | null, now = Date.now()): { state: GameState; from: 'main' | 'backup' } | null {
+  for (const [text, from] of [[main, 'main'], [backup, 'backup']] as const) {
+    if (!text) continue;
+    try {
+      return { state: deserialize(text, now), from };
+    } catch {
+      /* try the next copy */
+    }
+  }
+  return null;
+}
+
 /** Parses a save, filling any missing fields with defaults. Throws on garbage. */
 export function deserialize(text: string, now = Date.now()): GameState {
   const raw = JSON.parse(text) as Record<string, unknown>;
-  if (!raw || typeof raw !== 'object' || typeof raw.stardust !== 'number') throw new Error('Not a Stardust Empire save');
+  if (!raw || typeof raw !== 'object') throw new Error('Not a Stardust Empire save');
+  // A NaN that slipped into a save is written as null; keep the rest of the save.
+  if (raw.stardust === null && typeof raw.earnedAll === 'number') raw.stardust = 0;
+  if (typeof raw.stardust !== 'number') throw new Error('Not a Stardust Empire save');
   let version = typeof raw.version === 'number' ? raw.version : 1;
   while (version < SAVE_VERSION) {
     MIGRATIONS[version]?.(raw);
@@ -65,6 +102,7 @@ export function deserialize(text: string, now = Date.now()): GameState {
   for (const key of ['stardust', 'earnedRun', 'earnedAll'] as const) {
     if (!isFinite(s[key]) || s[key] < 0) s[key] = 0;
   }
+  repairNumbers(s, now);
   return s;
 }
 

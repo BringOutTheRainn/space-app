@@ -11,7 +11,7 @@ import { freeSpinReady } from './core/wheel.js';
 import { availableUpgrades, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
 import { fmt, fmtRate, fmtTime } from './core/format.js';
 import { canCollapse } from './core/prestige.js';
-import { applyOffline, deserialize, SAVE_KEY, serialize } from './core/save.js';
+import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
 import { newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
@@ -33,7 +33,7 @@ import { passClaimable } from './core/pass.js';
 import { hyperRemainingMs } from './core/ads.js';
 import { AD_CONFIG } from './data/ads.js';
 import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel } from './ui/panels.js';
-import { haptic, hideSplash, onBackButton, onPause } from './ui/platform.js';
+import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 
 const TABS = [
@@ -79,20 +79,27 @@ function layout(): void {
     <div id="modals"></div>`;
 }
 
-function loadState(): GameState {
+function readStorage(key: string): string | null {
   try {
-    const text = localStorage.getItem(SAVE_KEY);
-    if (text) return deserialize(text);
-  } catch (e) {
-    console.warn('Could not load save', e);
-    try {
-      const text = localStorage.getItem(SAVE_KEY);
-      if (text) localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), text);
-    } catch {
-      /* storage unavailable */
-    }
+    return localStorage.getItem(key);
+  } catch {
+    return null;
   }
-  return newState();
+}
+
+function loadState(): GameState {
+  const main = readStorage(SAVE_KEY);
+  const picked = pickSave(main, readStorage(BACKUP_KEY));
+  if (picked?.from === 'backup' && main) {
+    // Keep the unreadable save around rather than overwriting it.
+    try {
+      localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), main);
+    } catch {
+      /* storage full or unavailable */
+    }
+    console.warn('Main save unreadable; loaded the backup');
+  }
+  return picked?.state ?? newState();
 }
 
 function start(): void {
@@ -100,6 +107,10 @@ function start(): void {
   layout();
 
   const state = loadState();
+  let lastBackupAt = 0;
+  // On Android, wait until the preferences copy has been checked before
+  // writing over it, in case localStorage was cleared and this is a fresh state.
+  let nativeChecked = !isNative() || !!readStorage(SAVE_KEY);
   let derived: Derived = computeDerived(state);
   let rebuildAll = true;
   let activeTab = 'build';
@@ -138,12 +149,24 @@ function start(): void {
       ctx.d = derived;
     },
     save() {
-      ctx.s.lastSeen = Date.now();
+      const now = Date.now();
+      ctx.s.lastSeen = now;
+      const fixed = repairNumbers(ctx.s, now);
+      if (fixed.length) {
+        console.warn('Repaired save fields', fixed);
+        ctx.recalc();
+      }
+      const text = serialize(ctx.s);
       try {
-        localStorage.setItem(SAVE_KEY, serialize(ctx.s));
+        localStorage.setItem(SAVE_KEY, text);
+        if (now - lastBackupAt >= BACKUP_EVERY_MS) {
+          localStorage.setItem(BACKUP_KEY, text);
+          lastBackupAt = now;
+        }
       } catch (e) {
         console.warn('Save failed', e);
       }
+      if (nativeChecked) nativeSaveWrite(SAVE_KEY, text);
     },
     replaceState(s: GameState) {
       ctx.s = s;
@@ -489,6 +512,16 @@ function start(): void {
   refreshSlow(true);
   requestAnimationFrame(frame);
   hideSplash();
+  if (!nativeChecked) {
+    void nativeSaveRead(SAVE_KEY).then((text) => {
+      nativeChecked = true;
+      const found = pickSave(text, null);
+      if (found && found.state.earnedAll > ctx.s.earnedAll) {
+        ctx.replaceState(found.state);
+        toast('Progress restored from the phone backup.', 'good');
+      }
+    });
+  }
 
   // Hooks for automated screenshots and tests.
   (window as unknown as { __game: unknown }).__game = {
