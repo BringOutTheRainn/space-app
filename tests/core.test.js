@@ -1042,3 +1042,17 @@ test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese te
   }
   i18n.setLanguage('en');
 });
+
+test('wheel prizes and weekly contracts have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { SLICES } = await import('../www/js/core/wheel.js');
+  const { CONTRACTS } = await import('../www/js/core/contracts.js');
+  const texts = [...SLICES.map((w) => w.label), ...CONTRACTS.flatMap((c) => [c.name, c.goalText])];
+  for (const lang of ['es', 'pt']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});

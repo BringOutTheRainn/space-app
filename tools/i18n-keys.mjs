@@ -7,6 +7,8 @@ import { COSMIC } from '../www/js/data/cosmic.js';
 import { ANOMALIES } from '../www/js/data/anomalies.js';
 import { DESTINATIONS, RELICS } from '../www/js/data/expeditions.js';
 import { NEWS } from '../www/js/data/news.js';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { ES } from '../www/js/i18n/es.js';
 import { PT } from '../www/js/i18n/pt.js';
 
@@ -20,6 +22,13 @@ for (const g of GENERATORS) { keys.add(g.name); keys.add(g.flavor); }
 for (const list of [COSMIC, DESTINATIONS, RELICS]) list.forEach(add);
 for (const a of ANOMALIES) { keys.add(a.name); keys.add(a.rule); keys.add(a.rewardText); }
 for (const n of NEWS) keys.add(n.text);
+// Literal text passed to t() anywhere in the source.
+const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : e.name.endsWith('.ts') ? [join(dir, e.name)] : []));
+for (const file of walk('src')) {
+  if (file.includes('i18n')) continue;
+  const src = readFileSync(file, 'utf8');
+  for (const m of src.matchAll(/\bt\((['"])((?:\\.|(?!\1).)*)\1/g)) keys.add(m[2].replace(/\\(.)/g, '$1'));
+}
 for (const [lang, dict] of [['es', ES], ['pt', PT]]) {
   const miss = [...keys].filter((k) => !(k in dict));
   console.log(`${lang}: ${miss.length} missing of ${keys.size}`);

@@ -5,7 +5,7 @@ import { noteHappyMoment, openPlayPage } from './rating.js';
 import { AUTO_LANGS, LANG_NAMES, currentLang, t, type Lang, type LangSetting } from '../i18n/index.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
-import { UPGRADES } from '../data/upgrades.js';
+import { UPGRADES, pluralName } from '../data/upgrades.js';
 import { claimDaily, dailyReward, nextStreakDay, rewardMinutes } from '../core/daily.js';
 import { fmt, fmtLong, fmtPercent, fmtRate, fmtTime, setNumberStyle } from '../core/format.js';
 import { exportSave, importSave } from '../core/save.js';
@@ -32,49 +32,51 @@ import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood
 import { AD_SPINS_PER_DAY, GOLDEN_MULT, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
 import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
-import { claimMission, describeMission, missionDone, missionProgress, missionReward, swapMission } from '../core/missions.js';
+import { claimMission, missionDone, missionProgress, missionReward, swapMission, type Mission } from '../core/missions.js';
 
 export const VERSION = '1.0.0';
 export const PRIVACY_URL = 'https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md';
 
 export function openStats(ctx: Ctx): void {
+  const long = (n: number): string => (currentLang() === 'en' ? fmtLong(n) : fmt(n));
   const render = (): string => {
     const { s, d } = ctx;
     const rows: Array<[string, string]> = [
-      ['Stardust in bank', fmtLong(s.stardust)],
-      ['Earned this universe', fmtLong(s.earnedRun)],
-      ['Earned all time', fmtLong(s.earnedAll)],
-      ['Production', `${fmtRate(d.sps)} per second`],
-      ['Best production', `${fmtRate(s.highestSps)} per second`],
-      ['Production multiplier', `x${fmt(d.globalMult, 2)}`],
-      ['Stardust per tap', fmtRate(d.tap)],
-      ['Taps (this universe / all)', `${fmt(s.tapsRun)} / ${fmt(s.tapsAll)}`],
-      ['Earned by tapping (all time)', fmtLong(s.tapEarnedAll)],
-      ['Generators owned', fmt(totalGenerators(s))],
-      ['Upgrades bought', `${upgradeCount(s)} of ${UPGRADES.length}`],
-      ['Achievements', `${achievementCount(s)} of ${ACHIEVEMENTS.length}`],
-      ['Comets caught (this universe / all)', `${s.cometsRun} / ${s.cometsAll}`],
-      ['Universes collapsed', String(s.collapses)],
-      ['Dark Matter', fmt(s.darkMatter)],
-      ['Earned while away', fmtLong(s.offlineEarnedAll)],
-      ['Expeditions completed', String(s.expeditionsDone)],
-      ['Missions completed', fmt(s.missionsDone)],
-      ['Event Gold badges', String(s.eventGolds)],
-      ['Stardust Vaults opened', String(s.vaultsOpened)],
-      ['Lucky Orbit spins', String(s.wheelSpins)],
-      ['Warp Exchange profit', `${fmt(s.marketProfit)} credits`],
-      ['Contract Medals', `${s.contractMedals} (+${fmtPercent(s.contractMedals * MEDAL_PCT)})`],
-      ['Ads watched', String(s.adsWatched)],
-      ['Login streak', `${s.dailyStreak} day${s.dailyStreak === 1 ? '' : 's'}`],
-      ['Time played', fmtTime(s.playSeconds)],
-      ['This universe started', fmtTime((Date.now() - s.runStartedAt) / 1000) + ' ago'],
+      // English uses full number words; other languages use the short form.
+      [t('Stardust in bank'), long(s.stardust)],
+      [t('Earned this universe'), long(s.earnedRun)],
+      [t('Earned all time'), long(s.earnedAll)],
+      [t('Production'), t('{n} per second', { n: fmtRate(d.sps) })],
+      [t('Best production'), t('{n} per second', { n: fmtRate(s.highestSps) })],
+      [t('Production multiplier'), `x${fmt(d.globalMult, 2)}`],
+      [t('Stardust per tap'), fmtRate(d.tap)],
+      [t('Taps (this universe / all)'), `${fmt(s.tapsRun)} / ${fmt(s.tapsAll)}`],
+      [t('Earned by tapping (all time)'), long(s.tapEarnedAll)],
+      [t('Generators owned'), fmt(totalGenerators(s))],
+      [t('Upgrades bought'), t('{n} of {total}', { n: upgradeCount(s), total: UPGRADES.length })],
+      [t('Achievements'), t('{n} of {total}', { n: achievementCount(s), total: ACHIEVEMENTS.length })],
+      [t('Comets caught (this universe / all)'), `${s.cometsRun} / ${s.cometsAll}`],
+      [t('Universes collapsed'), String(s.collapses)],
+      [t('Dark Matter'), fmt(s.darkMatter)],
+      [t('Earned while away'), long(s.offlineEarnedAll)],
+      [t('Expeditions completed'), String(s.expeditionsDone)],
+      [t('Missions completed'), fmt(s.missionsDone)],
+      [t('Event Gold badges'), String(s.eventGolds)],
+      [t('Stardust Vaults opened'), String(s.vaultsOpened)],
+      [t('Lucky Orbit spins'), String(s.wheelSpins)],
+      [t('Warp Exchange profit'), t('{n} credits', { n: fmt(s.marketProfit) })],
+      [t('Contract Medals'), `${s.contractMedals} (+${fmtPercent(s.contractMedals * MEDAL_PCT)})`],
+      [t('Ads watched'), String(s.adsWatched)],
+      [t('Login streak'), s.dailyStreak === 1 ? t('1 day') : t('{n} days', { n: s.dailyStreak })],
+      [t('Time played'), fmtTime(s.playSeconds)],
+      [t('This universe started'), t('{time} ago', { time: fmtTime((Date.now() - s.runStartedAt) / 1000) })],
     ];
     const gens = GENERATORS.map((g, i) => s.generators[i]
-      ? `<tr><td>${esc(g.name)}</td><td>${s.generators[i]}</td><td>${fmtRate(d.genSps[i])}/s</td></tr>` : '').join('');
+      ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${fmtRate(d.genSps[i])}/s</td></tr>` : '').join('');
     return `<table class="stats">${rows.map(([k, v]) => `<tr><td>${k}</td><td colspan="2">${v}</td></tr>`).join('')}</table>
-      ${gens ? `<h3 class="section-title">Generators</h3><table class="stats">${gens}</table>` : ''}`;
+      ${gens ? `<h3 class="section-title">${t('Generators')}</h3><table class="stats">${gens}</table>` : ''}`;
   };
-  const el = openModal({ title: 'Stats', body: render(), wide: true, onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Stats'), body: render(), wide: true, onClose: () => clearInterval(timer) });
   const timer = setInterval(() => {
     const body = el.querySelector('.modal-body');
     if (body) body.innerHTML = render();
@@ -281,8 +283,8 @@ function wheelSvg(rot: number, golden = false): string {
     const dark = i === 3 || i === 5 || i === 7;
     return `<path d="M100,100 L${pt(mid - 22.5)} A${r},${r} 0 0 1 ${pt(mid + 22.5)} Z" fill="${SLICE_COLORS[i]}" stroke="#0c0f23" stroke-width="2"/>
       ${mid > 90 && mid < 270
-        ? `<text transform="rotate(${mid + 180} 100 100)" x="100" y="171" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(x.label)}</text>`
-        : `<text transform="rotate(${mid} 100 100)" x="100" y="34" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(x.label)}</text>`}`;
+        ? `<text transform="rotate(${mid + 180} 100 100)" x="100" y="171" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(t(x.label))}</text>`
+        : `<text transform="rotate(${mid} 100 100)" x="100" y="34" text-anchor="middle" class="wheel-label${dark ? ' dark' : ''}">${esc(t(x.label))}</text>`}`;
   }).join('');
   return `<div class="wheel-wrap${golden ? ' golden' : ''}"><svg class="wheel-disc" viewBox="0 0 200 200" style="transform:rotate(${rot}deg)" aria-hidden="true">
       <circle cx="100" cy="100" r="96" fill="#0c0f23"/>${slices}
@@ -293,10 +295,10 @@ function wheelSvg(rot: number, golden = false): string {
 function prizeText(ctx: Ctx, i: number, amount: number, golden = false): string {
   const x = SLICES[i];
   const mult = golden ? GOLDEN_MULT : 1;
-  if (x.kind === 'hyper') return `Hyperdrive +${x.minutes * mult} minutes`;
-  if (x.kind === 'comet') return amount ? `A comet is on its way, and +${fmt(amount)} Stardust` : 'A comet is on its way';
-  if (x.kind === 'crystal' && !amount) return `+${mult} Quasar Crystal${mult > 1 ? 's' : ''}`;
-  return `+${fmt(amount)} Stardust${i === 7 ? ', the jackpot!' : ''}`;
+  if (x.kind === 'hyper') return t('Hyperdrive +{n} minutes', { n: x.minutes * mult });
+  if (x.kind === 'comet') return amount ? t('A comet is on its way, and +{n} Stardust', { n: fmt(amount) }) : t('A comet is on its way');
+  if (x.kind === 'crystal' && !amount) return mult > 1 ? t('+{n} Quasar Crystals', { n: mult }) : t('+1 Quasar Crystal');
+  return i === 7 ? t('+{n} Stardust, the jackpot!', { n: fmt(amount) }) : t('+{n} Stardust', { n: fmt(amount) });
 }
 
 export function openHyperdrive(ctx: Ctx): void {
@@ -308,9 +310,9 @@ export function openHyperdrive(ctx: Ctx): void {
     const frenzyOn = s.buffs.find((b) => b.kind === 'frenzy');
     const wait = frenzyCooldown(s);
     const mult = boostMult();
-    const frenzyText = ctx.d.noTaps ? 'Not available while tapping is disabled.'
-      : frenzyOn ? `Active: ${Math.ceil(frenzyOn.endsAt - s.time)}s left.`
-      : wait > 0 ? `Recharging: ${fmtTime(wait)}.` : '';
+    const frenzyText = ctx.d.noTaps ? t('Not available while tapping is disabled.')
+      : frenzyOn ? t('Active: {time} left.', { time: `${Math.ceil(frenzyOn.endsAt - s.time)}s` })
+      : wait > 0 ? t('Recharging: {time}.', { time: fmtTime(wait) }) : '';
     const free = freeSpinReady(s);
     const golden = goldenReady(s);
     const adLeft = adSpinsLeft(s);
@@ -318,41 +320,42 @@ export function openHyperdrive(ctx: Ctx): void {
     const streak = currentStreak(s);
     const filled = streak % STREAK_DAYS === 0 && streak > 0 && !free ? STREAK_DAYS : streak % STREAK_DAYS;
     const dots = Array.from({ length: STREAK_DAYS }, (_, i) => `<i class="sdot${i < filled ? ' on' : ''}${free && i === filled ? ' today' : ''}${i === STREAK_DAYS - 1 ? ' gold' : ''}"></i>`).join('');
-    const streakLine = `<div class="wheel-streak" aria-label="Spin streak: ${streak} day${streak === 1 ? '' : 's'} in a row">${dots}</div>
-          <p class="dim small">${golden ? 'Day 7: a Golden Orbit. Prizes doubled, jackpot six times as likely.'
-            : !free && streak > 0 && streak % STREAK_DAYS === 0 ? 'Golden Orbit claimed. Keep the streak going for the next one.'
-            : `Spin ${STREAK_DAYS} days in a row for a Golden Orbit. Streak: ${streak} day${streak === 1 ? '' : 's'}.`}</p>`;
-    const spinBtn = free ? `<button class="btn btn-primary${golden ? ' btn-golden' : ''}" data-spin="free">${golden ? 'Spin Golden Orbit' : 'Spin free'}</button>`
-      : adLeft > 0 ? `<button class="btn ${rewardedAvailable() ? 'btn-primary' : 'btn-plain'}" data-spin="ad" ${rewardedAvailable() ? '' : 'disabled'}>Ad spin: ${adLeft} left</button>`
-      : '<p class="dim small">Next free spin tomorrow.</p>';
+    const days = streak === 1 ? t('1 day') : t('{n} days', { n: streak });
+    const streakLine = `<div class="wheel-streak" aria-label="${esc(t('Spin streak: {days} in a row', { days }))}">${dots}</div>
+          <p class="dim small">${golden ? t('Day 7: a Golden Orbit. Prizes doubled, jackpot six times as likely.')
+            : !free && streak > 0 && streak % STREAK_DAYS === 0 ? t('Golden Orbit claimed. Keep the streak going for the next one.')
+            : t('Spin {n} days in a row for a Golden Orbit. Streak: {days}.', { n: STREAK_DAYS, days })}</p>`;
+    const spinBtn = free ? `<button class="btn btn-primary${golden ? ' btn-golden' : ''}" data-spin="free">${golden ? t('Spin Golden Orbit') : t('Spin free')}</button>`
+      : adLeft > 0 ? `<button class="btn ${rewardedAvailable() ? 'btn-primary' : 'btn-plain'}" data-spin="ad" ${rewardedAvailable() ? '' : 'disabled'}>${t('Ad spin: {n} left', { n: adLeft })}</button>`
+      : `<p class="dim small">${t('Next free spin tomorrow.')}</p>`;
     return `<div class="boosts">
       <div class="wheel-card">
         ${wheelSvg(rot, golden)}
-        <div class="wheel-side"><b>${golden ? 'Golden Orbit' : 'Lucky Orbit'}</b>
-          <p>One free spin every day and ${AD_SPINS_PER_DAY} more with an ad. Up to 8 hours of production, Hyperdrive, comets and crystals.</p>
+        <div class="wheel-side"><b>${golden ? t('Golden Orbit') : t('Lucky Orbit')}</b>
+          <p>${t('One free spin every day and {n} more with an ad. Up to 8 hours of production, Hyperdrive, comets and crystals.', { n: AD_SPINS_PER_DAY })}</p>
           ${streakLine}
           ${spinBtn}</div>
       </div>
-      ${mult > 1 ? '<p class="ev-pass-on">Double weekend: boosts last twice as long while the weekend event runs.</p>' : ''}
+      ${mult > 1 ? `<p class="ev-pass-on">${t('Double weekend: boosts last twice as long while the weekend event runs.')}</p>` : ''}
       <div class="boost">
         <div class="boost-ico">${icon('probe')}</div>
-        <div class="boost-main"><b>Hyperdrive</b>
-          <p>Double all production for ${(AD_CONFIG.hyperMinutes * mult) / 60} hours. Keeps running while you are away and stacks up to ${AD_CONFIG.hyperCapMinutes / 60} hours.</p>
-          ${left > 0 ? `<p class="dim small">Active: ${fmtTime(left / 1000)} left.</p>` : ''}
-          ${hyperCanStack(s) ? '' : '<p class="dim small">Fully charged. Come back when it runs lower.</p>'}</div>
-        <button class="btn ${can ? 'btn-primary' : 'btn-plain'}" data-boost="hyper" ${can ? '' : 'disabled'}>Watch ad</button>
+        <div class="boost-main"><b>${t('Hyperdrive')}</b>
+          <p>${t('Double all production for {n} hours. Keeps running while you are away and stacks up to {cap} hours.', { n: (AD_CONFIG.hyperMinutes * mult) / 60, cap: AD_CONFIG.hyperCapMinutes / 60 })}</p>
+          ${left > 0 ? `<p class="dim small">${t('Active: {time} left.', { time: fmtTime(left / 1000) })}</p>` : ''}
+          ${hyperCanStack(s) ? '' : `<p class="dim small">${t('Fully charged. Come back when it runs lower.')}</p>`}</div>
+        <button class="btn ${can ? 'btn-primary' : 'btn-plain'}" data-boost="hyper" ${can ? '' : 'disabled'}>${t('Watch ad')}</button>
       </div>
       <div class="boost">
         <div class="boost-ico">${icon('tap')}</div>
-        <div class="boost-main"><b>Tap Frenzy</b>
-          <p>For ${AD_CONFIG.frenzySeconds * mult} seconds, probes tap ${AD_CONFIG.frenzyTapsPerSecond} times a second and every tap is worth x${BUFF_MULT.frenzy}.</p>
+        <div class="boost-main"><b>${t('Tap Frenzy')}</b>
+          <p>${t('For {n} seconds, probes tap {rate} times a second and every tap is worth x{mult}.', { n: AD_CONFIG.frenzySeconds * mult, rate: AD_CONFIG.frenzyTapsPerSecond, mult: BUFF_MULT.frenzy })}</p>
           ${frenzyText ? `<p class="dim small">${frenzyText}</p>` : ''}</div>
-        <button class="btn ${frenzyUsable() ? 'btn-primary' : 'btn-plain'}" data-boost="frenzy" ${frenzyUsable() ? '' : 'disabled'}>Watch ad</button>
+        <button class="btn ${frenzyUsable() ? 'btn-primary' : 'btn-plain'}" data-boost="frenzy" ${frenzyUsable() ? '' : 'disabled'}>${t('Watch ad')}</button>
       </div>
     </div>`;
   };
   const frenzyUsable = (): boolean => !ctx.d.noTaps && frenzyReady(ctx.s) && rewardedAvailable();
-  const el = openModal({ title: 'Boosts', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Boosts'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const timer = setInterval(() => { if (!busy) body.innerHTML = render(); }, 1000);
@@ -375,7 +378,7 @@ export function openHyperdrive(ctx: Ctx): void {
       sfxAchievement();
       haptic('medium');
       if (r.golden || r.slice === 7) noteHappyMoment();
-      toast(`<div class="t-ico">${icon('gift')}</div><div><b>${r.golden ? 'Golden Orbit' : 'Lucky Orbit'}</b><br>${esc(prizeText(ctx, r.slice, r.amount, r.golden))}</div>`, 'good');
+      toast(`<div class="t-ico">${icon('gift')}</div><div><b>${r.golden ? t('Golden Orbit') : t('Lucky Orbit')}</b><br>${esc(prizeText(ctx, r.slice, r.amount, r.golden))}</div>`, 'good');
       ctx.recalc();
       ctx.dirty();
       if (el.isConnected) body.innerHTML = render();
@@ -386,22 +389,22 @@ export function openHyperdrive(ctx: Ctx): void {
     if (w && !w.disabled && !busy) {
       busy = true;
       if (w.dataset.spin === 'free') doSpin(false);
-      else void showRewarded('spin the Lucky Orbit').then((ok) => { if (ok) doSpin(true); else busy = false; });
+      else void showRewarded(t('spin the Lucky Orbit')).then((ok) => { if (ok) doSpin(true); else busy = false; });
       return;
     }
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-boost]');
     if (!b || b.disabled || busy) return;
     busy = true;
     const kind = b.dataset.boost;
-    void showRewarded(kind === 'hyper' ? 'Hyperdrive: double production' : 'Tap Frenzy').then((ok) => {
+    void showRewarded(kind === 'hyper' ? t('Hyperdrive: double production') : t('Tap Frenzy')).then((ok) => {
       busy = false;
       if (ok && kind === 'hyper') {
         grantHyper(ctx.s);
-        toast(`<div class="t-ico">${icon('probe')}</div><div><b>Hyperdrive engaged</b><br>Production x2 for ${fmtTime(hyperRemainingMs(ctx.s) / 1000)}</div>`, 'good');
+        toast(`<div class="t-ico">${icon('probe')}</div><div><b>${t('Hyperdrive engaged')}</b><br>${t('Production x2 for {time}', { time: fmtTime(hyperRemainingMs(ctx.s) / 1000) })}</div>`, 'good');
       } else if (ok && kind === 'frenzy') {
         grantFrenzy(ctx.s);
         closeModal(el);
-        toast(`<div class="t-ico">${icon('tap')}</div><div><b>Tap Frenzy!</b><br>${AD_CONFIG.frenzyTapsPerSecond} taps a second, each x${BUFF_MULT.frenzy}</div>`, 'good');
+        toast(`<div class="t-ico">${icon('tap')}</div><div><b>${t('Tap Frenzy!')}</b><br>${t('{rate} taps a second, each x{mult}', { rate: AD_CONFIG.frenzyTapsPerSecond, mult: BUFF_MULT.frenzy })}</div>`, 'good');
       }
       if (ok) {
         ctx.recalc();
@@ -422,16 +425,16 @@ function contractCard(ctx: Ctx): string {
   const ready = contractClaimable(s) > 0;
   const marks = def.goals.map((g, i) => `<i class="tier-mark ${state.claimed > i ? 'got' : p >= g ? 'ready' : ''}" style="left:${(g / top) * 100}%"></i>`).join('');
   const tiers = def.goals.map((g, i) => `<div class="tier ${state.claimed > i ? 'got' : ''}">
-      <b>${fmt(g)}</b><span><span class="sd-dot"></span>${fmt(tierReward(d, i))}${i === 2 ? ` + Medal` : ''}</span></div>`).join('');
+      <b>${fmt(g)}</b><span><span class="sd-dot"></span>${fmt(tierReward(d, i))}${i === 2 ? ` + ${t('Medal')}` : ''}</span></div>`).join('');
   const days = contractTimeLeft() / 86400000;
-  const left = days >= 1 ? `${Math.floor(days)}d ${Math.floor((days % 1) * 24)}h left` : `${fmtTime(contractTimeLeft() / 1000)} left`;
+  const left = t('{time} left', { time: days >= 1 ? `${Math.floor(days)}d ${Math.floor((days % 1) * 24)}h` : fmtTime(contractTimeLeft() / 1000) });
   return `<div class="contract">
-    <div class="contract-head"><div><div class="contract-kicker">Weekly contract</div><div class="contract-name">${esc(def.name)}</div></div><div class="dim small">${left}</div></div>
-    <p class="contract-goal">${esc(def.goalText.replace('{n}', fmt(top)))} this week. Medal: +${fmtPercent(MEDAL_PCT)} production forever.</p>
+    <div class="contract-head"><div><div class="contract-kicker">${t('Weekly contract')}</div><div class="contract-name">${esc(t(def.name))}</div></div><div class="dim small">${left}</div></div>
+    <p class="contract-goal">${esc(t('{goal} this week. Medal: +{pct} production forever.', { goal: t(def.goalText, { n: fmt(top) }), pct: fmtPercent(MEDAL_PCT) }))}</p>
     <div class="bar contract-bar"><div class="bar-fill" style="width:${Math.min(100, (p / top) * 100)}%"></div>${marks}</div>
     <div class="contract-tiers">${tiers}</div>
-    ${ready ? `<button class="btn btn-primary contract-claim" data-contract="1">Claim tier ${state.claimed + 1}</button>`
-      : state.claimed >= 3 ? '<p class="dim small">Contract complete. A new one starts Monday.</p>' : `<p class="dim small">Progress: ${fmt(p)} / ${fmt(def.goals[state.claimed])}</p>`}
+    ${ready ? `<button class="btn btn-primary contract-claim" data-contract="1">${t('Claim tier {n}', { n: state.claimed + 1 })}</button>`
+      : state.claimed >= 3 ? `<p class="dim small">${t('Contract complete. A new one starts Monday.')}</p>` : `<p class="dim small">${t('Progress: {n} / {goal}', { n: fmt(p), goal: fmt(def.goals[state.claimed]) })}</p>`}
   </div>`;
 }
 
@@ -848,8 +851,8 @@ function passCard(ctx: Ctx): string {
   const into = tier >= PASS_TIERS ? XP_PER_TIER : xp - tier * XP_PER_TIER;
   const ready = passClaimable(s);
   return `<button class="pass-card" data-pass="1">
-    <div class="pass-card-head"><span class="contract-kicker">Star Pass · Season ${seasonLabel()}${p.premium ? ' · Premium' : ''}</span><span class="dim small">${fmtTime(seasonTimeLeft() / 1000)} left</span></div>
-    <div class="pass-card-main"><b>Tier ${tier} of ${PASS_TIERS}</b>${ready ? `<span class="pass-ready">${ready} reward${ready === 1 ? '' : 's'} ready</span>` : '<span class="dim small">Open</span>'}</div>
+    <div class="pass-card-head"><span class="contract-kicker">${t('Star Pass · Season {n}', { n: seasonLabel() })}${p.premium ? ` · ${t('Premium')}` : ''}</span><span class="dim small">${t('{time} left', { time: fmtTime(seasonTimeLeft() / 1000) })}</span></div>
+    <div class="pass-card-main"><b>${t('Tier {n} of {total}', { n: tier, total: PASS_TIERS })}</b>${ready ? `<span class="pass-ready">${ready === 1 ? t('1 reward ready') : t('{n} rewards ready', { n: ready })}</span>` : `<span class="dim small">${t('Open')}</span>`}</div>
     <div class="bar"><div class="bar-fill pass-fill" style="width:${(into / XP_PER_TIER) * 100}%"></div></div>
   </button>`;
 }
@@ -857,8 +860,8 @@ function passCard(ctx: Ctx): string {
 function rewardText(r: PassReward): string {
   const bits = [`${r.minutes} min`];
   if (r.crystals) bits.push(`${icon('crystal')}${r.crystals}`);
-  if (r.medal) bits.push('Medal');
-  if (r.skin) bits.push('Aurora skin');
+  if (r.medal) bits.push(t('Medal'));
+  if (r.skin) bits.push(t('Aurora skin'));
   return bits.join(' · ');
 }
 
@@ -870,29 +873,29 @@ export function openPass(ctx: Ctx, onChange: () => void): void {
     const tier = passTier(s, p);
     const ready = passClaimable(s);
     const rows = Array.from({ length: PASS_TIERS }, (_, i) => {
-      const t = i + 1;
-      const reached = tier >= t;
+      const n = i + 1;
+      const reached = tier >= n;
       const cell = (premium: boolean): string => {
-        const claimed = premium ? p.prem >= t : p.free >= t;
+        const claimed = premium ? p.prem >= n : p.free >= n;
         const locked = premium && !p.premium;
         const cls = claimed ? 'got' : reached && !locked ? 'ready' : locked ? 'locked' : '';
-        return `<div class="pass-cell ${cls}">${locked ? icon('lock') : ''}<span>${rewardText(passReward(t, premium))}</span></div>`;
+        return `<div class="pass-cell ${cls}">${locked ? icon('lock') : ''}<span>${rewardText(passReward(n, premium))}</span></div>`;
       };
-      return `<div class="pass-row${reached ? ' reached' : ''}"><div class="pass-tier">${t}</div>${cell(false)}${cell(true)}</div>`;
+      return `<div class="pass-row${reached ? ' reached' : ''}"><div class="pass-tier">${n}</div>${cell(false)}${cell(true)}</div>`;
     }).join('');
     const ways = ([
       ['Mission', XP_RATES.missions], ['Daily drop', XP_RATES.dailies], ['Contract tier', XP_RATES.contractTiers],
       ['Event badge', XP_RATES.badges], ['Collapse', XP_RATES.collapses], ['Comet', XP_RATES.comets],
       ['Forging', XP_RATES.casts], ['Profitable sale', XP_RATES.trades], ['Harvest', XP_RATES.harvests],
-    ] as Array<[string, number]>).map(([n, x]) => `<span>${n} <b>+${x}</b></span>`).join('');
-    return `<div class="pass-top"><div><div class="contract-kicker">Season ends in ${fmtTime(seasonTimeLeft() / 1000)}</div>
-        <div class="ev-name">Tier ${tier} of ${PASS_TIERS}</div><div class="dim small">${fmt(xp)} XP · ${XP_PER_TIER} XP per tier</div></div></div>
+    ] as Array<[string, number]>).map(([n, x]) => `<span>${t(n)} <b>+${x}</b></span>`).join('');
+    return `<div class="pass-top"><div><div class="contract-kicker">${t('Season ends in {time}', { time: fmtTime(seasonTimeLeft() / 1000) })}</div>
+        <div class="ev-name">${t('Tier {n} of {total}', { n: tier, total: PASS_TIERS })}</div><div class="dim small">${t('{xp} XP · {per} XP per tier', { xp: fmt(xp), per: XP_PER_TIER })}</div></div></div>
       <div class="pass-ways">${ways}</div>
-      ${ready ? `<button class="btn btn-primary btn-wide" data-pclaim="1">Claim ${ready} reward${ready === 1 ? '' : 's'}</button>` : ''}
-      ${p.premium ? '' : `<button class="ev-pass" data-pbuy="1"><b>Unlock Premium · ${esc(productPrice('star_pass'))}</b><span>A second track: double Stardust, 20 crystals, 2 Contract Medals and the Aurora skin. Tiers you already reached pay out at once.</span></button>`}
-      <div class="pass-grid"><div class="pass-row pass-headrow"><div class="pass-tier">Tier</div><div>Free</div><div>Premium</div></div>${rows}</div>`;
+      ${ready ? `<button class="btn btn-primary btn-wide" data-pclaim="1">${ready === 1 ? t('Claim 1 reward') : t('Claim {n} rewards', { n: ready })}</button>` : ''}
+      ${p.premium ? '' : `<button class="ev-pass" data-pbuy="1"><b>${t('Unlock Premium · {price}', { price: esc(productPrice('star_pass')) })}</b><span>${t('A second track: double Stardust, 20 crystals, 2 Contract Medals and the Aurora skin. Tiers you already reached pay out at once.')}</span></button>`}
+      <div class="pass-grid"><div class="pass-row pass-headrow"><div class="pass-tier">${t('Tier')}</div><div>${t('Free')}</div><div>${t('Premium')}</div></div>${rows}</div>`;
   };
-  const el = openModal({ title: 'Star Pass', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Star Pass'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => {
@@ -902,9 +905,9 @@ export function openPass(ctx: Ctx, onChange: () => void): void {
   };
   const timer = setInterval(() => { if (!busy) redraw(); }, 2000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-pclaim],[data-pbuy]');
-    if (!t || busy) return;
-    if (t.dataset.pbuy) {
+    const el2 = (e.target as HTMLElement).closest<HTMLElement>('[data-pclaim],[data-pbuy]');
+    if (!el2 || busy) return;
+    if (el2.dataset.pbuy) {
       busy = true;
       void buyProduct(ctx, 'star_pass').then(() => { busy = false; redraw(); onChange(); });
       return;
@@ -914,17 +917,29 @@ export function openPass(ctx: Ctx, onChange: () => void): void {
     if (r.skin) ctx.sky.setSkin(ctx.s.skin);
     sfxAchievement();
     haptic('heavy');
-    const bits = [`+${fmt(r.stardust)} Stardust`];
-    if (r.crystals) bits.push(`+${r.crystals} crystals`);
-    if (r.medals) bits.push(`+${r.medals} Contract Medal${r.medals === 1 ? '' : 's'}`);
-    if (r.skin) bits.push('Aurora skin unlocked');
-    toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${r.tiers} pass reward${r.tiers === 1 ? '' : 's'}</b><br>${bits.join(' · ')}</div>`, 'good', 6000);
+    const bits = [t('+{n} Stardust', { n: fmt(r.stardust) })];
+    if (r.crystals) bits.push(t('+{n} crystals', { n: r.crystals }));
+    if (r.medals) bits.push(r.medals === 1 ? t('+1 Contract Medal') : t('+{n} Contract Medals', { n: r.medals }));
+    if (r.skin) bits.push(t('Aurora skin unlocked'));
+    toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${r.tiers === 1 ? t('1 pass reward') : t('{n} pass rewards', { n: r.tiers })}</b><br>${bits.join(' · ')}</div>`, 'good', 6000);
     ctx.recalc();
     ctx.dirty();
     ctx.save();
     onChange();
     redraw();
   });
+}
+
+function missionText(m: Mission): string {
+  switch (m.kind) {
+    case 'own': {
+      const gen = m.gen ?? 0;
+      return m.target === 1 ? t('Build your first {gen}', { gen: t(GENERATORS[gen].name) }) : t('Own {n} {plural}', { n: m.target, plural: t(pluralName(gen)) });
+    }
+    case 'taps': return t('Tap {n} times', { n: m.target });
+    case 'comets': return m.target === 1 ? t('Catch a comet') : t('Catch {n} comets', { n: m.target });
+    case 'earn': return t('Harvest {n} Stardust', { n: fmt(m.target) });
+  }
 }
 
 export function openMissions(ctx: Ctx, onChange: () => void): void {
@@ -937,58 +952,58 @@ export function openMissions(ctx: Ctx, onChange: () => void): void {
       const progText = `${fmt(prog)} / ${fmt(m.target)}`;
       return `<div class="mission ${done ? 'done' : ''}">
         <div class="mission-main">
-          <div class="mission-name">${esc(describeMission(m, fmt))}</div>
+          <div class="mission-name">${esc(missionText(m))}</div>
           <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
           <div class="mission-meta"><span>${progText}</span><span class="mission-reward"><span class="sd-dot"></span>${fmt(missionReward(d, m))}</span></div>
         </div>
-        ${done ? `<button class="btn btn-primary" data-claim="${i}">Claim</button>`
-          : rewardedAvailable() ? `<button class="btn btn-plain mission-swap" data-swap="${i}" aria-label="Watch an ad to swap this mission">Swap<small>ad</small></button>` : ''}
+        ${done ? `<button class="btn btn-primary" data-claim="${i}">${t('Claim')}</button>`
+          : rewardedAvailable() ? `<button class="btn btn-plain mission-swap" data-swap="${i}" aria-label="${t('Watch an ad to swap this mission')}">${t('Swap')}<small>${t('ad')}</small></button>` : ''}
       </div>`;
     }).join('');
     return `${passCard(ctx)}${contractCard(ctx)}
-      <h3 class="section-title">Missions</h3>
+      <h3 class="section-title">${t('Missions')}</h3>
       <div class="missions">${rows}</div>
-      <p class="dim small">Missions completed: ${fmt(s.missionsDone)}</p>`;
+      <p class="dim small">${t('Missions completed: {n}', { n: fmt(s.missionsDone) })}</p>`;
   };
-  const el = openModal({ title: 'Goals', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Goals'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-claim],[data-swap],[data-contract],[data-pass]');
-    if (!t || busy) return;
-    if (t.dataset.pass) {
+    const el2 = (e.target as HTMLElement).closest<HTMLElement>('[data-claim],[data-swap],[data-contract],[data-pass]');
+    if (!el2 || busy) return;
+    if (el2.dataset.pass) {
       openPass(ctx, () => { redraw(); onChange(); });
       return;
     }
-    if (t.dataset.contract) {
+    if (el2.dataset.contract) {
       const r = claimContract(ctx.s, ctx.d);
       if (!r) return;
       sfxAchievement();
       haptic(r.medal ? 'heavy' : 'medium');
       ctx.sky.floatCenter(`+${fmt(r.amount)}`, '#ffcf5a', 30);
       if (r.medal) ctx.recalc();
-      toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${r.medal ? 'Contract Medal won!' : `Contract tier ${r.tier + 1} reached`}</b><br>+${fmt(r.amount)} Stardust${r.medal ? ` · +${fmtPercent(MEDAL_PCT)} production forever` : ''}</div>`, 'trophy', 4500);
+      toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${r.medal ? t('Contract Medal won!') : t('Contract tier {n} reached', { n: r.tier + 1 })}</b><br>${t('+{n} Stardust', { n: fmt(r.amount) })}${r.medal ? ` · ${t('+{pct} production forever', { pct: fmtPercent(MEDAL_PCT) })}` : ''}</div>`, 'trophy', 4500);
       ctx.save();
       redraw();
       onChange();
       return;
     }
-    if (t.dataset.claim) {
-      const amount = claimMission(ctx.s, ctx.d, Number(t.dataset.claim));
+    if (el2.dataset.claim) {
+      const amount = claimMission(ctx.s, ctx.d, Number(el2.dataset.claim));
       if (amount <= 0) return;
       sfxAchievement();
       haptic('medium');
       ctx.sky.floatCenter(`+${fmt(amount)}`, '#ffcf5a', 28);
-      toast(`<div class="t-ico">${icon('mission')}</div><div><b>Mission complete</b><br>+${fmt(amount)} Stardust</div>`, 'good');
+      toast(`<div class="t-ico">${icon('mission')}</div><div><b>${t('Mission complete')}</b><br>${t('+{n} Stardust', { n: fmt(amount) })}</div>`, 'good');
       ctx.save();
       redraw();
       onChange();
-    } else if (t.dataset.swap) {
+    } else if (el2.dataset.swap) {
       busy = true;
-      const i = Number(t.dataset.swap);
-      void showRewarded('swap a mission').then((ok) => {
+      const i = Number(el2.dataset.swap);
+      void showRewarded(t('swap a mission')).then((ok) => {
         busy = false;
         if (ok) {
           swapMission(ctx.s, ctx.d, i);
@@ -1007,18 +1022,18 @@ export function openDaily(ctx: Ctx, onClaim: () => void): void {
   const day = nextStreakDay(s);
   const cells = [1, 2, 3, 4, 5, 6, 7].map((n) => `
     <div class="day ${n < day ? 'done' : n === day ? 'today' : ''}">
-      <div class="day-n">Day ${n}</div>${icon(n === 7 ? 'gift' : 'comet')}<div class="day-r">${rewardMinutes(n) >= 60 ? rewardMinutes(n) / 60 + 'h' : rewardMinutes(n) + 'm'}</div>
+      <div class="day-n">${t('Day {n}', { n })}</div>${icon(n === 7 ? 'gift' : 'comet')}<div class="day-r">${rewardMinutes(n) >= 60 ? rewardMinutes(n) / 60 + 'h' : rewardMinutes(n) + 'm'}</div>
     </div>`).join('');
   openModal({
-    title: 'Daily supply drop',
-    body: `<p class="dim">Come back every day to keep your streak. Each reward is worth minutes of production.</p>
+    title: t('Daily supply drop'),
+    body: `<p class="dim">${t('Come back every day to keep your streak. Each reward is worth minutes of production.')}</p>
       <div class="days">${cells}</div>
-      <p class="daily-amount">Today: <span class="sd-dot"></span><b>${fmt(dailyReward(s, d, day))}</b> Stardust</p>`,
+      <p class="daily-amount">${t('Today: {amount} Stardust', { amount: `<span class="sd-dot"></span><b>${fmt(dailyReward(s, d, day))}</b>` })}</p>`,
     buttons: [
-      { label: 'Claim', kind: rewardedAvailable() ? 'plain' : 'primary', onClick: () => claim(1) },
+      { label: t('Claim'), kind: rewardedAvailable() ? 'plain' : 'primary', onClick: () => claim(1) },
       ...(rewardedAvailable() ? [{
-        label: 'Watch ad: x2', kind: 'primary' as const, onClick: () => {
-          void showRewarded('double today\'s supply drop').then((ok) => {
+        label: t('Watch ad: x2'), kind: 'primary' as const, onClick: () => {
+          void showRewarded(t('double today\'s supply drop')).then((ok) => {
             if (!ok) return;
             ctx.s.adsWatched++;
             claim(2);
@@ -1036,7 +1051,7 @@ export function openDaily(ctx: Ctx, onClaim: () => void): void {
     sfxAchievement();
     haptic('medium');
     ctx.sky.floatCenter(`+${fmt(total)}`, '#ffcf5a', 30);
-    toast(`<div class="t-ico">${icon('gift')}</div><div><b>Day ${r.day} claimed${mult > 1 ? ' x2' : ''}</b><br>+${fmt(total)} Stardust · streak ${r.streak}</div>`, 'good');
+    toast(`<div class="t-ico">${icon('gift')}</div><div><b>${t('Day {n} claimed', { n: r.day })}${mult > 1 ? ' x2' : ''}</b><br>${t('+{n} Stardust', { n: fmt(total) })} · ${t('streak {n}', { n: r.streak })}</div>`, 'good');
     ctx.save();
     onClaim();
   }
