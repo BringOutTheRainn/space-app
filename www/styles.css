@@ -743,8 +743,8 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .market-head .ico { width: 48px; height: 48px; flex: none; }
 .market-tick { font-size: 17px; font-weight: 800; color: #7ff5e0; font-variant-numeric: tabular-nums; }
 .goods { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px; }
-.good { padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.good.tipped { border-color: #35e0c4; }
+.goods .good { padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.goods .good.tipped { border-color: #35e0c4; }
 .good-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .good-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
 .good-name b { font-size: 14px; color: var(--text); }

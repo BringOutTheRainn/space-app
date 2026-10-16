@@ -3,6 +3,7 @@
 
 import { GENERATORS } from './generators.js';
 import type { GameState } from '../core/state.js';
+import type { Phrase } from '../i18n/index.js';
 
 export type Effect =
   | { k: 'gen'; gen: number; mult: number }
@@ -23,6 +24,9 @@ export interface UpgradeDef {
   id: string;
   name: string;
   desc: string;
+  /** Recipes for translating generated text. */
+  nameP?: Phrase;
+  descP?: Phrase;
   cost: number;
   group: UpgradeGroup;
   /** Icon key: a generator id, or 'tap', 'research', 'comet', 'synergy', 'astronomer'. */
@@ -76,6 +80,8 @@ function buildUpgrades(): UpgradeDef[] {
         id: `${def.id}_${t}`,
         name: `${TIER_PREFIX[t]} ${def.name}`,
         desc: `${pluralName(g)} are twice as efficient.`,
+        nameP: [`${TIER_PREFIX[t]} {gen}`, { gen: def.name }],
+        descP: ['{plural} are twice as efficient.', { plural: pluralName(g) }],
         cost: def.baseCost * TIER_COST[t],
         group: 'generator',
         icon: def.id,
@@ -113,6 +119,7 @@ function buildUpgrades(): UpgradeDef[] {
       id: `research_${i}`,
       name,
       desc: `Stardust production +${Math.round(researchPct[i] * 100)}%.`,
+      descP: ['Stardust production +{n}%.', { n: Math.round(researchPct[i] * 100) }],
       cost,
       group: 'research',
       icon: 'research',
@@ -132,6 +139,8 @@ function buildUpgrades(): UpgradeDef[] {
       id: `syn_${ga.id}_${gb.id}`,
       name: `${ga.name.split(' ').pop()}-${gb.name.split(' ').pop()} Link`,
       desc: `${pluralName(a)} +5% per ${gb.name}. ${pluralName(b)} +0.1% per ${ga.name}.`,
+      nameP: ['{a}-{b} Link', { a: ga.name.split(' ').pop()!, b: gb.name.split(' ').pop()! }],
+      descP: ['{pa} +5% per {b}. {pb} +0.1% per {a}.', { pa: pluralName(a), b: gb.name, pb: pluralName(b), a: ga.name }],
       cost: (ga.baseCost * 10 + gb.baseCost) * 30,
       group: 'synergy',
       icon: 'synergy',
@@ -163,6 +172,7 @@ function buildUpgrades(): UpgradeDef[] {
       id: `astro_${i}`,
       name,
       desc: `Each achievement adds ${(astroPct[i] * 100).toFixed(2).replace(/0$/, '')}% Stardust production.`,
+      descP: ['Each achievement adds {n}% Stardust production.', { n: astroPct[i] * 100 }],
       cost: 9 * Math.pow(1000, i + 2),
       group: 'astronomer',
       icon: 'astronomer',

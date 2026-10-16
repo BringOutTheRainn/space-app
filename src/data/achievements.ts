@@ -3,11 +3,15 @@
 import { GENERATORS } from './generators.js';
 import { pluralName } from './upgrades.js';
 import { totalGenerators, upgradeCount, type GameState } from '../core/state.js';
+import type { Phrase } from '../i18n/index.js';
 
 export interface AchievementDef {
   id: string;
   name: string;
   desc: string;
+  /** Recipes for translating generated text. */
+  nameP?: Phrase;
+  descP?: Phrase;
   /** Hidden achievements show as "???" until earned. */
   hidden?: boolean;
   check: (s: GameState, sps: number) => boolean;
@@ -29,7 +33,7 @@ function build(): AchievementDef[] {
     [1e18, 'Galactic Hoard'], [1e21, 'Cluster Wealth'], [1e24, 'Supercluster'], [1e27, 'Cosmic Web'], [1e30, 'Observable Universe'], [1e33, 'Beyond the Horizon'],
   ];
   earned.forEach(([n, name], i) => {
-    list.push({ id: `earn_${i}`, name, desc: `Earn ${short(n)} Stardust in one universe.`, check: (s) => s.earnedRun >= n });
+    list.push({ id: `earn_${i}`, name, desc: `Earn ${short(n)} Stardust in one universe.`, descP: ['Earn {n} Stardust in one universe.', { n: { big: n } }], check: (s) => s.earnedRun >= n });
   });
 
   const sps: Array<[number, string]> = [
@@ -37,95 +41,97 @@ function build(): AchievementDef[] {
     [1e6, 'Million per Second'], [1e8, 'Torrent'], [1e10, 'Cascade'], [1e12, 'Big Bang Lite'], [1e14, 'Cosmic Firehose'], [1e16, 'Infinite Flow'],
   ];
   sps.forEach(([n, name], i) => {
-    list.push({ id: `sps_${i}`, name, desc: `Reach ${short(n)} Stardust per second.`, check: (_s, rate) => rate >= n });
+    list.push({ id: `sps_${i}`, name, desc: `Reach ${short(n)} Stardust per second.`, descP: ['Reach {n} Stardust per second.', { n: { big: n } }], check: (_s, rate) => rate >= n });
   });
 
   const taps: Array<[number, string]> = [[1, 'First Contact'], [100, 'Tapper'], [1000, 'Dedicated Tapper'], [10000, 'Tap Dancer'], [50000, 'Finger of God']];
   taps.forEach(([n, name], i) => {
-    list.push({ id: `taps_${i}`, name, desc: `Tap the celestial body ${n.toLocaleString('en-US')} time${n === 1 ? '' : 's'}.`, check: (s) => s.tapsAll >= n });
+    list.push({ id: `taps_${i}`, name, desc: `Tap the celestial body ${n.toLocaleString('en-US')} time${n === 1 ? '' : 's'}.`, descP: [n === 1 ? 'Tap the celestial body once.' : 'Tap the celestial body {n} times.', { n }], check: (s) => s.tapsAll >= n });
   });
 
   const tapEarn: Array<[number, string]> = [[1000, 'Handpicked'], [1e5, 'Hand Miner'], [1e7, 'Iron Fist'], [1e9, 'Golden Touch'], [1e11, 'Midas of the Void'], [1e13, 'Tap Titan']];
   tapEarn.forEach(([n, name], i) => {
-    list.push({ id: `tapearn_${i}`, name, desc: `Harvest ${short(n)} Stardust by tapping in one universe.`, check: (s) => s.tapEarnedRun >= n });
+    list.push({ id: `tapearn_${i}`, name, desc: `Harvest ${short(n)} Stardust by tapping in one universe.`, descP: ['Harvest {n} Stardust by tapping in one universe.', { n: { big: n } }], check: (s) => s.tapEarnedRun >= n });
   });
 
   const missions: Array<[number, string]> = [[1, 'Reporting for Duty'], [10, 'Errand Runner'], [50, 'Mission Control'], [150, 'Fleet Admiral'], [400, 'Galactic Fixer']];
   missions.forEach(([n, name], i) => {
-    list.push({ id: `missions_${i}`, name, desc: `Complete ${n} mission${n === 1 ? '' : 's'}.`, check: (s) => s.missionsDone >= n });
+    list.push({ id: `missions_${i}`, name, desc: `Complete ${n} mission${n === 1 ? '' : 's'}.`, descP: [n === 1 ? 'Complete 1 mission.' : 'Complete {n} missions.', { n }], check: (s) => s.missionsDone >= n });
   });
 
   const medals: Array<[number, string]> = [[1, 'Contractor'], [4, 'Decorated'], [10, 'Hall of Fame']];
   medals.forEach(([n, name], i) => {
-    list.push({ id: `medals_${i}`, name, desc: `Win ${n} Contract Medal${n === 1 ? '' : 's'} by finishing a weekly contract.`, check: (s) => s.contractMedals >= n });
+    list.push({ id: `medals_${i}`, name, desc: `Win ${n} Contract Medal${n === 1 ? '' : 's'} by finishing a weekly contract.`, descP: [n === 1 ? 'Win 1 Contract Medal by finishing a weekly contract.' : 'Win {n} Contract Medals by finishing weekly contracts.', { n }], check: (s) => s.contractMedals >= n });
   });
 
   const levels: Array<[number, string]> = [[1, 'Crystal Clear'], [10, 'Refined'], [40, 'Lattice Lord']];
   levels.forEach(([n, name], i) => {
-    list.push({ id: `levels_${i}`, name, desc: `Reach ${n} total generator level${n === 1 ? '' : 's'} with Quasar Crystals.`, check: (s) => s.genLevels.reduce((a, b) => a + b, 0) >= n });
+    list.push({ id: `levels_${i}`, name, desc: `Reach ${n} total generator level${n === 1 ? '' : 's'} with Quasar Crystals.`, descP: [n === 1 ? 'Level up a generator once with Quasar Crystals.' : 'Reach {n} total generator levels with Quasar Crystals.', { n }], check: (s) => s.genLevels.reduce((a, b) => a + b, 0) >= n });
   });
 
   const harvests: Array<[number, string]> = [[1, 'Green Thumb'], [50, 'Space Gardener'], [500, 'Nebula Botanist']];
   harvests.forEach(([n, name], i) => {
-    list.push({ id: `harvests_${i}`, name, desc: `Harvest ${n} plant${n === 1 ? '' : 's'} in the Nebula Garden.`, check: (s) => s.gardenHarvests >= n });
+    list.push({ id: `harvests_${i}`, name, desc: `Harvest ${n} plant${n === 1 ? '' : 's'} in the Nebula Garden.`, descP: [n === 1 ? 'Harvest 1 plant in the Nebula Garden.' : 'Harvest {n} plants in the Nebula Garden.', { n }], check: (s) => s.gardenHarvests >= n });
   });
 
   const golds: Array<[number, string]> = [[1, 'Weekend Warrior'], [3, 'Rift Regular'], [8, 'Event Horizon Champion']];
   golds.forEach(([n, name], i) => {
-    list.push({ id: `golds_${i}`, name, desc: `Win ${n} Gold badge${n === 1 ? '' : 's'} in weekend events.`, check: (s) => s.eventGolds >= n });
+    list.push({ id: `golds_${i}`, name, desc: `Win ${n} Gold badge${n === 1 ? '' : 's'} in weekend events.`, descP: [n === 1 ? 'Win 1 Gold badge in a weekend event.' : 'Win {n} Gold badges in weekend events.', { n }], check: (s) => s.eventGolds >= n });
   });
 
   const casts: Array<[number, string]> = [[1, 'First Light'], [25, 'Smith of Stars'], [250, 'Forgemaster']];
   casts.forEach(([n, name], i) => {
-    list.push({ id: `casts_${i}`, name, desc: `Use ${n} forging${n === 1 ? '' : 's'} at the Star Forge.`, check: (s) => s.forgeCasts >= n });
+    list.push({ id: `casts_${i}`, name, desc: `Use ${n} forging${n === 1 ? '' : 's'} at the Star Forge.`, descP: [n === 1 ? 'Use 1 forging at the Star Forge.' : 'Use {n} forgings at the Star Forge.', { n }], check: (s) => s.forgeCasts >= n });
   });
 
   const trades: Array<[number, string]> = [[1, 'Buy Low'], [25, 'Sell High'], [200, 'Warp Tycoon']];
   trades.forEach(([n, name], i) => {
-    list.push({ id: `trades_${i}`, name, desc: `Sell goods at a profit ${n === 1 ? 'once' : `${n} times`} on the Warp Exchange.`, check: (s) => s.marketWins >= n });
+    list.push({ id: `trades_${i}`, name, desc: `Sell goods at a profit ${n === 1 ? 'once' : `${n} times`} on the Warp Exchange.`, descP: [n === 1 ? 'Sell goods at a profit once on the Warp Exchange.' : 'Sell goods at a profit {n} times on the Warp Exchange.', { n }], check: (s) => s.marketWins >= n });
   });
 
   const ownLevels: Array<[number, string]> = [[1, ''], [50, 'Fleet'], [100, 'Armada'], [200, 'Empire']];
   GENERATORS.forEach((g, gi) => {
     ownLevels.forEach(([n, suffix], li) => {
       const name = n === 1 ? `First ${g.name}` : `${g.name.split(' ').pop()} ${suffix}`;
-      list.push({ id: `own_${g.id}_${li}`, name, desc: `Own ${n} ${n === 1 ? g.name : pluralName(gi)}.`, check: (s) => s.generators[gi] >= n });
+      const nameP: Phrase = n === 1 ? ['First {gen}', { gen: g.name }] : [`{plural} ${suffix}`, { plural: pluralName(gi) }];
+      const descP: Phrase = n === 1 ? ['Own 1 {gen}.', { gen: g.name }] : ['Own {n} {plural}.', { n, plural: pluralName(gi) }];
+      list.push({ id: `own_${g.id}_${li}`, name, desc: `Own ${n} ${n === 1 ? g.name : pluralName(gi)}.`, nameP, descP, check: (s) => s.generators[gi] >= n });
     });
   });
 
   const total: Array<[number, string]> = [[100, 'Busy Sector'], [500, 'Industrial System'], [1000, 'Machine Galaxy'], [2000, 'Gray Goo Adjacent']];
   total.forEach(([n, name], i) => {
-    list.push({ id: `total_${i}`, name, desc: `Own ${n} generators in total.`, check: (s) => totalGenerators(s) >= n });
+    list.push({ id: `total_${i}`, name, desc: `Own ${n} generators in total.`, descP: ['Own {n} generators in total.', { n }], check: (s) => totalGenerators(s) >= n });
   });
 
   const comets: Array<[number, string]> = [[1, 'Shooting Star'], [7, 'Make a Wish'], [27, 'Comet Chaser'], [77, 'Tail Collector'], [777, 'Halley Would Be Proud']];
   comets.forEach(([n, name], i) => {
-    list.push({ id: `comet_${i}`, name, desc: `Catch ${n} comet${n === 1 ? '' : 's'}.`, check: (s) => s.cometsAll >= n });
+    list.push({ id: `comet_${i}`, name, desc: `Catch ${n} comet${n === 1 ? '' : 's'}.`, descP: [n === 1 ? 'Catch 1 comet.' : 'Catch {n} comets.', { n }], check: (s) => s.cometsAll >= n });
   });
 
   const upg: Array<[number, string]> = [[10, 'Tinkerer'], [25, 'Engineer'], [50, 'Architect'], [100, 'Grand Designer'], [150, 'Upgrade Everything']];
   upg.forEach(([n, name], i) => {
-    list.push({ id: `upg_${i}`, name, desc: `Buy ${n} upgrades.`, check: (s) => upgradeCount(s) >= n });
+    list.push({ id: `upg_${i}`, name, desc: `Buy ${n} upgrades.`, descP: ['Buy {n} upgrades.', { n }], check: (s) => upgradeCount(s) >= n });
   });
 
   const collapses: Array<[number, string]> = [[1, 'Big Crunch'], [5, 'Cyclic Cosmos'], [10, 'Eternal Return'], [25, 'Groundhog Universe']];
   collapses.forEach(([n, name], i) => {
-    list.push({ id: `collapse_${i}`, name, desc: `Collapse the universe ${n} time${n === 1 ? '' : 's'}.`, check: (s) => s.collapses >= n });
+    list.push({ id: `collapse_${i}`, name, desc: `Collapse the universe ${n} time${n === 1 ? '' : 's'}.`, descP: [n === 1 ? 'Collapse the universe once.' : 'Collapse the universe {n} times.', { n }], check: (s) => s.collapses >= n });
   });
 
   const dm: Array<[number, string]> = [[10, 'Dark Dabbler'], [100, 'Dark Collector'], [1000, 'Dark Lord'], [10000, 'Made of Shadow']];
   dm.forEach(([n, name], i) => {
-    list.push({ id: `dm_${i}`, name, desc: `Own ${n.toLocaleString('en-US')} Dark Matter.`, check: (s) => s.darkMatter >= n });
+    list.push({ id: `dm_${i}`, name, desc: `Own ${n.toLocaleString('en-US')} Dark Matter.`, descP: ['Own {n} Dark Matter.', { n }], check: (s) => s.darkMatter >= n });
   });
 
   const exp: Array<[number, string]> = [[1, 'Bon Voyage'], [10, 'Frequent Flyer'], [50, 'Star Trekker'], [200, 'Mapped It All']];
   exp.forEach(([n, name], i) => {
-    list.push({ id: `exp_${i}`, name, desc: `Complete ${n} expedition${n === 1 ? '' : 's'}.`, check: (s) => s.expeditionsDone >= n });
+    list.push({ id: `exp_${i}`, name, desc: `Complete ${n} expedition${n === 1 ? '' : 's'}.`, descP: [n === 1 ? 'Complete 1 expedition.' : 'Complete {n} expeditions.', { n }], check: (s) => s.expeditionsDone >= n });
   });
 
   const anomalies: Array<[number, string]> = [[1, 'Anomalous'], [3, 'Rule Breaker'], [6, 'Reality Bender']];
   anomalies.forEach(([n, name], i) => {
-    list.push({ id: `anomaly_${i}`, name, desc: `Complete ${n} anomal${n === 1 ? 'y' : 'ies'}.`, check: (s) => Object.keys(s.anomaliesDone).length >= n });
+    list.push({ id: `anomaly_${i}`, name, desc: `Complete ${n} anomal${n === 1 ? 'y' : 'ies'}.`, descP: [n === 1 ? 'Complete 1 anomaly.' : 'Complete {n} anomalies.', { n }], check: (s) => Object.keys(s.anomaliesDone).length >= n });
   });
 
   list.push({ id: 'daily_7', name: 'Creature of Habit', desc: 'Reach a 7 day login streak.', check: (s) => s.dailyStreak >= 7 });

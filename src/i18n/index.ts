@@ -3,6 +3,7 @@
 
 import { ES } from './es.js';
 import { PT } from './pt.js';
+import { fmt } from '../core/format.js';
 
 export type Lang = 'en' | 'es' | 'pt';
 export type LangSetting = 'auto' | Lang;
@@ -52,6 +53,41 @@ export function t(en: string, vars?: Record<string, string | number>): string {
   }
   if (vars) out = out.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
   return out;
+}
+
+/**
+ * Generated text (such as "Quantum Lunar Base") can't be looked up whole, so
+ * data carries a recipe: an English template and its parts. Text parts are
+ * translated in turn, numbers are written the local way, and { big } numbers
+ * use the game's short form (1.5M).
+ */
+export type PhraseArg = string | number | { big: number };
+export type Phrase = [string, Record<string, PhraseArg>];
+
+const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
+
+export function phrase([tpl, vars]: Phrase): string {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(vars)) {
+    out[k] = typeof v === 'string' ? t(v) : typeof v === 'number' ? v.toLocaleString(LOCALES[lang]) : fmt(v.big);
+  }
+  return t(tpl, out);
+}
+
+export interface Named {
+  name: string;
+  desc: string;
+  nameP?: Phrase;
+  descP?: Phrase;
+}
+
+/** The name in the current language. English always uses the original text. */
+export function tName(x: Named): string {
+  return dict && x.nameP ? phrase(x.nameP) : t(x.name);
+}
+
+export function tDesc(x: Named): string {
+  return dict && x.descP ? phrase(x.descP) : t(x.desc);
 }
 
 /** English text shown untranslated so far in the current language; for testing coverage. */

@@ -216,8 +216,16 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    Português); picking one reloads the page. "Device language" stays English until a language is
    complete (`AUTO_LANGS`), so nobody gets a half-translated game by surprise; Settings says "Some
    text is still in English" meanwhile. The Play listing is translated in `docs/STORE-es-pt.md`
-   (es-419 and pt-BR). Still English: upgrades, achievements, cosmic upgrades, anomalies, probes,
-   missions, contracts, the shop, the minigames, events, the Star Pass, stats and the news ticker.
+   (es-419 and pt-BR).
+   Run 10 (part 2): all 155 upgrades and 132 achievements, plus the Upgrades and Trophies tabs.
+   Generated text such as "Quantum Lunar Base" carries a recipe (`nameP`/`descP`: an English template
+   and its parts) so each language can order the words its own way; tier names are worded to avoid
+   gender agreement ("Salto cuántico: Base Lunar"). Big numbers in achievement goals use the game's
+   short form (1M). `npm run i18n` lists data text still missing; a test fails if any upgrade or
+   achievement lacks Spanish or Portuguese. Also fixed: the Trophies summary showed its "+25%" in a
+   box because a Warp Exchange style shared the class name.
+   Still English: cosmic upgrades, anomalies, probes, missions, contracts, the shop, the minigames,
+   events, the Star Pass, stats and the news ticker.
 
 ## Research log
 
@@ -363,8 +371,8 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. Finish Spanish and Portuguese: data files (upgrades, achievements, cosmic, anomalies, expeditions,
-   news), then the menus and shop, then turn on `AUTO_LANGS` for both.
+1. Finish Spanish and Portuguese: cosmic, anomalies, expeditions, news, then the menus and shop,
+   then turn on `AUTO_LANGS` for both.
 2. Welcome-back summary that lists what each system did while away (probes, garden, market).
 3. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 4. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

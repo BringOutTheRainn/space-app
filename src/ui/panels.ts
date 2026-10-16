@@ -21,6 +21,7 @@ import { haptic } from './platform.js';
 import { showInterstitial } from './ads.js';
 import { interstitialAllowed } from '../core/ads.js';
 import { stageFor, STAGES } from './sky.js';
+import { t, tDesc, tName } from '../i18n/index.js';
 
 // ------------------------------------------------------------------ Upgrades
 
@@ -32,16 +33,16 @@ export class UpgradesPanel implements Panel {
 
   constructor(private root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `
-      <h3 class="section-title">Available</h3>
+      <h3 class="section-title">${t('Available')}</h3>
       <div class="upg-list" id="upg-list"></div>
-      <h3 class="section-title" id="upg-owned-title">Bought</h3>
+      <h3 class="section-title" id="upg-owned-title">${t('Bought')}</h3>
       <div class="upg-owned" id="upg-owned"></div>`;
     this.list = $('#upg-list', root);
     this.owned = $('#upg-owned', root);
     this.ownedTitle = $('#upg-owned-title', root);
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      const buy = t.closest<HTMLElement>('[data-buy]');
+      const el = e.target as HTMLElement;
+      const buy = el.closest<HTMLElement>('[data-buy]');
       if (buy) {
         const u = UPGRADE_BY_ID[buy.dataset.buy!];
         if (buyUpgrade(ctx.s, ctx.d, u.id)) {
@@ -52,10 +53,10 @@ export class UpgradesPanel implements Panel {
         } else sfxDenied();
         return;
       }
-      const own = t.closest<HTMLElement>('[data-owned]');
+      const own = el.closest<HTMLElement>('[data-owned]');
       if (own) {
         const u = UPGRADE_BY_ID[own.dataset.owned!];
-        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(u.name)}</b><br>${esc(u.desc)}</div>`);
+        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(tName(u))}</b><br>${esc(tDesc(u))}</div>`);
       }
     });
   }
@@ -70,13 +71,13 @@ export class UpgradesPanel implements Panel {
         ? ups.map((u) => `
           <div class="upg-card" data-id="${u.id}">
             <div class="upg-ico">${icon(u.icon)}</div>
-            <div class="upg-text"><div class="upg-name">${esc(u.name)}</div><div class="upg-desc">${esc(u.desc)}</div></div>
-            <button class="btn btn-buy" data-buy="${u.id}" aria-label="Buy ${esc(u.name)} for ${fmt(upgradePrice(d, u))} Stardust"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
+            <div class="upg-text"><div class="upg-name">${esc(tName(u))}</div><div class="upg-desc">${esc(tDesc(u))}</div></div>
+            <button class="btn btn-buy" data-buy="${u.id}" aria-label="${esc(t('Buy {name} for {price} Stardust', { name: tName(u), price: fmt(upgradePrice(d, u)) }))}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
           </div>`).join('')
-        : `<p class="empty">${d.noUpgrades ? 'Upgrades cannot be bought in this anomaly.' : 'No upgrades right now. Buy more generators to unlock new ones.'}</p>`;
+        : `<p class="empty">${d.noUpgrades ? t('Upgrades cannot be bought in this anomaly.') : t('No upgrades right now. Buy more generators to unlock new ones.')}</p>`;
       const bought = UPGRADES.filter((u) => s.upgrades[u.id]);
-      setText(this.ownedTitle, `Bought (${bought.length} of ${UPGRADES.length})`);
-      this.owned.innerHTML = bought.map((u) => `<button class="owned-chip" data-owned="${u.id}" aria-label="${esc(u.name)}">${icon(u.icon)}</button>`).join('');
+      setText(this.ownedTitle, t('Bought ({n} of {total})', { n: bought.length, total: UPGRADES.length }));
+      this.owned.innerHTML = bought.map((u) => `<button class="owned-chip" data-owned="${u.id}" aria-label="${esc(tName(u))}">${icon(u.icon)}</button>`).join('');
     }
     this.list.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
       toggleClass(b, 'afford', upgradePrice(d, UPGRADE_BY_ID[b.dataset.buy!]) <= s.stardust);
@@ -100,8 +101,8 @@ export class TrophiesPanel implements Panel {
       if (!el) return;
       const a = ACHIEVEMENT_BY_ID[el.dataset.ach!];
       const got = a.id in ctx.s.achievements;
-      const name = got || !a.hidden ? a.name : '???';
-      const desc = got || !a.hidden ? a.desc : 'A secret achievement.';
+      const name = got || !a.hidden ? tName(a) : '???';
+      const desc = got || !a.hidden ? tDesc(a) : t('A secret achievement.');
       toast(`<div class="t-ico">${icon(got ? 'trophy' : 'lock')}</div><div><b>${esc(name)}</b>${got ? ' ✓' : ''}<br>${esc(desc)}</div>`, got ? 'trophy' : 'info');
     });
   }
@@ -113,10 +114,10 @@ export class TrophiesPanel implements Panel {
     if (key === this.key) return;
     this.key = key;
     const per = ctx.d ? achievementBonus(ctx) : 0.01;
-    this.summary.innerHTML = `<b>${n}</b> of ${ACHIEVEMENTS.length} achievements · <span class="good">+${fmtPercent(per * n)}</span> production`;
+    this.summary.innerHTML = t('<b>{n}</b> of {total} achievements · <span class="good">+{pct}</span> production', { n, total: ACHIEVEMENTS.length, pct: fmtPercent(per * n) });
     this.grid.innerHTML = ACHIEVEMENTS.map((a) => {
       const got = a.id in s.achievements;
-      return `<button class="trophy${got ? ' got' : ''}${a.hidden && !got ? ' secret' : ''}" data-ach="${a.id}" aria-label="${esc(got || !a.hidden ? a.name : 'Secret')}">${icon(got ? 'trophy' : 'lock')}</button>`;
+      return `<button class="trophy${got ? ' got' : ''}${a.hidden && !got ? ' secret' : ''}" data-ach="${a.id}" aria-label="${esc(got || !a.hidden ? tName(a) : t('Secret'))}">${icon(got ? 'trophy' : 'lock')}</button>`;
     }).join('');
   }
 }

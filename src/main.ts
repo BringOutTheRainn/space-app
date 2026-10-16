@@ -37,7 +37,7 @@ import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackBu
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 import { maybeAskRating } from './ui/rating.js';
-import { setLanguage, t } from './i18n/index.js';
+import { setLanguage, t, tDesc, tName } from './i18n/index.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -293,7 +293,7 @@ function start(): void {
       sfxAchievement();
       for (const id of fresh.slice(0, 3)) {
         const a = ACHIEVEMENT_BY_ID[id];
-        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(t(a.name)) })}</b><br>${esc(t(a.desc))}</div>`, 'trophy', 4000);
+        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(tName(a)) })}</b><br>${esc(tDesc(a))}</div>`, 'trophy', 4000);
       }
       if (fresh.length > 3) toast(t('and {n} more achievements!', { n: fresh.length - 3 }), 'trophy');
       rebuildAll = true;

@@ -1002,3 +1002,23 @@ test('language setting falls back to English and fills placeholders', async () =
   assert.equal(i18n.t('{n} per tap', { n: 2 }), '2 per tap');
   assert.equal(newState().settings.lang, 'auto');
 });
+
+test('every upgrade and achievement has Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const items = [...UPGRADES, ...ACHIEVEMENTS];
+  i18n.setLanguage('en');
+  for (const x of items) {
+    assert.equal(i18n.tName(x), x.name);
+    assert.equal(i18n.tDesc(x), x.desc);
+  }
+  for (const lang of ['es', 'pt']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const x of items) {
+      for (const text of [i18n.tName(x), i18n.tDesc(x)]) assert.ok(!/[{}]/.test(text), `${lang}: unfilled placeholder in ${text}`);
+    }
+    const added = i18n.missingText().filter((k) => !before.has(k));
+    assert.deepEqual(added, [], `${lang} is missing data text`);
+  }
+  i18n.setLanguage('en');
+});

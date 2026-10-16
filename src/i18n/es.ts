@@ -1,6 +1,9 @@
 // Spanish (neutral Latin American). Keys are the English text.
 
+import { ES_DATA } from './es-data.js';
+
 export const ES: Record<string, string> = {
+  ...ES_DATA,
   // Main screen
   'Build': 'Construir',
   'Upgrades': 'Mejoras',
@@ -79,6 +82,17 @@ export const ES: Record<string, string> = {
   'Buy the one above to discover': 'Compra el de arriba para descubrirlo',
   'Earn more Stardust to discover': 'Gana más Polvo Estelar para descubrirlo',
   '{each}/s each · {share} of total': '{each}/s cada uno · {share} del total',
+
+  // Upgrades and Trophies tabs
+  'Available': 'Disponibles',
+  'Bought': 'Compradas',
+  'Bought ({n} of {total})': 'Compradas ({n} de {total})',
+  'Buy {name} for {price} Stardust': 'Comprar {name} por {price} de Polvo Estelar',
+  'Upgrades cannot be bought in this anomaly.': 'En esta anomalía no se pueden comprar mejoras.',
+  'No upgrades right now. Buy more generators to unlock new ones.': 'No hay mejoras por ahora. Compra más generadores para desbloquear nuevas.',
+  'A secret achievement.': 'Un logro secreto.',
+  'Secret': 'Secreto',
+  '<b>{n}</b> of {total} achievements · <span class="good">+{pct}</span> production': '<b>{n}</b> de {total} logros · <span class="good">+{pct}</span> de producción',
 
   // Generators
   'Mining Drone': 'Dron Minero',

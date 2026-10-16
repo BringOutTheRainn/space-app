@@ -14,7 +14,7 @@ import { openCrystals, openForge, openGarden, openMarket } from './menus.js';
 import { gardenUnlocked, plotCount, readyPlots } from '../core/garden.js';
 import { forgeUnlocked, maxHeat, syncHeat } from '../core/forge.js';
 import { GOODS, marketUnlocked, syncMarket } from '../core/market.js';
-import { t } from '../i18n/index.js';
+import { t, tDesc, tName } from '../i18n/index.js';
 
 interface Row {
   el: HTMLElement;
@@ -145,12 +145,12 @@ export class BuildPanel implements Panel {
       if (buyUpgrade(ctx.s, ctx.d, id)) {
         sfxUpgrade();
         haptic('medium');
-        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(t(u.name))}</b><br>${esc(t(u.desc))}</div>`, 'good');
+        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(tName(u))}</b><br>${esc(tDesc(u))}</div>`, 'good');
         ctx.recalc();
         ctx.dirty();
       } else {
         sfxDenied();
-        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(t(u.name))}</b> · ${fmt(upgradePrice(ctx.d, u))}<br>${esc(t(u.desc))}</div>`);
+        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(tName(u))}</b> · ${fmt(upgradePrice(ctx.d, u))}<br>${esc(tDesc(u))}</div>`);
       }
     });
   }
@@ -201,7 +201,7 @@ export class BuildPanel implements Panel {
     if (key !== this.stripKey) {
       this.stripKey = key;
       this.strip.innerHTML = d.noUpgrades ? `<div class="strip-empty">${t('No upgrades in this anomaly')}</div>` : ups.length
-        ? ups.map((u) => `<button class="upg-chip" data-upg="${u.id}" aria-label="${esc(t(u.name))}">${icon(u.icon)}<span class="tier">${u.group === 'generator' ? romans(u.tier + 1) : ''}</span></button>`).join('')
+        ? ups.map((u) => `<button class="upg-chip" data-upg="${u.id}" aria-label="${esc(tName(u))}">${icon(u.icon)}<span class="tier">${u.group === 'generator' ? romans(u.tier + 1) : ''}</span></button>`).join('')
         : `<div class="strip-empty">${t('Upgrades appear here as your empire grows')}</div>`;
     }
     this.strip.querySelectorAll<HTMLElement>('[data-upg]').forEach((el) => {

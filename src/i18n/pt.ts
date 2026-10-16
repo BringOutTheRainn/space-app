@@ -1,6 +1,9 @@
 // Portuguese (Brazil). Keys are the English text.
 
+import { PT_DATA } from './pt-data.js';
+
 export const PT: Record<string, string> = {
+  ...PT_DATA,
   // Main screen
   'Build': 'Construir',
   'Upgrades': 'Melhorias',
@@ -79,6 +82,17 @@ export const PT: Record<string, string> = {
   'Buy the one above to discover': 'Compre o de cima para descobrir',
   'Earn more Stardust to discover': 'Ganhe mais Poeira Estelar para descobrir',
   '{each}/s each · {share} of total': '{each}/s cada · {share} do total',
+
+  // Upgrades and Trophies tabs
+  'Available': 'Disponíveis',
+  'Bought': 'Compradas',
+  'Bought ({n} of {total})': 'Compradas ({n} de {total})',
+  'Buy {name} for {price} Stardust': 'Comprar {name} por {price} de Poeira Estelar',
+  'Upgrades cannot be bought in this anomaly.': 'Nesta anomalia não dá para comprar melhorias.',
+  'No upgrades right now. Buy more generators to unlock new ones.': 'Nenhuma melhoria agora. Compre mais geradores para liberar novas.',
+  'A secret achievement.': 'Uma conquista secreta.',
+  'Secret': 'Secreta',
+  '<b>{n}</b> of {total} achievements · <span class="good">+{pct}</span> production': '<b>{n}</b> de {total} conquistas · <span class="good">+{pct}</span> de produção',
 
   // Generators
   'Mining Drone': 'Drone Minerador',
