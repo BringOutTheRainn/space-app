@@ -2,8 +2,8 @@
 
 Add these in Play Console under **Grow > Store presence > Main store listing > Manage translations > Add
 your own translations**, as **Spanish (Latin America) – es-419** and **Portuguese (Brazil) – pt-BR**.
-Graphics can stay the English ones. The in-game text is being translated in stages; until it is
-complete, players choose Español or Português in Settings, and the phone's language is not used yet.
+Graphics can stay the English ones. The whole game is translated: phones set to Spanish or Portuguese
+start in that language, and players can switch in Settings.
 
 ## Spanish (Latin America), es-419
 

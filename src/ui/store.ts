@@ -15,6 +15,7 @@ import {
 import { sfxAchievement } from './audio.js';
 import type { Ctx } from './ctx.js';
 import { esc, openModal, toast } from './dom.js';
+import { t } from '../i18n/index.js';
 import { icon } from './icons.js';
 import { haptic, isNative } from './platform.js';
 import { setBanner } from './ads.js';
@@ -87,8 +88,9 @@ function applyGrant(id: string): void {
   sfxAchievement();
   haptic('heavy');
   const p = PRODUCT_BY_ID[id];
-  const parts = [g.stardust ? `+${fmt(g.stardust)} Stardust` : '', g.crystals ? `+${g.crystals} crystals` : ''].filter(Boolean).join(' · ');
-  toast(`<div class="t-ico">${icon(p.icon)}</div><div><b>${esc(p.name)}</b><br>${esc(g.text)}${parts ? `<br>${parts}` : ''}</div>`, 'good', 6000);
+  const parts = [g.stardust ? t('+{n} Stardust', { n: fmt(g.stardust) }) : '', g.crystals ? t('+{n} crystals', { n: g.crystals }) : ''].filter(Boolean).join(' · ');
+  const text = id.startsWith('skin_') ? t('{name} unlocked and applied.', { name: t(p.name) }) : t(g.text);
+  toast(`<div class="t-ico">${icon(p.icon)}</div><div><b>${esc(t(p.name))}</b><br>${esc(text)}${parts ? `<br>${parts}` : ''}</div>`, 'good', 6000);
 }
 
 /** Connects to the store once at start-up. Safe to call in a browser. */
@@ -134,12 +136,12 @@ export function buyProduct(ctx: Ctx, id: string): Promise<boolean> {
   const c = cdv();
   if (isNative()) {
     if (!c || !nativeReady) {
-      toast('The store is not available right now. Check your connection and try again.', 'bad');
+      toast(t('The store is not available right now. Check your connection and try again.'), 'bad');
       return Promise.resolve(false);
     }
     const offer = c.store.get(id, platformId(c))?.getOffer();
     if (!offer) {
-      toast('This item is not available in your store yet.', 'bad');
+      toast(t('This item is not available in your store yet.'), 'bad');
       return Promise.resolve(false);
     }
     return new Promise((resolve) => {
@@ -168,14 +170,14 @@ function testCheckout(p: Product): Promise<boolean> {
       resolve(ok);
     };
     openModal({
-      title: 'Checkout',
-      body: `<div class="fake-ad"><div class="fake-ad-tag">Test purchase</div>
-        <p><b>${esc(p.name)}</b> · ${esc(p.price)}</p><p class="dim small">${esc(p.desc)}</p>
-        <p class="dim small">In the app this opens Google Play. Here nothing is charged.</p></div>`,
+      title: t('Checkout'),
+      body: `<div class="fake-ad"><div class="fake-ad-tag">${t('Test purchase')}</div>
+        <p><b>${esc(t(p.name))}</b> · ${esc(p.price)}</p><p class="dim small">${esc(t(p.desc))}</p>
+        <p class="dim small">${t('In the app this opens Google Play. Here nothing is charged.')}</p></div>`,
       onClose: () => finish(false),
       buttons: [
-        { label: 'Cancel', kind: 'plain', onClick: () => finish(false) },
-        { label: `Buy ${p.price}`, kind: 'primary', onClick: () => finish(true) },
+        { label: t('Cancel'), kind: 'plain', onClick: () => finish(false) },
+        { label: t('Buy {price}', { price: p.price }), kind: 'primary', onClick: () => finish(true) },
       ],
     });
   });
@@ -184,11 +186,11 @@ function testCheckout(p: Product): Promise<boolean> {
 export async function restorePurchases(): Promise<void> {
   const c = cdv();
   if (!c || !nativeReady) {
-    toast('The store is not available right now.', 'bad');
+    toast(t('The store is not available right now.'), 'bad');
     return;
   }
   await c.store.restorePurchases();
-  toast('Purchases restored.', 'good');
+  toast(t('Purchases restored.'), 'good');
 }
 
 // ------------------------------------------------------------------ Shop
@@ -208,61 +210,61 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
     const starterLeft = starterOfferLeft(s, now);
     if (starterLeft > 0) {
       parts.push(`<div class="shop-card shop-feature">
-        <div class="shop-kicker">New player offer · ends in ${fmtTime(starterLeft / 1000)}</div>
-        <div class="shop-row">${icon('gift')}<div class="shop-main"><b>Starter Pack</b><span>10 Quasar Crystals, 4 hours of production and +${STARTER_PCT * 100}% production forever.</span></div>${buyButton(ctx, 'starter_pack')}</div>
+        <div class="shop-kicker">${t('New player offer · ends in {time}', { time: fmtTime(starterLeft / 1000) })}</div>
+        <div class="shop-row">${icon('gift')}<div class="shop-main"><b>${t('Starter Pack')}</b><span>${t('10 Quasar Crystals, 4 hours of production and +{pct}% production forever.', { pct: STARTER_PCT * 100 })}</span></div>${buyButton(ctx, 'starter_pack')}</div>
       </div>`);
     }
 
     parts.push(`<div class="shop-card${owns(s, 'supporter_pack') ? ' owned' : ''}">
-      <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>Supporter Pack</b><span>No break ads or banners, ever. Production x${SUPPORTER_MULT} forever. Optional reward ads stay for their bonuses.</span></div>
-      ${owns(s, 'supporter_pack') ? '<span class="shop-owned">Owned</span>' : buyButton(ctx, 'supporter_pack')}</div></div>`);
+      <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>${t('Supporter Pack')}</b><span>${t('No break ads or banners, ever. Production x{n} forever. Optional reward ads stay for their bonuses.', { n: SUPPORTER_MULT })}</span></div>
+      ${owns(s, 'supporter_pack') ? `<span class="shop-owned">${t('Owned')}</span>` : buyButton(ctx, 'supporter_pack')}</div></div>`);
 
     const v = vaultValue(s, d);
     parts.push(`<div class="shop-card">
-      <div class="shop-row">${icon('darkMatter')}<div class="shop-main"><b>Stardust Vault</b><span>Saves ${VAULT_RATE * 60} minutes of production every hour, even while you are away, up to ${VAULT_CAP_HOURS} hours.${crystalsUnlocked(s) ? ` Plus a crystal for every ${VAULT_HOURS_PER_CRYSTAL} hours saved.` : ''}</span></div></div>
+      <div class="shop-row">${icon('darkMatter')}<div class="shop-main"><b>${t('Stardust Vault')}</b><span>${t('Saves {n} minutes of production every hour, even while you are away, up to {cap} hours.', { n: VAULT_RATE * 60, cap: VAULT_CAP_HOURS })}${crystalsUnlocked(s) ? ` ${t('Plus a crystal for every {n} hours saved.', { n: VAULT_HOURS_PER_CRYSTAL })}` : ''}</span></div></div>
       <div class="bar"><div class="bar-fill vault-fill" style="width:${(s.vaultHours / VAULT_CAP_HOURS) * 100}%"></div></div>
-      <div class="shop-row shop-sub"><span class="dim small">${s.vaultHours.toFixed(1)} of ${VAULT_CAP_HOURS} hours saved · worth ${fmt(v.stardust)} Stardust${v.crystals ? ` and ${v.crystals} crystal${v.crystals === 1 ? '' : 's'}` : ''}</span>
-      ${buyButton(ctx, 'vault_open', s.vaultHours >= 1 ? `Open ${productPrice('vault_open')}` : 'Filling')}</div></div>`);
+      <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: s.vaultHours.toFixed(1), cap: VAULT_CAP_HOURS, sd: fmt(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
+      ${buyButton(ctx, 'vault_open', s.vaultHours >= 1 ? t('Open {price}', { price: productPrice('vault_open') }) : t('Filling'))}</div></div>`);
 
     const pass = currentPass(s, now);
     parts.push(`<div class="shop-card">
-      <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>Star Pass Premium</b><span>This season (ends in ${fmtTime(seasonTimeLeft(now) / 1000)}): a second reward track with double Stardust, 20 crystals, 2 Contract Medals and the Aurora skin. Rewards for tiers you already reached are paid at once.</span></div>
-      ${pass.premium ? '<span class="shop-owned">Active</span>' : buyButton(ctx, 'star_pass')}</div></div>`);
+      <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>${t('Star Pass Premium')}</b><span>${t('This season (ends in {time}): a second reward track with double Stardust, 20 crystals, 2 Contract Medals and the Aurora skin. Rewards for tiers you already reached are paid at once.', { time: fmtTime(seasonTimeLeft(now) / 1000) })}</span></div>
+      ${pass.premium ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'star_pass')}</div></div>`);
 
     const e = currentEvent(s, now);
     parts.push(`<div class="shop-card">
-      <div class="shop-row">${icon('rift')}<div class="shop-main"><b>Event Pass</b><span>${e ? 'This weekend: double Flux and a Platinum badge worth 12 hours of production and 10 crystals.' : `Opens with the next weekend event${eventActive(now) ? '' : `, in ${fmtTime(eventTimeLeft(now) / 1000)}`}.`}</span></div>
-      ${e?.pass ? '<span class="shop-owned">Active</span>' : buyButton(ctx, 'event_pass')}</div></div>`);
+      <div class="shop-row">${icon('rift')}<div class="shop-main"><b>${t('Event Pass')}</b><span>${e ? t('This weekend: double Flux and a Platinum badge worth 12 hours of production and 10 crystals.') : eventActive(now) ? t('Opens with the next weekend event.') : t('Opens with the next weekend event, in {time}.', { time: fmtTime(eventTimeLeft(now) / 1000) })}</span></div>
+      ${e?.pass ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'event_pass')}</div></div>`);
 
     const packs = ['crystals_5', 'crystals_30', 'crystals_80'].map((id) => {
       const p = PRODUCT_BY_ID[id];
-      return `<div class="shop-pack">${icon('crystal')}<b>${esc(p.desc.split(' ')[0])}</b><span class="dim small">${esc(p.name)}</span>${buyButton(ctx, id)}</div>`;
+      return `<div class="shop-pack">${icon('crystal')}<b>${esc(p.desc.split(' ')[0])}</b><span class="dim small">${esc(t(p.name))}</span>${buyButton(ctx, id)}</div>`;
     }).join('');
-    parts.push(`<div class="shop-card"><div class="shop-head"><b>Quasar Crystals</b>${crystalsUnlocked(s) ? `<span class="dim small">You have ${s.crystals}</span>` : '<span class="dim small">Unlock at 1B lifetime Stardust</span>'}</div>
+    parts.push(`<div class="shop-card"><div class="shop-head"><b>${t('Quasar Crystals')}</b>${crystalsUnlocked(s) ? `<span class="dim small">${t('You have {n}', { n: s.crystals })}</span>` : `<span class="dim small">${t('Unlock at 1B lifetime Stardust')}</span>`}</div>
       <div class="shop-packs">${packs}</div></div>`);
 
     const skins = [{ id: 'default', name: 'Classic', swatch: ['#a99a8a', '#3e5fa8'] as [string, string] }, ...SKINS].map((k) => {
       const have = k.id === 'default' || owns(s, `skin_${k.id}`);
       const using = s.skin === k.id;
       return `<div class="shop-skin${using ? ' using' : ''}"><span class="skin-swatch" style="background:radial-gradient(circle at 35% 30%, ${k.swatch[0]}, ${k.swatch[1]})"></span>
-        <b>${esc(k.name)}</b>${using ? '<span class="shop-owned">In use</span>' : have ? `<button class="btn btn-plain shop-buy" data-skin="${k.id}">Use</button>` : 'exclusive' in k && k.exclusive ? '<span class="dim small shop-owned-note">Star Pass reward</span>' : buyButton(ctx, `skin_${k.id}`)}</div>`;
+        <b>${esc(t(k.name))}</b>${using ? `<span class="shop-owned">${t('In use')}</span>` : have ? `<button class="btn btn-plain shop-buy" data-skin="${k.id}">${t('Use')}</button>` : 'exclusive' in k && k.exclusive ? `<span class="dim small shop-owned-note">${t('Star Pass reward')}</span>` : buyButton(ctx, `skin_${k.id}`)}</div>`;
     }).join('');
-    parts.push(`<div class="shop-card"><div class="shop-head"><b>Planet skins</b><span class="dim small">Looks only</span></div><div class="shop-skins">${skins}</div></div>`);
+    parts.push(`<div class="shop-card"><div class="shop-head"><b>${t('Planet skins')}</b><span class="dim small">${t('Looks only')}</span></div><div class="shop-skins">${skins}</div></div>`);
 
-    if (isNative()) parts.push('<button class="btn btn-plain btn-wide" data-restore="1">Restore purchases</button>');
-    if (!storeIsLive()) parts.push(`<p class="dim small">${isNative() ? 'The store could not be reached, so prices may be out of date.' : 'Browser preview: purchases here are tests and nothing is charged.'}</p>`);
+    if (isNative()) parts.push(`<button class="btn btn-plain btn-wide" data-restore="1">${t('Restore purchases')}</button>`);
+    if (!storeIsLive()) parts.push(`<p class="dim small">${isNative() ? t('The store could not be reached, so prices may be out of date.') : t('Browser preview: purchases here are tests and nothing is charged.')}</p>`);
     return parts.join('');
   };
-  const el = openModal({ title: 'Shop', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Shop'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-skin],[data-restore]');
-    if (!t || t.disabled || busy) return;
-    if (t.dataset.skin) {
-      if (setSkin(ctx.s, t.dataset.skin)) {
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-skin],[data-restore]');
+    if (!el2 || el2.disabled || busy) return;
+    if (el2.dataset.skin) {
+      if (setSkin(ctx.s, el2.dataset.skin)) {
         ctx.sky.setSkin(ctx.s.skin);
         haptic('light');
         ctx.save();
@@ -272,8 +274,8 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
     }
     busy = true;
     const done = (): void => { busy = false; redraw(); onChange(); };
-    if (t.dataset.restore) void restorePurchases().then(done);
-    else void buyProduct(ctx, t.dataset.buy!).then(done);
+    if (el2.dataset.restore) void restorePurchases().then(done);
+    else void buyProduct(ctx, el2.dataset.buy!).then(done);
   });
 }
 
@@ -284,13 +286,13 @@ export function maybeOfferStarter(ctx: Ctx): void {
   s.starterOffered = true;
   ctx.save();
   openModal({
-    title: 'Starter Pack',
-    body: `<div class="shop-offer">${icon('gift')}<p><b>A one-time offer for new commanders.</b></p>
-      <p>10 Quasar Crystals, 4 hours of production and +${STARTER_PCT * 100}% production forever, for ${esc(productPrice('starter_pack'))}.</p>
-      <p class="dim small">Available for ${fmtTime(starterOfferLeft(s) / 1000)} more in the Shop.</p></div>`,
+    title: t('Starter Pack'),
+    body: `<div class="shop-offer">${icon('gift')}<p><b>${t('A one-time offer for new commanders.')}</b></p>
+      <p>${t('10 Quasar Crystals, 4 hours of production and +{pct}% production forever, for {price}.', { pct: STARTER_PCT * 100, price: esc(productPrice('starter_pack')) })}</p>
+      <p class="dim small">${t('Available for {time} more in the Shop.', { time: fmtTime(starterOfferLeft(s) / 1000) })}</p></div>`,
     buttons: [
-      { label: 'Not now', kind: 'plain' },
-      { label: `Get it ${productPrice('starter_pack')}`, kind: 'primary', onClick: () => { void buyProduct(ctx, 'starter_pack'); } },
+      { label: t('Not now'), kind: 'plain' },
+      { label: t('Get it {price}', { price: productPrice('starter_pack') }), kind: 'primary', onClick: () => { void buyProduct(ctx, 'starter_pack'); } },
     ],
   });
 }

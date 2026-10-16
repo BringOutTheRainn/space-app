@@ -2,6 +2,7 @@
 // (@capacitor-community/admob). In a browser it shows a stand-in ad so every
 // placement can be tried without an ad account.
 
+import { t } from '../i18n/index.js';
 import { AD_CONFIG } from '../data/ads.js';
 import { esc, openModal, closeModal } from './dom.js';
 import { isNative } from './platform.js';
@@ -142,7 +143,7 @@ export async function showRewarded(what: string): Promise<boolean> {
       void preloadRewarded();
     }
   }
-  return webAd(`Rewarded ad: ${what}`, 5, true);
+  return webAd(t('Rewarded ad: {what}', { what }), 5, true);
 }
 
 /** Shows a full-screen ad if one is loaded. Never blocks the game for long. */
@@ -163,7 +164,7 @@ export async function showInterstitial(): Promise<void> {
     }
     return;
   }
-  await webAd('Full-screen ad', 3, false);
+  await webAd(t('Full-screen ad'), 3, false);
 }
 
 export async function setBanner(on: boolean): Promise<void> {
@@ -184,13 +185,13 @@ function webAd(label: string, seconds: number, rewarded: boolean): Promise<boole
     let left = seconds;
     let done = false;
     const el = openModal({
-      title: 'Ad',
+      title: t('Ad'),
       dismissable: false,
-      body: `<div class="fake-ad"><div class="fake-ad-tag">Stand-in ad</div><p>${esc(label)}</p>
-        <p class="dim">In the app a real ad plays here. This placeholder lets you try the flow in a browser.</p>
+      body: `<div class="fake-ad"><div class="fake-ad-tag">${t('Stand-in ad')}</div><p>${esc(label)}</p>
+        <p class="dim">${t('In the app a real ad plays here. This placeholder lets you try the flow in a browser.')}</p>
         <div class="fake-ad-count" id="ad-count">${left}</div></div>`,
       buttons: [{
-        label: rewarded ? 'Skip (no reward)' : 'Close',
+        label: rewarded ? t('Skip (no reward)') : t('Close'),
         onClick: () => {
           if (!done) {
             done = true;

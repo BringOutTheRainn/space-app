@@ -993,7 +993,9 @@ test('language setting falls back to English and fills placeholders', async () =
   const i18n = await import('../www/js/i18n/index.js');
   assert.equal(i18n.resolveLang('es', 'en'), 'es');
   assert.equal(i18n.resolveLang('auto', 'fr'), 'en');
-  assert.equal(i18n.resolveLang('auto', 'es'), i18n.AUTO_LANGS.includes('es') ? 'es' : 'en');
+  assert.equal(i18n.resolveLang('auto', 'es'), 'es');
+  assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');
+  assert.equal(i18n.resolveLang('en', 'es'), 'en');
   i18n.setLanguage('pt');
   assert.equal(i18n.t('{n} per second', { n: '5' }), '5 por segundo');
   assert.equal(i18n.t('Not a real string'), 'Not a real string');

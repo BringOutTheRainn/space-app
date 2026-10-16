@@ -10,12 +10,8 @@ export type LangSetting = 'auto' | Lang;
 
 export const LANG_NAMES: Record<Lang, string> = { en: 'English', es: 'Español', pt: 'Português' };
 
-/**
- * Languages chosen automatically from the phone's language. Spanish and
- * Portuguese join once every screen is translated; until then players pick
- * them in Settings.
- */
-export const AUTO_LANGS: Lang[] = [];
+/** Languages chosen automatically from the phone's language. Players can still pick any language in Settings. */
+export const AUTO_LANGS: Lang[] = ['es', 'pt'];
 
 const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT };
 

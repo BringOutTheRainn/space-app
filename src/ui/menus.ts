@@ -588,7 +588,7 @@ export function openGarden(ctx: Ctx, onChange: () => void): void {
 const EVENT_ICONS = ['siphon', 'nebula', 'forge', 'wormhole'];
 
 function extra(tier: number): string {
-  return tier === GOLD_TIER ? ' and a Contract Medal' : tier === GOLD_TIER + 1 ? ` and ${PLATINUM_CRYSTALS} crystals` : '';
+  return tier === GOLD_TIER ? t(' and a Contract Medal') : tier === GOLD_TIER + 1 ? t(' and {n} crystals', { n: PLATINUM_CRYSTALS }) : '';
 }
 
 export function openEvent(ctx: Ctx, onChange: () => void): void {
@@ -596,14 +596,14 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
     const { s, d } = ctx;
     const now = Date.now();
     const e = currentEvent(s, now);
-    if (!e) return '<p>This weekend\'s event has ended. The next one opens on Friday.</p>';
+    if (!e) return `<p>${t("This weekend's event has ended. The next one opens on Friday.")}</p>`;
     const theme = eventTheme(e.week);
     const nBadges = badgeCount(e);
     const goals = BADGE_GOALS.slice(0, nBadges);
     const top = goals[goals.length - 1];
     // The bar is on a log scale so the early badges are not squashed into the first pixel.
     const pos = (v: number): number => Math.min(100, Math.max(0, (Math.log10(Math.max(1, v)) / Math.log10(top)) * 100));
-    const marks = goals.map((g, i) => `<span class="ev-mark${e.claimed > i ? ' got' : ''}" style="left:${pos(g)}%"><i>${BADGE_NAMES[i]}</i></span>`).join('');
+    const marks = goals.map((g, i) => `<span class="ev-mark${e.claimed > i ? ' got' : ''}" style="left:${pos(g)}%"><i>${t(BADGE_NAMES[i])}</i></span>`).join('');
     const ready = badgeReady(e);
     const next = e.claimed < nBadges ? e.claimed : -1;
     const gens = EVENT_GENS.map((g, i) => {
@@ -611,27 +611,27 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
       const ok = e.flux >= price;
       return `<button class="ev-gen${ok ? ' ok' : ''}" data-egen="${i}" ${ok ? '' : 'aria-disabled="true"'}>
         <span class="ev-gen-ico">${icon(EVENT_ICONS[i])}</span>
-        <span class="ev-gen-main"><b>${esc(g.name)}</b><span class="dim small">${fmt(g.rate)} Flux/s each</span></span>
+        <span class="ev-gen-main"><b>${esc(t(g.name))}</b><span class="dim small">${t('{n} Flux/s each', { n: fmt(g.rate) })}</span></span>
         <span class="ev-gen-side"><span class="ev-price">${fmt(price)}</span><span class="ev-owned">${e.gens[i] ?? 0}</span></span></button>`;
     }).join('');
     const adOk = eventAdReady(e, now) && rewardedAvailable();
-    return `<div class="ev-head"><div><div class="contract-kicker">Day ${eventDay(now)} of 3 · ends in ${fmtTime(eventTimeLeft(now) / 1000)}</div>
-        <div class="ev-name">${esc(theme.name)}</div><div class="dim small">${esc(theme.flavor)}</div></div></div>
+    return `<div class="ev-head"><div><div class="contract-kicker">${t('Day {n} of 3 · ends in {time}', { n: eventDay(now), time: fmtTime(eventTimeLeft(now) / 1000) })}</div>
+        <div class="ev-name">${esc(t(theme.name))}</div><div class="dim small">${esc(t(theme.flavor))}</div></div></div>
       <div class="ev-core">
-        <button class="ev-rift" data-etap="1" aria-label="Tap the rift">${icon('rift')}</button>
-        <div class="ev-flux"><div class="ev-flux-n">${fmt(e.flux)}</div><div class="dim small">Flux · ${fmt(eventRate(e))}/s · ${fmt(eventTap(e), 1)} per tap</div>
-          ${adOk ? `<button class="btn btn-plain btn-small" data-ead="1">Watch ad: +${EVENT_AD_MINUTES} min of Flux</button>` : ''}</div>
+        <button class="ev-rift" data-etap="1" aria-label="${t('Tap the rift')}">${icon('rift')}</button>
+        <div class="ev-flux"><div class="ev-flux-n">${fmt(e.flux)}</div><div class="dim small">${t('Flux · {rate}/s · {tap} per tap', { rate: fmt(eventRate(e)), tap: fmt(eventTap(e), 1) })}</div>
+          ${adOk ? `<button class="btn btn-plain btn-small" data-ead="1">${t('Watch ad: +{n} min of Flux', { n: EVENT_AD_MINUTES })}</button>` : ''}</div>
       </div>
       <div class="bar ev-bar"><div class="bar-fill ev-fill" style="width:${pos(e.earned)}%"></div>${marks}</div>
-      ${ready ? `<button class="btn btn-primary btn-wide" data-ebadge="1">Claim ${BADGE_NAMES[e.claimed]} badge: +${fmt(badgeReward(d, e.claimed))} Stardust${extra(e.claimed)}</button>`
-        : next >= 0 ? `<p class="dim small">${BADGE_NAMES[next]} badge at ${fmt(BADGE_GOALS[next])} Flux earned (${fmt(e.earned)} so far). Pays ${BADGE_MINUTES[next] >= 60 ? `${BADGE_MINUTES[next] / 60} hours` : `${BADGE_MINUTES[next]} minutes`} of production${extra(next)}.</p>`
-        : '<p class="dim small">Every badge won. See you next weekend.</p>'}
-      ${e.pass ? '<p class="ev-pass-on">Event Pass active: double Flux and the Platinum badge.</p>'
-        : `<button class="ev-pass" data-epass="1"><b>Event Pass · ${esc(productPrice('event_pass'))}</b><span>Double Flux this weekend and a Platinum badge worth 12 hours of production and ${PLATINUM_CRYSTALS} crystals.</span></button>`}
+      ${ready ? `<button class="btn btn-primary btn-wide" data-ebadge="1">${t('Claim {badge} badge: +{n} Stardust', { badge: t(BADGE_NAMES[e.claimed]), n: fmt(badgeReward(d, e.claimed)) })}${extra(e.claimed)}</button>`
+        : next >= 0 ? `<p class="dim small">${t('{badge} badge at {goal} Flux earned ({n} so far).', { badge: t(BADGE_NAMES[next]), goal: fmt(BADGE_GOALS[next]), n: fmt(e.earned) })} ${BADGE_MINUTES[next] >= 60 ? t('Pays {n} hours of production', { n: BADGE_MINUTES[next] / 60 }) : t('Pays {n} minutes of production', { n: BADGE_MINUTES[next] })}${extra(next)}.</p>`
+        : `<p class="dim small">${t('Every badge won. See you next weekend.')}</p>`}
+      ${e.pass ? `<p class="ev-pass-on">${t('Event Pass active: double Flux and the Platinum badge.')}</p>`
+        : `<button class="ev-pass" data-epass="1"><b>${t('Event Pass · {price}', { price: esc(productPrice('event_pass')) })}</b><span>${t('Double Flux this weekend and a Platinum badge worth 12 hours of production and {n} crystals.', { n: PLATINUM_CRYSTALS })}</span></button>`}
       <div class="ev-gens">${gens}</div>
-      <p class="dim small">Flux keeps flowing while you are away and is wiped when the weekend ends. Badges are paid in Stardust.</p>`;
+      <p class="dim small">${t('Flux keeps flowing while you are away and is wiped when the weekend ends. Badges are paid in Stardust.')}</p>`;
   };
-  const el = openModal({ title: 'Weekend Event', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Weekend Event'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
@@ -660,18 +660,18 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
       if (!amount) return;
       sfxAchievement();
       haptic('heavy');
-      toast(`<div class="t-ico">${icon('rift')}</div><div><b>${BADGE_NAMES[tier]} badge</b><br>+${fmt(amount)} Stardust${extra(tier)}</div>`, 'good', 5000);
+      toast(`<div class="t-ico">${icon('rift')}</div><div><b>${t('{badge} badge', { badge: t(BADGE_NAMES[tier]) })}</b><br>${t('+{n} Stardust', { n: fmt(amount) })}${extra(tier)}</div>`, 'good', 5000);
       ctx.recalc();
       ctx.save();
       onChange();
     } else {
       busy = true;
-      void showRewarded('boost the event').then((ok) => {
+      void showRewarded(t('boost the event')).then((ok) => {
         busy = false;
         const live = currentEvent(ctx.s);
         if (ok && live) {
           const n = eventAdBoost(live);
-          if (n) toast(`<div class="t-ico">${icon('rift')}</div><div><b>Rift surge</b><br>+${fmt(n)} Flux</div>`, 'good');
+          if (n) toast(`<div class="t-ico">${icon('rift')}</div><div><b>${t('Rift surge')}</b><br>${t('+{n} Flux', { n: fmt(n) })}</div>`, 'good');
           ctx.save();
         }
         redraw();
