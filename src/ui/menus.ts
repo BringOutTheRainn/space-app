@@ -32,6 +32,7 @@ import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood
 import { AD_SPINS_PER_DAY, GOLDEN_MULT, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
 import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
+import type { AwayReport } from '../core/away.js';
 import { claimMission, missionDone, missionProgress, missionReward, swapMission, type Mission } from '../core/missions.js';
 
 export const VERSION = '1.0.0';
@@ -218,7 +219,23 @@ export function openSettings(ctx: Ctx): void {
   });
 }
 
-export function showOffline(ctx: Ctx, seconds: number, earned: number): void {
+function awayRows(r: AwayReport): string {
+  const rows: Array<[string, string]> = [];
+  if (r.probes) rows.push(['probe', r.probes === 1 ? t('1 probe is back with loot') : t('{n} probes are back with loot', { n: r.probes })]);
+  if (r.plants) rows.push(['sprout', r.plants === 1 ? t('1 plant is ready to harvest') : t('{n} plants are ready to harvest', { n: r.plants })]);
+  if (r.crystals) rows.push(['crystal', r.crystals === 1 ? t('A Quasar Crystal formed') : t('{n} Quasar Crystals formed', { n: r.crystals })]);
+  if (r.forgeFull) rows.push(['anvil', t('The Star Forge is at full heat')]);
+  if (r.marketPL !== null) {
+    const pl = fmt(Math.abs(r.marketPL));
+    rows.push(['exchange', r.marketPL >= 0 ? t('Your goods are up {n} credits', { n: pl }) : t('Your goods are down {n} credits', { n: pl })]);
+  }
+  if (r.flux >= 1) rows.push(['rift', t('+{n} event Flux', { n: fmt(r.flux) })]);
+  if (r.vaultHours >= 1) rows.push(['darkMatter', t('Stardust Vault: {n} hours saved', { n: r.vaultHours.toFixed(1) })]);
+  if (!rows.length) return '';
+  return `<ul class="away-list">${rows.map(([ico, text]) => `<li>${icon(ico)}<span>${esc(text)}</span></li>`).join('')}</ul>`;
+}
+
+export function showOffline(ctx: Ctx, seconds: number, earned: number, report?: AwayReport): void {
   if (earned <= 0 || seconds < 60) return;
   const buttons: Parameters<typeof openModal>[0]['buttons'] = [{ label: t('Collect'), kind: rewardedAvailable() ? 'plain' : 'primary' }];
   if (rewardedAvailable()) {
@@ -239,7 +256,8 @@ export function showOffline(ctx: Ctx, seconds: number, earned: number): void {
     title: t('Welcome back!'),
     body: `<div class="offline"><div class="big-ico">${icon('drone')}</div>
       <p>${t('While you were away for <b>{time}</b>, your empire harvested', { time: fmtTime(seconds) })}</p>
-      <p class="offline-amount"><span class="sd-dot big"></span>${fmt(earned)}</p><p class="dim">${t('Stardust')}</p></div>`,
+      <p class="offline-amount"><span class="sd-dot big"></span>${fmt(earned)}</p><p class="dim">${t('Stardust')}</p>
+      ${report ? awayRows(report) : ''}</div>`,
     buttons,
     onClose: () => { if (seconds >= 1800) askReminders(ctx); },
   });

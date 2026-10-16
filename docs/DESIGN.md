@@ -382,8 +382,14 @@ Antimatter Dimensions review summary, run 10's market notes.
   when the universe collapses or enters or leaves an anomaly, before Dark Matter is counted, so their
   profit adds to it. The collapse dialog says how much they will fetch.
 
+**Run 15 (Oct 16, evening). Built: welcome-back summary.** The Welcome back window now lists what
+each real-time system did while the player was away, under the Stardust total: probes back with loot,
+plants ready to harvest, Quasar Crystals formed, a full Star Forge, the profit or loss on goods held at
+the Warp Exchange, event Flux earned and hours saved in the Stardust Vault. Only lines with something to
+report show. `core/away.ts` brings each system up to date once (so a crystal is reported here instead of
+in a second toast) and a test covers it. Translated into Spanish and Portuguese.
+
 ### Backlog from research (best first)
-1. Welcome-back summary that lists what each system did while away (probes, garden, market).
-2. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
-3. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
+1. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
+2. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

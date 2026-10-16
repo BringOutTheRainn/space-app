@@ -1073,3 +1073,27 @@ test('garden spores, forge spells and market goods have Spanish and Portuguese t
   }
   i18n.setLanguage('en');
 });
+
+test('the welcome-back report lists what each system did while away', async () => {
+  const { awayReport } = await import('../www/js/core/away.js');
+  const g = await import('../www/js/core/garden.js');
+  const H = 3600000;
+  // A Tuesday, so no weekend event runs.
+  const t0 = Date.UTC(2026, 9, 13, 12);
+  const s = newState(t0);
+  const quiet = awayReport(s, t0);
+  assert.deepEqual([quiet.crystals, quiet.probes, quiet.plants, quiet.forgeFull, quiet.flux, quiet.marketPL], [0, 0, 0, false, 0, null]);
+
+  s.earnedAll = 2e9;
+  s.crystalNextAt = t0 + 1000;
+  s.genLevels[g.GARDEN_GEN] = 1;
+  assert.ok(g.plant(s, 0, 'moss', t0));
+  assert.ok(g.plant(s, 1, 'orchid', t0));
+  s.expeditions.push({ id: 'belt', returnsAt: t0 + H }, { id: 'belt', returnsAt: t0 + 99 * H });
+  const r = awayReport(s, t0 + 2 * H);
+  assert.equal(r.crystals, 1, 'one crystal banked');
+  assert.equal(s.crystals, 1);
+  assert.equal(r.probes, 1, 'only the probe that is back');
+  assert.equal(r.plants, 1, 'moss is ripe, the orchid is not');
+  assert.equal(awayReport(s, t0 + 2 * H).crystals, 0, 'crystals are only reported once');
+});

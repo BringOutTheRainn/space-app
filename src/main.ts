@@ -22,6 +22,7 @@ import { VERSION, applySettings, openDaily, openEvent, openHyperdrive, openMissi
 import { claimableMissions, ensureMissions } from './core/missions.js';
 import { contractClaimable } from './core/contracts.js';
 import { autoBuyStep } from './core/autobuy.js';
+import { awayReport } from './core/away.js';
 import { growCrystals } from './core/crystals.js';
 import { badgeReady, currentEvent, eventTimeLeft } from './core/event.js';
 import { planReminders } from './core/notify.js';
@@ -206,9 +207,10 @@ function start(): void {
 
   // Offline progress since the last session.
   const off = applyOffline(ctx.s, ctx.d);
+  const offReport = awayReport(ctx.s);
   if (off.earned > 0) {
     if (off.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
-    showOffline(ctx, off.seconds, off.earned);
+    showOffline(ctx, off.seconds, off.earned, offReport);
   }
 
   document.querySelector('.tabs')!.addEventListener('click', (e) => {
@@ -258,9 +260,10 @@ function start(): void {
       resumeAudio();
       void clearReminders();
       const back = applyOffline(ctx.s, ctx.d);
+      const backReport = awayReport(ctx.s);
       if (back.earned > 0 && back.seconds >= 60) {
         if (back.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
-        showOffline(ctx, back.seconds, back.earned);
+        showOffline(ctx, back.seconds, back.earned, backReport);
       }
       ctx.recalc();
       last = performance.now();
