@@ -190,6 +190,9 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    and small buttons (top icons, buy chips, upgrade buy buttons, crystals, Hyperdrive) get an
    invisible larger touch area close to Android's 48 dp. Contrast and button names were checked on
    the Build, Upgrades and Settings screens; none failed.
+   Run 5: Play compliance. Settings shows "Ad privacy choices" (Google's privacy options form) where
+   the consent rules apply; the Android build removes the exact-alarm permission (reminders use
+   inexact alarms) and reports whether native libraries are aligned for 16 KB pages.
 
 ## Research log
 

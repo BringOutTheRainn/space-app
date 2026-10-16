@@ -9,8 +9,9 @@ import { suspendAudio, resumeAudio } from './audio.js';
 
 interface AdMobPlugin {
   initialize(o: { initializeForTesting?: boolean }): Promise<void>;
-  requestConsentInfo?(): Promise<{ status: string; isConsentFormAvailable?: boolean }>;
+  requestConsentInfo?(): Promise<{ status: string; isConsentFormAvailable?: boolean; privacyOptionsRequirementStatus?: string }>;
   showConsentForm?(): Promise<unknown>;
+  showPrivacyOptionsForm?(): Promise<unknown>;
   prepareRewardVideoAd(o: { adId: string; isTesting?: boolean }): Promise<unknown>;
   showRewardVideoAd(): Promise<{ type: string; amount: number } | undefined>;
   prepareInterstitial(o: { adId: string; isTesting?: boolean }): Promise<unknown>;
@@ -34,6 +35,8 @@ let rewardedLoaded = false;
 let interstitialLoaded = false;
 
 let initing: Promise<void> | null = null;
+/** Players under GDPR must be able to change their ad consent later (Settings). */
+let privacyOptionsRequired = false;
 
 /** Starts the ad SDK once. Later callers share the same promise. */
 export function initAds(): Promise<void> {
@@ -53,11 +56,36 @@ async function startAds(): Promise<void> {
     // Ask for consent where the law requires it (EEA and UK).
     const info = await ad.requestConsentInfo?.();
     if (info && info.isConsentFormAvailable && info.status === 'REQUIRED') await ad.showConsentForm?.();
+    privacyOptionsRequired = await privacyOptionsNeeded(ad);
     ready = true;
     void preloadRewarded();
     void preloadInterstitial();
   } catch (e) {
     console.warn('Ads unavailable', e);
+  }
+}
+
+async function privacyOptionsNeeded(ad: AdMobPlugin): Promise<boolean> {
+  if (typeof ad.showPrivacyOptionsForm !== 'function') return false;
+  try {
+    const info = await ad.requestConsentInfo?.();
+    return info?.privacyOptionsRequirementStatus === 'REQUIRED';
+  } catch {
+    return false;
+  }
+}
+
+/** True when Settings should offer "Ad privacy choices" (EEA, UK and Switzerland). */
+export function adPrivacyOptionsAvailable(): boolean {
+  return privacyOptionsRequired;
+}
+
+/** Opens Google's form where players change or withdraw ad consent. */
+export async function showAdPrivacyOptions(): Promise<void> {
+  try {
+    await admob()?.showPrivacyOptionsForm?.();
+  } catch (e) {
+    console.warn('Privacy options unavailable', e);
   }
 }
 

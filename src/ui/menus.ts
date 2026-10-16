@@ -13,7 +13,7 @@ import { closeModal, confirmModal, esc, openModal, toast } from './dom.js';
 import { icon } from './icons.js';
 import { copyText, haptic, setVibration } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
-import { rewardedAvailable, showRewarded } from './ads.js';
+import { adPrivacyOptionsAvailable, rewardedAvailable, showAdPrivacyOptions, showRewarded } from './ads.js';
 import { BUFF_MULT, earn } from '../core/economy.js';
 import { AD_CONFIG } from '../data/ads.js';
 import { boostMult, frenzyCooldown, frenzyReady, grantFrenzy, grantHyper, hyperCanStack, hyperRemainingMs } from '../core/ads.js';
@@ -106,6 +106,7 @@ export function openSettings(ctx: Ctx): void {
       <h3 class="section-title">Save</h3>
       <p class="dim">Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.</p>
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">Copy save code</button><button class="btn btn-plain" id="btn-import">Load save code</button></div>
+      ${adPrivacyOptionsAvailable() ? '<h3 class="section-title">Ads</h3><button class="btn btn-plain" id="btn-ad-privacy">Ad privacy choices</button>' : ''}
       <h3 class="section-title">Danger zone</h3>
       <button class="btn btn-danger" id="btn-reset">Erase all progress</button>
       <p class="dim small">Stardust Empire ${VERSION} · <a class="link" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy policy</a></p>`,
@@ -145,6 +146,7 @@ export function openSettings(ctx: Ctx): void {
     });
   });
 
+  el.querySelector('#btn-ad-privacy')?.addEventListener('click', () => void showAdPrivacyOptions());
   el.querySelector('#btn-export')!.addEventListener('click', async () => {
     ctx.save();
     const code = exportSave(ctx.s);

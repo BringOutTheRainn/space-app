@@ -52,6 +52,12 @@ if [ -n "${ADMOB_MEDIATION_ADAPTERS:-}" ]; then
     fi
   done
 fi
+# Reminders do not need exact alarms; inexact ones keep the permission list short
+# (the local notifications plugin falls back to inexact alarms without it).
+if ! grep -q 'SCHEDULE_EXACT_ALARM' "$MANIFEST"; then
+  grep -q 'xmlns:tools' "$MANIFEST" || sed -i 's#<manifest #<manifest xmlns:tools="http://schemas.android.com/tools" #' "$MANIFEST"
+  sed -i 's#</manifest>#    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />\n</manifest>#' "$MANIFEST"
+fi
 # Portrait only.
 MANIFEST=android/app/src/main/AndroidManifest.xml
 if ! grep -q 'screenOrientation' "$MANIFEST"; then
@@ -67,6 +73,17 @@ sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/; s/versionName \"[^\"]*\
 mkdir -p build
 cp android/app/build/outputs/apk/debug/app-debug.apk build/stardust-empire.apk
 ls -la build/stardust-empire.apk
+
+# Google Play needs native libraries aligned for 16 KB memory pages (Android 15+).
+ZIPALIGN=$(ls "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/nonexistent}}"/build-tools/*/zipalign 2>/dev/null | sort -V | tail -1 || true)
+if [ -n "$ZIPALIGN" ]; then
+  if "$ZIPALIGN" -c -P 16 -v 4 build/stardust-empire.apk > build/zipalign.txt 2>&1; then
+    echo "16 KB page alignment: OK ($(grep -c '\.so' build/zipalign.txt || true) native libraries)"
+  else
+    echo "::warning::Some native libraries are not 16 KB aligned:"
+    grep -i '\.so' build/zipalign.txt | grep -iv 'OK' || tail -20 build/zipalign.txt
+  fi
+fi
 
 # A signed release bundle for Google Play, only when a signing key is provided:
 #   ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD

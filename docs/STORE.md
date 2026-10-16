@@ -87,6 +87,11 @@ Orbit every day. Always a next goal.
     the phone and is not collected.
   - Data is encrypted in transit: Yes. Users can request deletion: No account exists; uninstalling
     deletes all game data (say so, and link Google's policy for ad data).
+- **Permissions the app asks for:** Internet, Notifications (opt-in reminders), Vibrate, and the
+  advertising ID (added by AdMob). Exact alarms are removed from the build, so there is no Alarms &
+  reminders access to declare.
+- **Ad consent:** Google's consent form shows in the EEA, UK and Switzerland, and Settings shows
+  "Ad privacy choices" there so players can change it later (Google requires that entry point).
 - **News app:** No. **COVID-19 app:** No. **Government app:** No. **Financial features:** None.
 - **Health apps:** No.
 
