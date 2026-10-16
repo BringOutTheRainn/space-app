@@ -39,6 +39,31 @@ export function repairNumbers(s: GameState, now = Date.now()): string[] {
   return fixed;
 }
 
+/**
+ * Puts back the default for any list, record, text or flag whose type is wrong
+ * (a hand-edited import or a damaged save), so one bad field cannot stop the
+ * game from starting. Lists of records keep only their well-formed entries.
+ */
+function repairShapes(s: GameState, base: GameState): void {
+  const st = s as unknown as Record<string, unknown>;
+  const b = base as unknown as Record<string, unknown>;
+  const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+  for (const k of Object.keys(b)) {
+    const want = b[k];
+    const have = st[k];
+    if (Array.isArray(want)) {
+      if (!Array.isArray(have)) st[k] = want;
+    } else if (isRecord(want)) {
+      if (!isRecord(have)) st[k] = want;
+    } else if (typeof want === 'string' || typeof want === 'boolean') {
+      if (typeof have !== typeof want) st[k] = want;
+    }
+  }
+  s.buffs = s.buffs.filter((x) => isRecord(x) && typeof x.kind === 'string' && Number.isFinite(x.endsAt));
+  s.expeditions = s.expeditions.filter((x) => isRecord(x) && typeof x.id === 'string' && Number.isFinite(x.returnsAt));
+  s.missions = s.missions.filter((x) => isRecord(x));
+}
+
 /** The first readable save among the main copy and the backup, or null. */
 export function pickSave(main: string | null, backup: string | null, now = Date.now()): { state: GameState; from: 'main' | 'backup' } | null {
   for (const [text, from] of [[main, 'main'], [backup, 'backup']] as const) {
@@ -66,6 +91,7 @@ export function deserialize(text: string, now = Date.now()): GameState {
   }
   const base = newState(now);
   const s = { ...base, ...raw, version: SAVE_VERSION } as GameState;
+  repairShapes(s, base);
   s.settings = { ...base.settings, ...(raw.settings as object) };
   // New generators added after this save was made start at zero.
   const gens = Array.isArray(raw.generators) ? (raw.generators as number[]) : [];

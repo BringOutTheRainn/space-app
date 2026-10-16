@@ -394,6 +394,15 @@ in a second toast) and a test covers it. Translated into Spanish and Portuguese.
 same 8 shots with translated captions. The es-419 and pt-BR sets are in the project files under
 `store/es-419/` and `store/pt-BR/`, and STORE-es-pt.md says where to upload them.
 
+**Run 17. Pacing re-check and save hardening.** `tools/simulate.mjs` still gives the first Dark Matter
+at 1h 24m and the first collapse at 3h 54m, with each later universe shorter (2h 53m, 2h 2m, 1h 25m,
+then under an hour by the sixth), so the systems added since run 3 needed no rebalancing; the bot does
+not use crystals, the garden, the wheel or daily rewards, which only speed things up. A fuzz over every
+save field found that a list or record of the wrong type (for example `"buffs": null` from a damaged
+save or a hand-edited import) stopped the game at start-up. Loading now puts the default back for any
+list, record, text or flag of the wrong type and drops malformed buffs, expeditions and missions. A
+test corrupts each field in turn (7 bad values, 2 levels deep) and checks the save still loads and plays.
+
 ### Backlog from research (best first)
 1. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 2. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

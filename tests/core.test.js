@@ -1097,3 +1097,41 @@ test('the welcome-back report lists what each system did while away', async () =
   assert.equal(r.plants, 1, 'moss is ripe, the orchid is not');
   assert.equal(awayReport(s, t0 + 2 * H).crystals, 0, 'crystals are only reported once');
 });
+
+test('a save with any field of the wrong type still loads and plays', async () => {
+  const { awayReport } = await import('../www/js/core/away.js');
+  const now = Date.UTC(2026, 9, 17, 12); // a Saturday, so the weekend event runs too
+  const s = newState(now - 3600e3);
+  s.earnedAll = 9e15; s.earnedRun = 4e14; s.stardust = 3e14; s.collapses = 2; s.darkMatter = 50;
+  s.generators = [100, 80, 60, 40, 30, 20, 10, 5, 3, 2, 1, 0, 0, 0];
+  s.genLevels = s.generators.map((n) => (n ? 2 : 0));
+  s.garden = [{ seed: 'moss', plantedAt: now - 7200e3 }, null];
+  s.expeditions = [{ id: 'belt', returnsAt: now - 1000 }];
+  s.buffs = [{ kind: 'rush', endsAt: 99, duration: 30 }];
+  awayReport(s, now - 3600e3);
+  const base = JSON.parse(serialize(s));
+  const paths = [];
+  const walk = (o, p) => { for (const [k, v] of Object.entries(o)) { paths.push([...p, k]); if (v && typeof v === 'object' && p.length < 2) walk(v, [...p, k]); } };
+  walk(base, []);
+  const failures = [];
+  for (const path of paths) {
+    for (const bad of [null, 'x', -1, {}, [], true, [null]]) {
+      const raw = structuredClone(base);
+      let o = raw;
+      for (const k of path.slice(0, -1)) o = o[k];
+      o[path.at(-1)] = bad;
+      try {
+        const st = deserialize(JSON.stringify(raw), now);
+        const d = computeDerived(st);
+        applyOffline(st, d, now);
+        awayReport(st, now);
+        tap(st, d);
+        tick(st, d, 1);
+        if (!['stardust', 'earnedAll', 'darkMatter', 'crystals'].every((k) => Number.isFinite(st[k]))) failures.push(`${path.join('.')}=${JSON.stringify(bad)}: not finite`);
+      } catch (e) {
+        if (!/save/i.test(e.message)) failures.push(`${path.join('.')}=${JSON.stringify(bad)}: ${e.message}`);
+      }
+    }
+  }
+  assert.deepEqual(failures, []);
+});
