@@ -140,13 +140,13 @@ export class CosmosPanel implements Panel {
 
   constructor(private root: HTMLElement, private ctx: Ctx) {
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('#btn-collapse')) this.askCollapse();
-      const node = t.closest<HTMLElement>('[data-cosmic]');
+      const el = e.target as HTMLElement;
+      if (el.closest('#btn-collapse')) this.askCollapse();
+      const node = el.closest<HTMLElement>('[data-cosmic]');
       if (node) this.showCosmic(node.dataset.cosmic!);
-      const enter = t.closest<HTMLElement>('[data-anomaly]');
+      const enter = el.closest<HTMLElement>('[data-anomaly]');
       if (enter) this.askAnomaly(enter.dataset.anomaly!);
-      if (t.closest('#btn-abandon')) this.askAbandon();
+      if (el.closest('#btn-abandon')) this.askAbandon();
     });
   }
 
@@ -158,14 +158,14 @@ export class CosmosPanel implements Panel {
         <div><div class="dm-amount" id="dm-amount"></div><div class="dm-sub" id="dm-sub"></div></div>
       </div>
       <div class="collapse-card">
-        <div class="collapse-row"><span>Collapse now for</span><b id="dm-pending"></b></div>
+        <div class="collapse-row"><span>${t('Collapse now for')}</span><b id="dm-pending"></b></div>
         <div class="bar"><div class="bar-fill" id="dm-bar"></div></div>
         <div class="collapse-note" id="dm-next"></div>
-        <button class="btn btn-cosmic btn-wide" id="btn-collapse">Collapse the Universe</button>
+        <button class="btn btn-cosmic btn-wide" id="btn-collapse">${t('Collapse the Universe')}</button>
       </div>
       <div id="anomalies"></div>
-      <h3 class="section-title">Cosmic upgrades</h3>
-      <p class="hint-text">Bought with Dark Matter. Kept forever. Spending Dark Matter does not lower its production bonus.</p>
+      <h3 class="section-title">${t('Cosmic upgrades')}</h3>
+      <p class="hint-text">${t('Bought with Dark Matter. Kept forever. Spending Dark Matter does not lower its production bonus.')}</p>
       <div class="tree" id="tree"></div>`;
   }
 
@@ -178,8 +178,8 @@ export class CosmosPanel implements Panel {
       this.root.innerHTML = `
         <div class="locked-card">
           <div class="locked-ico">${icon('darkMatter')}</div>
-          <h3>The Cosmos is sealed</h3>
-          <p>Earn ${fmt(COSMOS_UNLOCK)} Stardust in total to learn how to collapse the universe and harvest Dark Matter.</p>
+          <h3>${t('The Cosmos is sealed')}</h3>
+          <p>${t('Earn {n} Stardust in total to learn how to collapse the universe and harvest Dark Matter.', { n: fmt(COSMOS_UNLOCK) })}</p>
           <div class="bar"><div class="bar-fill" style="width:${(pct * 100).toFixed(1)}%"></div></div>
           <p class="dim">${fmt(s.earnedAll)} / ${fmt(COSMOS_UNLOCK)}</p>
         </div>`;
@@ -187,17 +187,17 @@ export class CosmosPanel implements Panel {
     }
     if (!this.built) this.build();
     const pending = pendingDarkMatter(s);
-    setText($('#dm-amount', this.root), `${fmt(s.darkMatter)} Dark Matter`);
+    setText($('#dm-amount', this.root), t('{n} Dark Matter', { n: fmt(s.darkMatter) }));
     const dmPct = (s.cosmic.resonance ? 0.03 : 0.02) + (s.cosmic.resonance2 ? 0.01 : 0);
-    setText($('#dm-sub', this.root), `${fmt(darkMatterAvailable(s))} to spend · +${fmtPercent(dmPct * s.darkMatter)} production`);
-    setText($('#dm-pending', this.root), `+${fmt(pending)} Dark Matter`);
+    setText($('#dm-sub', this.root), t('{n} to spend · +{pct} production', { n: fmt(darkMatterAvailable(s)), pct: fmtPercent(dmPct * s.darkMatter) }));
+    setText($('#dm-pending', this.root), t('+{n} Dark Matter', { n: fmt(pending) }));
     const nextAt = earningsForNextDarkMatter(s);
     const prevTotal = Math.pow(Math.cbrt(nextAt / DM_SCALE) - 1, 3) * DM_SCALE;
     const frac = Math.max(0, Math.min(1, (s.earnedAll - prevTotal) / (nextAt - prevTotal)));
     ($('#dm-bar', this.root) as HTMLElement).style.width = `${(frac * 100).toFixed(1)}%`;
     setText($('#dm-next', this.root), s.earnedAll < DM_SCALE
-      ? `Your first Dark Matter forms at ${fmt(DM_SCALE)} lifetime Stardust (${fmt(s.earnedAll)} so far).`
-      : `Next Dark Matter at ${fmt(nextAt)} lifetime Stardust.`);
+      ? t('Your first Dark Matter forms at {n} lifetime Stardust ({have} so far).', { n: fmt(DM_SCALE), have: fmt(s.earnedAll) })
+      : t('Next Dark Matter at {n} lifetime Stardust.', { n: fmt(nextAt) }));
     const btn = $('#btn-collapse', this.root) as HTMLButtonElement;
     btn.disabled = !canCollapse(s);
 
@@ -211,7 +211,7 @@ export class CosmosPanel implements Panel {
     const bar = this.root.querySelector<HTMLElement>('#anomaly-bar');
     if (a && bar) bar.style.width = `${Math.min(100, (Math.log10(Math.max(1, s.earnedRun)) / Math.log10(a.goal)) * 100).toFixed(1)}%`;
     const prog = this.root.querySelector<HTMLElement>('#anomaly-progress');
-    if (a && prog) setText(prog, `${fmt(s.earnedRun)} / ${fmt(a.goal)} Stardust`);
+    if (a && prog) setText(prog, t('{n} / {goal} Stardust', { n: fmt(s.earnedRun), goal: fmt(a.goal) }));
     void d;
   }
 
@@ -224,17 +224,17 @@ export class CosmosPanel implements Panel {
     }
     const done = Object.keys(s.anomaliesDone).length;
     root.innerHTML = `
-      <h3 class="section-title">Anomalies · ${done} of ${ANOMALIES.length}</h3>
-      <p class="hint-text">Twisted universes with one strange rule. Reach the goal inside one for a permanent reward. Entering collapses your universe and collects any pending Dark Matter.</p>
+      <h3 class="section-title">${t('Anomalies · {n} of {total}', { n: done, total: ANOMALIES.length })}</h3>
+      <p class="hint-text">${t('Twisted universes with one strange rule. Reach the goal inside one for a permanent reward. Entering collapses your universe and collects any pending Dark Matter.')}</p>
       <div class="anomalies">${ANOMALIES.map((a) => {
         const isDone = !!s.anomaliesDone[a.id];
         const active = s.anomaly === a.id;
         return `<div class="anomaly ${isDone ? 'done' : ''} ${active ? 'active' : ''}">
-          <div class="anomaly-top"><b>${esc(a.name)}</b><span class="anomaly-goal">${isDone ? 'Complete' : `Goal ${fmt(a.goal)}`}</span></div>
-          <div class="dim">${esc(a.rule)}</div>
-          <div class="anomaly-reward">${esc(a.rewardText)}</div>
-          ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">Leave</button></div>`
-            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''}>Enter</button>`}
+          <div class="anomaly-top"><b>${esc(t(a.name))}</b><span class="anomaly-goal">${isDone ? t('Complete') : t('Goal {n}', { n: fmt(a.goal) })}</span></div>
+          <div class="dim">${esc(t(a.rule))}</div>
+          <div class="anomaly-reward">${esc(t(a.rewardText))}</div>
+          ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">${t('Leave')}</button></div>`
+            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''}>${t('Enter')}</button>`}
         </div>`;
       }).join('')}</div>`;
   }
@@ -243,18 +243,18 @@ export class CosmosPanel implements Panel {
     const ctx = this.ctx;
     const a = ANOMALY_BY_ID[id];
     const pending = pendingDarkMatter(ctx.s);
-    confirmModal(`Enter ${a.name}?`,
-      `<b>Rule:</b> ${esc(a.rule)}<br><b>Goal:</b> earn ${fmt(a.goal)} Stardust in this universe.<br><b>Reward:</b> ${esc(a.rewardText)}<br><br>Your current universe collapses${pending >= 1 ? ` and you collect <b class="dm">+${fmt(pending)} Dark Matter</b>` : ''}. You can leave the anomaly at any time.`,
-      'Enter', () => {
+    confirmModal(t('Enter {name}?', { name: t(a.name) }),
+      `${t('<b>Rule:</b> {rule}<br><b>Goal:</b> earn {goal} Stardust in this universe.<br><b>Reward:</b> {reward}', { rule: esc(t(a.rule)), goal: fmt(a.goal), reward: esc(t(a.rewardText)) })}<br><br>${pending >= 1 ? t('Your current universe collapses and you collect <b class="dm">+{n} Dark Matter</b>.', { n: fmt(pending) }) : t('Your current universe collapses.')} ${t('You can leave the anomaly at any time.')}`,
+      t('Enter'), () => {
         enterAnomaly(ctx.s, ctx.d, id);
         this.afterReset();
-        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(a.name)}</b><br>${esc(a.rule)}</div>`, 'comet', 5000);
+        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(t(a.name))}</b><br>${esc(t(a.rule))}</div>`, 'comet', 5000);
       });
   }
 
   private askAbandon(): void {
     const ctx = this.ctx;
-    confirmModal('Leave the anomaly?', 'Your universe collapses into a normal one. Progress towards this anomaly is lost, but pending Dark Matter is collected.', 'Leave', () => {
+    confirmModal(t('Leave the anomaly?'), t('Your universe collapses into a normal one. Progress towards this anomaly is lost, but pending Dark Matter is collected.'), t('Leave'), () => {
       abandonAnomaly(ctx.s, ctx.d);
       this.afterReset();
     }, true);
@@ -293,9 +293,9 @@ export class CosmosPanel implements Panel {
       const open = cosmicAvailable(s, c.id);
       const afford = open && darkMatterAvailable(s) >= c.cost;
       const cls = owned ? 'owned' : open ? (afford ? 'open afford' : 'open') : 'closed';
-      return `<button class="node ${cls}" data-cosmic="${c.id}" style="left:${(c.x + 0.5) * cell}%;top:${c.y * rowH}px" aria-label="${esc(c.name)}">
+      return `<button class="node ${cls}" data-cosmic="${c.id}" style="left:${(c.x + 0.5) * cell}%;top:${c.y * rowH}px" aria-label="${esc(t(c.name))}">
         <span class="node-dot">${icon(owned ? 'darkMatter' : open ? 'darkMatter' : 'lock')}</span>
-        <span class="node-name">${esc(c.name)}</span>
+        <span class="node-name">${esc(t(c.name))}</span>
         ${owned ? '' : `<span class="node-cost">${fmt(c.cost)}</span>`}
       </button>`;
     }).join('');
@@ -308,24 +308,24 @@ export class CosmosPanel implements Panel {
     const c = COSMIC_BY_ID[id];
     const owned = !!ctx.s.cosmic[id];
     const open = cosmicAvailable(ctx.s, id);
-    const needs = c.requires.filter((r) => !ctx.s.cosmic[r]).map((r) => COSMIC_BY_ID[r].name);
-    const body = `<div class="cosmic-detail"><div class="big-ico">${icon('darkMatter')}</div><p>${esc(c.desc)}</p>
-      <p class="dim">${owned ? 'Owned.' : `Costs ${fmt(c.cost)} Dark Matter. You have ${fmt(darkMatterAvailable(ctx.s))}.`}</p>
-      ${needs.length ? `<p class="dim">Needs: ${needs.map(esc).join(', ')}</p>` : ''}</div>`;
+    const needs = c.requires.filter((r) => !ctx.s.cosmic[r]).map((r) => t(COSMIC_BY_ID[r].name));
+    const body = `<div class="cosmic-detail"><div class="big-ico">${icon('darkMatter')}</div><p>${esc(t(c.desc))}</p>
+      <p class="dim">${owned ? t('Owned.') : t('Costs {cost} Dark Matter. You have {have}.', { cost: fmt(c.cost), have: fmt(darkMatterAvailable(ctx.s)) })}</p>
+      ${needs.length ? `<p class="dim">${t('Needs: {list}', { list: needs.map(esc).join(', ') })}</p>` : ''}</div>`;
     openModal({
-      title: c.name,
+      title: t(c.name),
       body,
-      buttons: owned || !open ? [{ label: 'Close', kind: 'primary' }] : [
-        { label: 'Close', kind: 'plain' },
+      buttons: owned || !open ? [{ label: t('Close'), kind: 'primary' }] : [
+        { label: t('Close'), kind: 'plain' },
         {
-          label: `Buy for ${fmt(c.cost)}`, kind: 'primary', onClick: () => {
+          label: t('Buy for {n}', { n: fmt(c.cost) }), kind: 'primary', onClick: () => {
             if (buyCosmic(ctx.s, id)) {
               sfxUpgrade();
               haptic('medium');
               ctx.recalc();
               ctx.dirty();
               ctx.save();
-              toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(c.name)}</b><br>${esc(c.desc)}</div>`, 'good');
+              toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(t(c.name))}</b><br>${esc(t(c.desc))}</div>`, 'good');
             } else {
               sfxDenied();
               return false;
@@ -343,9 +343,9 @@ export class CosmosPanel implements Panel {
     if (pending < 1) return;
     const goods = heldValue(ctx.s);
     confirmModal(
-      'Collapse the Universe?',
-      `Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.${goods > 0 ? ` Your Warp Exchange goods are sold first, for about ${fmt(goods * creditValue(ctx.d))} Stardust; any profit adds to your Dark Matter.` : ''}<br><br>You will gain <b class="dm">+${fmt(pending)} Dark Matter</b>, for <b>+${fmtPercent(pending * 0.02)}</b> production or more, forever.`,
-      'Collapse',
+      t('Collapse the Universe?'),
+      `${t('Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.')}${goods > 0 ? ' ' + t('Your Warp Exchange goods are sold first, for about {n} Stardust; any profit adds to your Dark Matter.', { n: fmt(goods * creditValue(ctx.d)) }) : ''}<br><br>${t('You will gain <b class="dm">+{n} Dark Matter</b>, for <b>+{pct}</b> production or more, forever.', { n: fmt(pending), pct: fmtPercent(pending * 0.02) })}`,
+      t('Collapse'),
       () => {
         const gained = collapse(ctx.s, ctx.d);
         sfxCollapse();
@@ -359,7 +359,7 @@ export class CosmosPanel implements Panel {
         ctx.showTab('build');
         breakAd(ctx);
         noteHappyMoment(12000);
-        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>A new universe begins</b><br>+${fmt(gained)} Dark Matter</div>`, 'good', 5000);
+        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('A new universe begins')}</b><br>${t('+{n} Dark Matter', { n: fmt(gained) })}</div>`, 'good', 5000);
       },
     );
   }
@@ -372,8 +372,8 @@ export class ProbesPanel implements Panel {
 
   constructor(private root: HTMLElement, private ctx: Ctx) {
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      const go = t.closest<HTMLElement>('[data-launch]');
+      const el = e.target as HTMLElement;
+      const go = el.closest<HTMLElement>('[data-launch]');
       if (go) {
         if (startExpedition(ctx.s, ctx.d, go.dataset.launch!)) {
           sfxUpgrade();
@@ -382,7 +382,7 @@ export class ProbesPanel implements Panel {
           this.key = '';
         } else sfxDenied();
       }
-      if (t.closest('#btn-collect')) this.collect();
+      if (el.closest('#btn-collect')) this.collect();
     });
   }
 
@@ -394,8 +394,8 @@ export class ProbesPanel implements Panel {
     ctx.save();
     sfxAchievement();
     haptic('medium');
-    const lines = results.map((r) => `<li><b>${esc(DESTINATION_BY_ID[r.destId].name)}</b>: +${fmt(r.stardust)} Stardust${r.relic ? `<br><span class="relic-get">${icon('relic')} ${esc(relicName(r.relic))} (level ${r.relicLevel})</span>` : ''}</li>`).join('');
-    openModal({ title: 'Probes are back', body: `<ul class="result-list">${lines}</ul>` });
+    const lines = results.map((r) => `<li><b>${esc(t(DESTINATION_BY_ID[r.destId].name))}</b>: ${t('+{n} Stardust', { n: fmt(r.stardust) })}${r.relic ? `<br><span class="relic-get">${icon('relic')} ${esc(t('{relic} (level {n})', { relic: t(relicName(r.relic)), n: r.relicLevel }))}</span>` : ''}</li>`).join('');
+    openModal({ title: t('Probes are back'), body: `<ul class="result-list">${lines}</ul>` });
     this.key = '';
   }
 
@@ -407,22 +407,22 @@ export class ProbesPanel implements Panel {
       this.key = key;
       const slots = freeSlots(s, d);
       this.root.innerHTML = `
-        <div class="probe-head"><div class="probe-ico">${icon('probe')}</div><div><b>Expeditions</b><br><span class="dim">${d.expeditionSlots} probe${d.expeditionSlots > 1 ? 's' : ''} · rewards scale with your production</span></div></div>
+        <div class="probe-head"><div class="probe-ico">${icon('probe')}</div><div><b>${t('Expeditions')}</b><br><span class="dim">${d.expeditionSlots > 1 ? t('{n} probes · rewards scale with your production', { n: d.expeditionSlots }) : t('1 probe · rewards scale with your production')}</span></div></div>
         <div id="probe-active">${s.expeditions.map((e, i) => `
-          <div class="probe-run"><div class="probe-run-top"><b>${esc(DESTINATION_BY_ID[e.id]?.name ?? e.id)}</b><span class="probe-left" data-i="${i}"></span></div>
+          <div class="probe-run"><div class="probe-run-top"><b>${esc(t(DESTINATION_BY_ID[e.id]?.name ?? e.id))}</b><span class="probe-left" data-i="${i}"></span></div>
           <div class="bar"><div class="bar-fill" data-bar="${i}"></div></div></div>`).join('')}</div>
-        <button class="btn btn-primary btn-wide" id="btn-collect" hidden>Collect returned probes</button>
-        <h3 class="section-title">Destinations</h3>
+        <button class="btn btn-primary btn-wide" id="btn-collect" hidden>${t('Collect returned probes')}</button>
+        <h3 class="section-title">${t('Destinations')}</h3>
         ${DESTINATIONS.map((dest) => `
           <div class="dest">
-            <div class="dest-text"><b>${esc(dest.name)}</b><br><span class="dim">${esc(dest.desc)}</span><br>
-            <span class="dest-meta">${fmtTime(expeditionDurationMs(d, dest) / 1000)} · ~${fmt(expeditionReward(d, dest))} Stardust · ${Math.round(dest.relicChance * 100)}% Relic</span></div>
-            <button class="btn btn-buy ${slots > 0 ? 'afford' : ''}" data-launch="${dest.id}" ${slots > 0 ? '' : 'disabled'}>Launch</button>
+            <div class="dest-text"><b>${esc(t(dest.name))}</b><br><span class="dim">${esc(t(dest.desc))}</span><br>
+            <span class="dest-meta">${t('{time} · ~{n} Stardust · {pct}% Relic', { time: fmtTime(expeditionDurationMs(d, dest) / 1000), n: fmt(expeditionReward(d, dest)), pct: Math.round(dest.relicChance * 100) })}</span></div>
+            <button class="btn btn-buy ${slots > 0 ? 'afford' : ''}" data-launch="${dest.id}" ${slots > 0 ? '' : 'disabled'}>${t('Launch')}</button>
           </div>`).join('')}
-        <h3 class="section-title">Relics</h3>
+        <h3 class="section-title">${t('Relics')}</h3>
         <div class="relics">${RELICS.map((r) => {
           const lvl = s.relics[r.id] ?? 0;
-          return `<div class="relic ${lvl ? 'got' : ''}"><div class="relic-ico">${icon(lvl ? 'relic' : 'lock')}</div><div><b>${lvl ? esc(r.name) : 'Unknown relic'}</b> ${lvl ? `<span class="dim">Lv ${lvl}/${r.maxLevel}</span>` : ''}<br><span class="dim">${lvl ? esc(r.desc) : 'Found on expeditions.'}</span></div></div>`;
+          return `<div class="relic ${lvl ? 'got' : ''}"><div class="relic-ico">${icon(lvl ? 'relic' : 'lock')}</div><div><b>${lvl ? esc(t(r.name)) : t('Unknown relic')}</b> ${lvl ? `<span class="dim">${t('Lv {n}/{max}', { n: lvl, max: r.maxLevel })}</span>` : ''}<br><span class="dim">${lvl ? esc(t(r.desc)) : t('Found on expeditions.')}</span></div></div>`;
         }).join('')}</div>`;
     }
     let ready = false;
@@ -431,7 +431,7 @@ export class ProbesPanel implements Panel {
       const frac = Math.min(1, (now - e.startedAt) / Math.max(1, e.returnsAt - e.startedAt));
       const label = this.root.querySelector<HTMLElement>(`.probe-left[data-i="${i}"]`);
       const bar = this.root.querySelector<HTMLElement>(`[data-bar="${i}"]`);
-      if (label) setText(label, left > 0 ? fmtTime(left) : 'Returned!');
+      if (label) setText(label, left > 0 ? fmtTime(left) : t('Returned!'));
       if (bar) bar.style.width = `${(frac * 100).toFixed(1)}%`;
       if (left <= 0) ready = true;
     });
@@ -447,5 +447,5 @@ function breakAd(ctx: Ctx): void {
 }
 
 export function stageName(earned: number): string {
-  return STAGES[stageFor(earned)].name;
+  return t(STAGES[stageFor(earned)].name);
 }

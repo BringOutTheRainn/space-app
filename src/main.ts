@@ -433,7 +433,7 @@ function start(): void {
     let pick = list[Math.floor(Math.random() * list.length)];
     if (pick === lastNews && list.length > 1) pick = list[(list.indexOf(pick) + 1) % list.length];
     lastNews = pick;
-    tickerEl.textContent = pick;
+    tickerEl.textContent = t(pick);
     tickerEl.classList.remove('run');
     void tickerEl.offsetWidth;
     tickerEl.classList.add('run');

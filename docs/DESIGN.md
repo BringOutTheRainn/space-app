@@ -224,8 +224,11 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    short form (1M). `npm run i18n` lists data text still missing; a test fails if any upgrade or
    achievement lacks Spanish or Portuguese. Also fixed: the Trophies summary showed its "+25%" in a
    box because a Warp Exchange style shared the class name.
-   Still English: cosmic upgrades, anomalies, probes, missions, contracts, the shop, the minigames,
-   events, the Star Pass, stats and the news ticker.
+   Run 11 (part 3): the Cosmos tab (collapse, all 21 cosmic upgrades, the 6 anomalies and their
+   dialogs), the Probes tab (4 destinations, 6 relics) and all 34 news headlines. A test checks every
+   one of them has both languages.
+   Still English: missions, contracts, the shop, the minigames (garden, forge, market, wheel),
+   events, the Star Pass, the daily drop and stats.
 
 ## Research log
 
@@ -371,8 +374,8 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. Finish Spanish and Portuguese: cosmic, anomalies, expeditions, news, then the menus and shop,
-   then turn on `AUTO_LANGS` for both.
+1. Finish Spanish and Portuguese: missions, contracts, minigames, events, Star Pass, daily drop, stats
+   and the shop, then turn on `AUTO_LANGS` for both.
 2. Welcome-back summary that lists what each system did while away (probes, garden, market).
 3. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 4. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

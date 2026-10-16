@@ -3,6 +3,10 @@
 import { UPGRADES } from '../www/js/data/upgrades.js';
 import { ACHIEVEMENTS } from '../www/js/data/achievements.js';
 import { GENERATORS } from '../www/js/data/generators.js';
+import { COSMIC } from '../www/js/data/cosmic.js';
+import { ANOMALIES } from '../www/js/data/anomalies.js';
+import { DESTINATIONS, RELICS } from '../www/js/data/expeditions.js';
+import { NEWS } from '../www/js/data/news.js';
 import { ES } from '../www/js/i18n/es.js';
 import { PT } from '../www/js/i18n/pt.js';
 
@@ -13,6 +17,9 @@ const add = (x) => {
 };
 for (const list of [UPGRADES, ACHIEVEMENTS]) list.forEach(add);
 for (const g of GENERATORS) { keys.add(g.name); keys.add(g.flavor); }
+for (const list of [COSMIC, DESTINATIONS, RELICS]) list.forEach(add);
+for (const a of ANOMALIES) { keys.add(a.name); keys.add(a.rule); keys.add(a.rewardText); }
+for (const n of NEWS) keys.add(n.text);
 for (const [lang, dict] of [['es', ES], ['pt', PT]]) {
   const miss = [...keys].filter((k) => !(k in dict));
   console.log(`${lang}: ${miss.length} missing of ${keys.size}`);

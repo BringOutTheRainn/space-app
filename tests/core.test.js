@@ -1022,3 +1022,23 @@ test('every upgrade and achievement has Spanish and Portuguese text', async () =
   }
   i18n.setLanguage('en');
 });
+
+test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { ANOMALIES } = await import('../www/js/data/anomalies.js');
+  const { DESTINATIONS, RELICS } = await import('../www/js/data/expeditions.js');
+  const { NEWS } = await import('../www/js/data/news.js');
+  const texts = [
+    ...COSMIC.flatMap((c) => [c.name, c.desc]),
+    ...ANOMALIES.flatMap((a) => [a.name, a.rule, a.rewardText]),
+    ...[...DESTINATIONS, ...RELICS].flatMap((x) => [x.name, x.desc]),
+    ...NEWS.map((n) => n.text),
+  ];
+  for (const lang of ['es', 'pt']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});
