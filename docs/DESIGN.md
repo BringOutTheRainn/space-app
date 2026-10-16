@@ -389,6 +389,11 @@ the Warp Exchange, event Flux earned and hours saved in the Stardust Vault. Only
 report show. `core/away.ts` brings each system up to date once (so a crystal is reported here instead of
 in a second toast) and a test covers it. Translated into Spanish and Portuguese.
 
+**Run 16. Built: Spanish and Portuguese store screenshots.** `tools/store-shots.mjs` takes a language
+(`en`, `es` or `pt`), opens the game with that phone locale so it starts in that language, and writes the
+same 8 shots with translated captions. The es-419 and pt-BR sets are in the project files under
+`store/es-419/` and `store/pt-BR/`, and STORE-es-pt.md says where to upload them.
+
 ### Backlog from research (best first)
 1. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 2. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

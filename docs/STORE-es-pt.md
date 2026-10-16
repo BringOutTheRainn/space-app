@@ -2,8 +2,14 @@
 
 Add these in Play Console under **Grow > Store presence > Main store listing > Manage translations > Add
 your own translations**, as **Spanish (Latin America) – es-419** and **Portuguese (Brazil) – pt-BR**.
-Graphics can stay the English ones. The whole game is translated: phones set to Spanish or Portuguese
-start in that language, and players can switch in Settings.
+The whole game is translated: phones set to Spanish or Portuguese start in that language, and players
+can switch in Settings.
+
+**Phone screenshots.** Each language has its own set of 8 (1080 x 1920, same order as English), with
+translated captions and the game itself in that language: `store/es-419/01_tap.png` … `08_missions.png`
+and `store/pt-BR/01_tap.png` … `08_missions.png` in the project files. Upload them under each
+translation's Graphics section. Regenerate with `npm run build && node tools/store-shots.mjs <dir> es`
+(or `pt`). The icon and feature graphic have no text in a language, so the English ones serve all three.
 
 ## Spanish (Latin America), es-419
 
