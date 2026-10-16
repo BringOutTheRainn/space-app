@@ -27,7 +27,7 @@ import { GENERATORS as GENS } from '../data/generators.js';
 import { generatorVisible } from '../core/economy.js';
 import { FERTILIZE_COOLDOWN_HOURS, FERTILIZE_HOURS, GARDEN_GEN, SEEDS, fertilize, fertilizeReady, harvest, harvestAll, harvestValue, plant, plotCount, plotProgress, plotReady, readyPlots, seedById } from '../core/garden.js';
 import { BADGE_GOALS, BADGE_MINUTES, BADGE_NAMES, GOLD_TIER, PLATINUM_CRYSTALS, badgeCount, EVENT_AD_MINUTES, EVENT_GENS, badgeReady, badgeReward, buyEventGen, claimBadge, currentEvent, eventAdBoost, eventAdReady, eventPrice, eventRate, eventTap, eventTapOnce, eventDay, eventTheme, eventTimeLeft } from '../core/event.js';
-import { FORGE_GEN, REFILL_MINUTES, SPELLS, STOKE_COOLDOWN_HOURS, cast, heatFullIn, maxHeat, spellById, stoke, stokeReady, syncHeat } from '../core/forge.js';
+import { FORGE_GEN, REFILL_MINUTES, SMELT_FAIL, SMELT_MINUTES, SPELLS, STOKE_COOLDOWN_HOURS, cast, heatFullIn, maxHeat, spellById, stoke, stokeReady, syncHeat } from '../core/forge.js';
 import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood, creditValue, holdSize, insiderTip, maxBuy, nextTickIn, sellGood, syncMarket, tipReady, type GoodState } from '../core/market.js';
 import { AD_SPINS_PER_DAY, GOLDEN_MULT, SLICES, STREAK_DAYS, adSpinsLeft, currentStreak, freeSpinReady, goldenReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
@@ -449,35 +449,35 @@ export function openCrystals(ctx: Ctx, onChange: () => void): void {
       const cost = levelCost(s, i);
       return `<div class="lvl-row">
         <div class="lvl-ico">${icon(g.id)}</div>
-        <div class="lvl-main"><b>${esc(g.name)}</b><span class="dim small">${lvl ? `Level ${lvl} · +${fmtPercent(lvl * LEVEL_PCT)} production` : 'Not levelled yet'}${i === GARDEN_GEN ? (lvl ? ' · Garden open' : ' · Level 1 opens the Nebula Garden') : ''}${i === FORGE_GEN ? (lvl ? ' · Forge lit' : ' · Level 1 lights the Star Forge minigame') : ''}</span></div>
+        <div class="lvl-main"><b>${esc(t(g.name))}</b><span class="dim small">${lvl ? t('Level {n} · +{pct} production', { n: lvl, pct: fmtPercent(lvl * LEVEL_PCT) }) : t('Not levelled yet')}${i === GARDEN_GEN ? ` · ${lvl ? t('Garden open') : t('Level 1 opens the Nebula Garden')}` : ''}${i === FORGE_GEN ? ` · ${lvl ? t('Forge lit') : t('Level 1 lights the Star Forge minigame')}` : ''}</span></div>
         <button class="btn ${s.crystals >= cost ? 'btn-primary' : 'btn-plain'}" data-level="${i}" ${s.crystals >= cost ? '' : 'disabled'}>${icon('crystal')}${cost}</button>
       </div>`;
     }).join('');
     return `<div class="crystal-head">
         <div class="crystal-big">${icon('crystal')}<b>${s.crystals}</b></div>
-        <div class="crystal-grow"><div class="dim small">Next crystal in ${fmtTime(left / 1000)}</div>
+        <div class="crystal-grow"><div class="dim small">${t('Next crystal in {time}', { time: fmtTime(left / 1000) })}</div>
           <div class="bar"><div class="bar-fill crystal-fill" style="width:${crystalProgress(s) * 100}%"></div></div>
-          ${canAd ? `<button class="btn btn-plain btn-small" data-speed="1">Watch ad: ${AD_SPEEDUP_HOURS} hours sooner</button>` : ''}</div>
+          ${canAd ? `<button class="btn btn-plain btn-small" data-speed="1">${t('Watch ad: {n} hours sooner', { n: AD_SPEEDUP_HOURS })}</button>` : ''}</div>
       </div>
-      <p class="dim small">A crystal forms every ${CRYSTAL_HOURS} hours, even while you are away. Each level makes that generator ${fmtPercent(LEVEL_PCT)} stronger, forever.</p>
+      <p class="dim small">${t('A crystal forms every {n} hours, even while you are away. Each level makes that generator {pct} stronger, forever.', { n: CRYSTAL_HOURS, pct: fmtPercent(LEVEL_PCT) })}</p>
       <div class="lvl-list">${rows}</div>`;
   };
-  const el = openModal({ title: 'Quasar Crystals', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Quasar Crystals'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-level],[data-speed]');
-    if (!t || t.disabled || busy) return;
-    if (t.dataset.level) {
-      const gen = Number(t.dataset.level);
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-level],[data-speed]');
+    if (!el2 || el2.disabled || busy) return;
+    if (el2.dataset.level) {
+      const gen = Number(el2.dataset.level);
       if (!levelUp(ctx.s, gen)) return;
       if (gen === GARDEN_GEN && ctx.s.genLevels[gen] === 1) {
-        toast(`<div class="t-ico">${icon('sprout')}</div><div><b>Nebula Garden open</b><br>Find it at the top of the Build tab.</div>`, 'good', 5000);
+        toast(`<div class="t-ico">${icon('sprout')}</div><div><b>${t('Nebula Garden open')}</b><br>${t('Find it at the top of the Build tab.')}</div>`, 'good', 5000);
       }
       if (gen === FORGE_GEN && ctx.s.genLevels[gen] === 1) {
-        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>Star Forge lit</b><br>Spend its heat from the top of the Build tab.</div>`, 'good', 5000);
+        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>${t('Star Forge lit')}</b><br>${t('Spend its heat from the top of the Build tab.')}</div>`, 'good', 5000);
       }
       sfxAchievement();
       haptic('medium');
@@ -488,11 +488,11 @@ export function openCrystals(ctx: Ctx, onChange: () => void): void {
       return;
     }
     busy = true;
-    void showRewarded('grow a crystal sooner').then((ok) => {
+    void showRewarded(t('grow a crystal sooner')).then((ok) => {
       busy = false;
       if (ok && speedUpCrystal(ctx.s)) {
         ctx.save();
-        toast(`<div class="t-ico">${icon('crystal')}</div><div><b>Crystal growth sped up</b><br>${AD_SPEEDUP_HOURS} hours sooner</div>`, 'good');
+        toast(`<div class="t-ico">${icon('crystal')}</div><div><b>${t('Crystal growth sped up')}</b><br>${t('{n} hours sooner', { n: AD_SPEEDUP_HOURS })}</div>`, 'good');
       }
       redraw();
     });
@@ -507,33 +507,33 @@ export function openGarden(ctx: Ctx, onChange: () => void): void {
     const now = Date.now();
     const n = plotCount(s);
     const seeds = SEEDS.map((x) => `<button class="seed${x.id === gardenSeed ? ' on' : ''}" data-seed="${x.id}" aria-pressed="${x.id === gardenSeed}">
-        ${icon(x.id)}<b>${esc(x.name)}</b><span class="dim small">${fmtTime(x.growMinutes * 60)} · ${fmt(harvestValue(s, d, x))}</span></button>`).join('');
+        ${icon(x.id)}<b>${esc(t(x.name))}</b><span class="dim small">${fmtTime(x.growMinutes * 60)} · ${fmt(harvestValue(s, d, x))}</span></button>`).join('');
     const plots = Array.from({ length: n }, (_, i) => {
       const p = s.garden[i] ?? null;
-      if (!p) return `<button class="plot empty" data-plot="${i}" aria-label="Plant ${esc(seedById(gardenSeed)!.name)}"><span class="plot-plus">+</span></button>`;
+      if (!p) return `<button class="plot empty" data-plot="${i}" aria-label="${esc(t('Plant {name}', { name: t(seedById(gardenSeed)!.name) }))}"><span class="plot-plus">+</span></button>`;
       const seed = seedById(p.seed)!;
       const pr = plotProgress(p, now);
       const ready = pr >= 1;
       const left = (1 - pr) * seed.growMinutes * 60;
-      return `<button class="plot${ready ? ' ready' : ''}" data-plot="${i}" aria-label="${esc(seed.name)}${ready ? ', ready to harvest' : ''}">
+      return `<button class="plot${ready ? ' ready' : ''}" data-plot="${i}" aria-label="${esc(ready ? t('{name}, ready to harvest', { name: t(seed.name) }) : t(seed.name))}">
         <span class="plot-ico" style="transform:scale(${0.45 + 0.55 * pr})">${icon(seed.id)}</span>
-        <span class="plot-time">${ready ? 'Harvest' : fmtTime(left)}</span>
+        <span class="plot-time">${ready ? t('Harvest') : fmtTime(left)}</span>
         ${ready ? '' : `<span class="plot-bar"><span style="width:${pr * 100}%"></span></span>`}</button>`;
     }).join('');
     const ready = readyPlots(s, now);
     const canAd = fertilizeReady(s, now) && rewardedAvailable();
     const cool = Math.max(0, s.gardenFertilizeAt - now);
     const lvl = s.genLevels[GARDEN_GEN] ?? 0;
-    return `<p class="dim small">Pick a spore, then tap an empty plot. Plants grow in real time, even while you are away. Nebula Refinery level ${lvl}: ${n} plots${n < 9 ? ', two more next level' : ''}.</p>
+    return `<p class="dim small">${t('Pick a spore, then tap an empty plot. Plants grow in real time, even while you are away.')} ${n < 9 ? t('Nebula Refinery level {lvl}: {n} plots, two more next level.', { lvl, n }) : t('Nebula Refinery level {lvl}: {n} plots.', { lvl, n })}</p>
       <div class="seeds">${seeds}</div>
       <div class="garden-bed">${plots}</div>
       <div class="garden-actions">
-        <button class="btn ${ready ? 'btn-primary' : 'btn-plain'}" data-harvest-all="1" ${ready ? '' : 'disabled'}>Harvest ${ready || ''} and replant</button>
-        ${canAd ? `<button class="btn btn-plain" data-fertilize="1">Watch ad: grow ${FERTILIZE_HOURS} hours</button>` : cool > 0 ? `<span class="dim small">Fertilizer again in ${fmtTime(cool / 1000)}</span>` : ''}
+        <button class="btn ${ready ? 'btn-primary' : 'btn-plain'}" data-harvest-all="1" ${ready ? '' : 'disabled'}>${ready ? t('Harvest {n} and replant', { n: ready }) : t('Harvest and replant')}</button>
+        ${canAd ? `<button class="btn btn-plain" data-fertilize="1">${t('Watch ad: grow {n} hours', { n: FERTILIZE_HOURS })}</button>` : cool > 0 ? `<span class="dim small">${t('Fertilizer again in {time}', { time: fmtTime(cool / 1000) })}</span>` : ''}
       </div>
-      <p class="dim small">Harvests: ${fmt(s.gardenHarvests)}. Fertilizer can be used every ${FERTILIZE_COOLDOWN_HOURS} hours.</p>`;
+      <p class="dim small">${t('Harvests: {n}. Fertilizer can be used every {hours} hours.', { n: fmt(s.gardenHarvests), hours: FERTILIZE_COOLDOWN_HOURS })}</p>`;
   };
-  const el = openModal({ title: 'Nebula Garden', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Nebula Garden'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
@@ -541,41 +541,41 @@ export function openGarden(ctx: Ctx, onChange: () => void): void {
   const paid = (amount: number, what: string): void => {
     sfxAchievement();
     haptic('medium');
-    toast(`<div class="t-ico">${icon('sprout')}</div><div><b>${what}</b><br>+${fmt(amount)} Stardust</div>`, 'good');
+    toast(`<div class="t-ico">${icon('sprout')}</div><div><b>${what}</b><br>${t('+{n} Stardust', { n: fmt(amount) })}</div>`, 'good');
     ctx.recalc();
     ctx.save();
     onChange();
   };
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-seed],[data-plot],[data-harvest-all],[data-fertilize]');
-    if (!t || t.disabled || busy) return;
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-seed],[data-plot],[data-harvest-all],[data-fertilize]');
+    if (!el2 || el2.disabled || busy) return;
     const { s, d } = ctx;
-    if (t.dataset.seed) {
-      gardenSeed = t.dataset.seed;
+    if (el2.dataset.seed) {
+      gardenSeed = el2.dataset.seed;
       haptic('light');
-    } else if (t.dataset.plot) {
-      const i = Number(t.dataset.plot);
+    } else if (el2.dataset.plot) {
+      const i = Number(el2.dataset.plot);
       const p = s.garden[i];
       if (!p) {
         if (plant(s, i, gardenSeed)) { haptic('light'); ctx.save(); }
       } else if (plotReady(p)) {
-        const name = seedById(p.seed)!.name;
+        const name = t(seedById(p.seed)!.name);
         const amount = harvest(s, d, i);
-        if (amount) paid(amount, `${name} harvested`);
+        if (amount) paid(amount, esc(t('{name} harvested', { name })));
       } else {
-        toast(`${esc(seedById(p.seed)!.name)} is still growing.`, 'info');
+        toast(esc(t('{name} is still growing.', { name: t(seedById(p.seed)!.name) })), 'info');
       }
-    } else if (t.dataset.harvestAll) {
+    } else if (el2.dataset.harvestAll) {
       const n = readyPlots(s);
       const amount = harvestAll(s, d);
-      if (amount) paid(amount, `${n} plant${n === 1 ? '' : 's'} harvested`);
+      if (amount) paid(amount, n === 1 ? t('1 plant harvested') : t('{n} plants harvested', { n }));
     } else {
       busy = true;
-      void showRewarded('fertilize the garden').then((ok) => {
+      void showRewarded(t('fertilize the garden')).then((ok) => {
         busy = false;
         if (ok && fertilize(ctx.s)) {
           ctx.save();
-          toast(`<div class="t-ico">${icon('sprout')}</div><div><b>Garden fertilized</b><br>Every plant grew ${FERTILIZE_HOURS} hours</div>`, 'good');
+          toast(`<div class="t-ico">${icon('sprout')}</div><div><b>${t('Garden fertilized')}</b><br>${t('Every plant grew {n} hours', { n: FERTILIZE_HOURS })}</div>`, 'good');
         }
         redraw();
       });
@@ -637,9 +637,9 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (ev) => {
-    const t = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-etap],[data-egen],[data-ebadge],[data-ead],[data-epass]');
-    if (!t || busy) return;
-    if (t.dataset.epass) {
+    const el2 = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-etap],[data-egen],[data-ebadge],[data-ead],[data-epass]');
+    if (!el2 || busy) return;
+    if (el2.dataset.epass) {
       busy = true;
       void buyProduct(ctx, 'event_pass').then(() => { busy = false; redraw(); onChange(); });
       return;
@@ -647,14 +647,14 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
     const { s, d } = ctx;
     const e = currentEvent(s);
     if (!e) { redraw(); return; }
-    if (t.dataset.etap) {
+    if (el2.dataset.etap) {
       eventTapOnce(e);
       sfxTap();
       haptic('light');
-    } else if (t.dataset.egen) {
-      if (buyEventGen(e, Number(t.dataset.egen))) { sfxBuy(); haptic('light'); }
+    } else if (el2.dataset.egen) {
+      if (buyEventGen(e, Number(el2.dataset.egen))) { sfxBuy(); haptic('light'); }
       else sfxDenied();
-    } else if (t.dataset.ebadge) {
+    } else if (el2.dataset.ebadge) {
       const tier = e.claimed;
       const amount = claimBadge(s, d, e);
       if (!amount) return;
@@ -682,6 +682,12 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
   });
 }
 
+function spellDesc(x: { id: string; desc: string }): string {
+  return x.id === 'smelt'
+    ? t('{n} minutes of production at once. {pct}% of melts fail.', { n: SMELT_MINUTES, pct: SMELT_FAIL * 100 })
+    : t(x.desc);
+}
+
 export function openForge(ctx: Ctx, onChange: () => void): void {
   const render = (): string => {
     const s = ctx.s;
@@ -692,38 +698,38 @@ export function openForge(ctx: Ctx, onChange: () => void): void {
     const spells = SPELLS.map((x) => {
       const ok = heat >= x.cost;
       return `<button class="spell${ok ? ' ok' : ''}" data-spell="${x.id}" ${ok ? '' : 'disabled'}>
-        <b>${esc(x.name)}</b><span class="spell-cost">${x.cost} heat</span><span class="dim">${esc(x.desc)}</span></button>`;
+        <b>${esc(t(x.name))}</b><span class="spell-cost">${t('{n} heat', { n: x.cost })}</span><span class="dim">${esc(spellDesc(x))}</span></button>`;
     }).join('');
     const canAd = stokeReady(s, now) && rewardedAvailable();
     const cool = Math.max(0, s.forgeAdAt - now);
     return `<div class="heat-head">${icon('anvil')}<div class="heat-main">
-        <div class="heat-n">${Math.floor(heat)} / ${max} heat</div>
+        <div class="heat-n">${t('{n} / {max} heat', { n: Math.floor(heat), max })}</div>
         <div class="bar"><div class="bar-fill heat-fill" style="width:${max ? (heat / max) * 100 : 0}%"></div></div>
-        <div class="dim small">${full > 0 ? `Full in ${fmtTime(full / 1000)}` : 'The forge is white hot.'}</div></div></div>
+        <div class="dim small">${full > 0 ? t('Full in {time}', { time: fmtTime(full / 1000) }) : t('The forge is white hot.')}</div></div></div>
       <div class="spells">${spells}</div>
-      ${canAd ? `<button class="btn btn-plain btn-wide" data-stoke="1">Watch ad: refill the forge</button>` : cool > 0 ? `<p class="dim small">Stoke again in ${fmtTime(cool / 1000)}.</p>` : ''}
-      <p class="dim small">Heat refills from empty in ${REFILL_MINUTES / 60} hours, even while you are away. Star Forge level ${s.genLevels[FORGE_GEN] ?? 0}: each level adds 10 heat. Forgings used: ${fmt(s.forgeCasts)}. Stoking is once every ${STOKE_COOLDOWN_HOURS} hours.</p>`;
+      ${canAd ? `<button class="btn btn-plain btn-wide" data-stoke="1">${t('Watch ad: refill the forge')}</button>` : cool > 0 ? `<p class="dim small">${t('Stoke again in {time}.', { time: fmtTime(cool / 1000) })}</p>` : ''}
+      <p class="dim small">${t('Heat refills from empty in {hours} hours, even while you are away. Star Forge level {lvl}: each level adds 10 heat. Forgings used: {n}. Stoking is once every {cool} hours.', { hours: REFILL_MINUTES / 60, lvl: s.genLevels[FORGE_GEN] ?? 0, n: fmt(s.forgeCasts), cool: STOKE_COOLDOWN_HOURS })}</p>`;
   };
-  const el = openModal({ title: 'Star Forge', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Star Forge'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-spell],[data-stoke]');
-    if (!t || t.disabled || busy) return;
-    if (t.dataset.spell) {
-      const spell = spellById(t.dataset.spell)!;
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-spell],[data-stoke]');
+    if (!el2 || el2.disabled || busy) return;
+    if (el2.dataset.spell) {
+      const spell = spellById(el2.dataset.spell)!;
       const r = cast(ctx.s, ctx.d, spell.id);
       if (!r.ok) { sfxDenied(); return; }
       haptic('medium');
       if (r.failed) {
         sfxDenied();
-        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>The melt cracked</b><br>The heat is gone. Better luck next pour.</div>`, 'info');
+        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>${t('The melt cracked')}</b><br>${t('The heat is gone. Better luck next pour.')}</div>`, 'info');
       } else {
         sfxAchievement();
-        const detail = r.amount ? `+${fmt(r.amount)} Stardust` : esc(spell.desc);
-        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>${esc(spell.name)}</b><br>${detail}</div>`, 'good');
+        const detail = r.amount ? t('+{n} Stardust', { n: fmt(r.amount) }) : esc(spellDesc(spell));
+        toast(`<div class="t-ico">${icon('anvil')}</div><div><b>${esc(t(spell.name))}</b><br>${detail}</div>`, 'good');
       }
       ctx.recalc();
       ctx.dirty();
@@ -733,11 +739,11 @@ export function openForge(ctx: Ctx, onChange: () => void): void {
       if (spell.id !== 'smelt') { closeModal(el); return; }
     } else {
       busy = true;
-      void showRewarded('stoke the forge').then((ok) => {
+      void showRewarded(t('stoke the forge')).then((ok) => {
         busy = false;
         if (ok && stoke(ctx.s)) {
           ctx.save();
-          toast(`<div class="t-ico">${icon('anvil')}</div><div><b>Forge stoked</b><br>Heat is full again</div>`, 'good');
+          toast(`<div class="t-ico">${icon('anvil')}</div><div><b>${t('Forge stoked')}</b><br>${t('Heat is full again')}</div>`, 'good');
         }
         redraw();
         onChange();
@@ -778,16 +784,16 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
       const tip = m.tip === i && m.tipTicks > 0;
       return `<div class="good${tip ? ' tipped' : ''}">
         <div class="good-top">
-          <div class="good-name"><b>${esc(def.name)}</b>${tip ? '<span class="good-tip">Tip</span>' : ''}<span class="dim small">rests at ${def.rest}</span></div>
+          <div class="good-name"><b>${esc(t(def.name))}</b>${tip ? `<span class="good-tip">${t('Tip')}</span>` : ''}<span class="dim small">${t('rests at {n}', { n: def.rest })}</span></div>
           <div class="good-price ${move >= 0 ? 'up' : 'down'}">${g.price.toFixed(1)}<span>${move >= 0 ? '▲' : '▼'} ${Math.abs(move).toFixed(1)}</span></div>
         </div>
         ${sparkline(g, def.rest)}
         <div class="good-foot">
-          <span class="good-held">${g.held} / ${hold}${g.held ? ` · paid ${g.avg.toFixed(1)}` : ''}${g.held ? ` · <b class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)}</b>` : ''}</span>
+          <span class="good-held">${g.held} / ${hold}${g.held ? ` · ${t('paid {n}', { n: g.avg.toFixed(1) })}` : ''}${g.held ? ` · <b class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)}</b>` : ''}</span>
           <span class="good-btns">
             <button class="chip" data-buy="${i}" data-n="10" ${canBuy ? '' : 'disabled'}>+10</button>
-            <button class="chip" data-buy="${i}" data-n="max" ${canBuy ? '' : 'disabled'}>Max</button>
-            <button class="chip" data-sell="${i}" ${g.held ? '' : 'disabled'}>Sell</button>
+            <button class="chip" data-buy="${i}" data-n="max" ${canBuy ? '' : 'disabled'}>${t('Max')}</button>
+            <button class="chip" data-sell="${i}" ${g.held ? '' : 'disabled'}>${t('Sell')}</button>
           </span>
         </div>
       </div>`;
@@ -795,40 +801,41 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
     const canAd = tipReady(m, now) && rewardedAvailable();
     const cool = Math.max(0, m.tipAt - now);
     return `<div class="market-head">${icon('exchange')}<div>
-        <div class="market-tick">Prices move in ${fmtTime(nextTickIn(m, now) / 1000)}</div>
-        <div class="dim small">1 credit = 1 second of production (${fmt(unit)} Stardust)</div></div></div>
+        <div class="market-tick">${t('Prices move in {time}', { time: fmtTime(nextTickIn(m, now) / 1000) })}</div>
+        <div class="dim small">${t('1 credit = 1 second of production ({n} Stardust)', { n: fmt(unit) })}</div></div></div>
       <div class="goods">${rows}</div>
-      ${canAd ? `<button class="btn btn-plain btn-wide" data-tip="1">Watch ad: get an insider tip</button>` : cool > 0 ? `<p class="dim small">Next tip in ${fmtTime(cool / 1000)}.</p>` : ''}
-      <p class="dim small">Prices drift every ${TICK_MINUTES} minutes, even while you are away, and pull back toward their resting price. Warp Gate level ${s.genLevels[MARKET_GEN] ?? 0}: holds ${hold} of each good (25 more per level). A tip lifts the cheapest good for ${TIP_TICKS * TICK_MINUTES} minutes, once every ${TIP_COOLDOWN_HOURS} hours. Goods are priced from your production, so sell before you collapse. Profit so far: ${fmt(s.marketProfit)} credits.</p>`;
+      ${canAd ? `<button class="btn btn-plain btn-wide" data-tip="1">${t('Watch ad: get an insider tip')}</button>` : cool > 0 ? `<p class="dim small">${t('Next tip in {time}.', { time: fmtTime(cool / 1000) })}</p>` : ''}
+      <p class="dim small">${t('Prices drift every {tick} minutes, even while you are away, and pull back toward their resting price. Warp Gate level {lvl}: holds {hold} of each good (25 more per level). A tip lifts the cheapest good for {tip} minutes, once every {cool} hours. Goods are priced from your production, so sell before you collapse. Profit so far: {n} credits.', { tick: TICK_MINUTES, lvl: s.genLevels[MARKET_GEN] ?? 0, hold, tip: TIP_TICKS * TICK_MINUTES, cool: TIP_COOLDOWN_HOURS, n: fmt(s.marketProfit) })}</p>`;
   };
-  const el = openModal({ title: 'Warp Exchange', body: render(), onClose: () => clearInterval(timer) });
+  const el = openModal({ title: t('Warp Exchange'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
   const redraw = (): void => { body.innerHTML = render(); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-sell],[data-tip]');
-    if (!t || t.disabled || busy) return;
+    const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-sell],[data-tip]');
+    if (!el2 || el2.disabled || busy) return;
     const { s, d } = ctx;
-    if (t.dataset.buy) {
-      const n = t.dataset.n === 'max' ? Infinity : Number(t.dataset.n);
-      if (!buyGood(s, d, Number(t.dataset.buy), n)) { sfxDenied(); return; }
+    if (el2.dataset.buy) {
+      const n = el2.dataset.n === 'max' ? Infinity : Number(el2.dataset.n);
+      if (!buyGood(s, d, Number(el2.dataset.buy), n)) { sfxDenied(); return; }
       sfxBuy();
       haptic('light');
-    } else if (t.dataset.sell) {
-      const i = Number(t.dataset.sell);
+    } else if (el2.dataset.sell) {
+      const i = Number(el2.dataset.sell);
       const r = sellGood(s, d, i, Infinity);
       if (!r.sold) return;
       if (r.profit > 0) sfxAchievement(); else sfxTap();
-      const word = r.profit >= 0 ? 'profit' : 'loss';
-      toast(`<div class="t-ico">${icon('exchange')}</div><div><b>Sold ${r.sold} ${esc(GOODS[i].name)}</b><br>+${fmt(r.value)} Stardust, ${fmt(Math.abs(r.profit))} credit ${word}</div>`, r.profit > 0 ? 'good' : 'info');
+      const vars = { n: fmt(r.value), c: fmt(Math.abs(r.profit)) };
+      const line = r.profit >= 0 ? t('+{n} Stardust, {c} credit profit', vars) : t('+{n} Stardust, {c} credit loss', vars);
+      toast(`<div class="t-ico">${icon('exchange')}</div><div><b>${esc(t('Sold {n} {good}', { n: r.sold, good: t(GOODS[i].name) }))}</b><br>${line}</div>`, r.profit > 0 ? 'good' : 'info');
     } else {
       busy = true;
-      void showRewarded('get a market tip').then((ok) => {
+      void showRewarded(t('get a market tip')).then((ok) => {
         busy = false;
         if (ok) {
           const i = insiderTip(ctx.s);
-          if (i >= 0) toast(`<div class="t-ico">${icon('exchange')}</div><div><b>Insider tip</b><br>${esc(GOODS[i].name)} is about to rise</div>`, 'good');
+          if (i >= 0) toast(`<div class="t-ico">${icon('exchange')}</div><div><b>${t('Insider tip')}</b><br>${esc(t('{good} is about to rise', { good: t(GOODS[i].name) }))}</div>`, 'good');
           ctx.save();
         }
         redraw();

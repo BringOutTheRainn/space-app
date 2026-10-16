@@ -231,7 +231,10 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    the Boosts window (Lucky Orbit wheel and its streak, Hyperdrive, Tap Frenzy), the daily supply
    drop and the stats screen. `npm run i18n` now also checks every `t('...')` call in the code, and
    both languages cover all 658 keys it finds. A test covers the wheel slices and contracts.
-   Still English: the minigames (garden, forge, market), events and the shop.
+   Run 13 (part 5): Quasar Crystals, the Nebula Garden, the Star Forge and the Warp Exchange, with
+   their spores, spells, goods and toasts. The Warp Exchange is "Intercambio Warp" / "Bolsa de Dobra"
+   everywhere (the stats row had drifted). A test covers spores, spells and goods.
+   Still English: the weekend event and the shop.
 
 ## Research log
 
@@ -377,8 +380,7 @@ Antimatter Dimensions review summary, run 10's market notes.
   profit adds to it. The collapse dialog says how much they will fetch.
 
 ### Backlog from research (best first)
-1. Finish Spanish and Portuguese: the garden, forge, market, events and the shop, then turn on
-   `AUTO_LANGS` for both.
+1. Finish Spanish and Portuguese: the weekend event and the shop, then turn on `AUTO_LANGS` for both.
 2. Welcome-back summary that lists what each system did while away (probes, garden, market).
 3. A seventh Golden Orbit slice reward: a cosmetic sky trail for a 30-day streak.
 4. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be

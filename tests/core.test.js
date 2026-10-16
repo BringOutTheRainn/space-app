@@ -1056,3 +1056,18 @@ test('wheel prizes and weekly contracts have Spanish and Portuguese text', async
   }
   i18n.setLanguage('en');
 });
+
+test('garden spores, forge spells and market goods have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { SEEDS } = await import('../www/js/core/garden.js');
+  const { SPELLS } = await import('../www/js/core/forge.js');
+  const { GOODS } = await import('../www/js/core/market.js');
+  const texts = [...SEEDS.map((x) => x.name), ...SPELLS.flatMap((x) => (x.id === 'smelt' ? [x.name] : [x.name, x.desc])), ...GOODS.map((x) => x.name)];
+  for (const lang of ['es', 'pt']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});
