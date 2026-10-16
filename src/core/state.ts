@@ -29,6 +29,10 @@ export interface Settings {
   particles: boolean;
   /** Reminder notifications, on the phone only. Off until the player opts in. */
   notifications: boolean;
+  /** Battery saver: 30 fps and a sharper-but-cheaper sky for slow or hot phones. */
+  saver: boolean;
+  /** True once the game has offered or switched on battery saver by itself. */
+  saverAuto: boolean;
 }
 
 export interface Expedition {
@@ -226,7 +230,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false, saver: false, saverAuto: false },
   };
 }
 

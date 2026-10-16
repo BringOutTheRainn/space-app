@@ -731,6 +731,16 @@ test('shop purchases grant once, the vault fills in real time, and the event pas
   assert.equal(back.event.pass, true);
 });
 
+test('older saves get battery saver off by default', () => {
+  const s = newState(0);
+  const raw = JSON.parse(serialize(s));
+  delete raw.settings.saver; delete raw.settings.saverAuto;
+  const back = deserialize(JSON.stringify(raw), 0);
+  assert.equal(back.settings.saver, false);
+  assert.equal(back.settings.saverAuto, false);
+  assert.equal(back.settings.sound, true);
+});
+
 test('star pass seasons are numbered from launch week', async () => {
   const pass = await import('../www/js/core/pass.js');
   assert.equal(pass.seasonLabel(new Date(2026, 9, 14, 12).getTime()), 1, 'never below 1');

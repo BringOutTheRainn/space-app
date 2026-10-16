@@ -446,9 +446,33 @@ function start(): void {
   let autoBuyAcc = 0;
   let cometPending = false;
 
+  // Slow phones: watch the first 20 s of play and switch on battery saver
+  // once if the game runs below about 22 fps.
+  const SLOW_FRAME_MS = 45;
+  const slowSample: number[] = [];
+
   function frame(now: number): void {
-    const dt = Math.min(1, Math.max(0, (now - last) / 1000));
+    const gap = now - last;
+    // Battery saver runs the whole loop at about 30 fps.
+    if (ctx.s.settings.saver && gap < 30) {
+      requestAnimationFrame(frame);
+      return;
+    }
+    const dt = Math.min(1, Math.max(0, gap / 1000));
     last = now;
+    if (!paused && !ctx.s.settings.saverAuto && gap > 0 && gap < 1000) {
+      slowSample.push(gap);
+      if (slowSample.length >= 400 || slowSample.reduce((a, b) => a + b, 0) > 20000) {
+        const sorted = slowSample.slice().sort((a, b) => a - b);
+        ctx.s.settings.saverAuto = true;
+        if (sorted[sorted.length >> 1] > SLOW_FRAME_MS) {
+          ctx.s.settings.saver = true;
+          applySettings(ctx);
+          toast('Battery saver is on to keep things smooth. You can change it in Settings.', 'info', 5000);
+        }
+        ctx.save();
+      }
+    }
     if (!paused) {
       const { s } = ctx;
       if (tick(s, ctx.d, dt)) ctx.recalc();

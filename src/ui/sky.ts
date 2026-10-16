@@ -55,6 +55,8 @@ export class Sky {
   private rockShape: number[] = [];
   private craters: Array<[number, number, number]> = [];
   particlesOn = true;
+  /** Battery saver draws the sky at 1x pixel density. */
+  private lowRes = false;
   aura: 'none' | 'rush' | 'horizon' | 'well' | 'supernova' = 'none';
   /** Canvas filter for the bought planet skin. */
   private bodyFilter = 'none';
@@ -101,10 +103,16 @@ export class Sky {
     this.owned = counts;
   }
 
+  setLowRes(on: boolean): void {
+    if (on === this.lowRes) return;
+    this.lowRes = on;
+    this.resize();
+  }
+
   private resize(): void {
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = this.lowRes ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     this.w = rect.width;
     this.h = rect.height;
     this.canvas.width = Math.round(rect.width * this.dpr);

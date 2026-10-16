@@ -88,6 +88,7 @@ export function applySettings(ctx: Ctx): void {
   setVibration(st.vibration);
   setNumberStyle(st.numberStyle);
   ctx.sky.particlesOn = st.particles;
+  ctx.sky.setLowRes(st.saver);
 }
 
 export function openSettings(ctx: Ctx): void {
@@ -99,6 +100,7 @@ export function openSettings(ctx: Ctx): void {
       ${toggleRow('set-music', 'Ambient music', st.music)}
       ${toggleRow('set-vibration', 'Vibration', st.vibration)}
       ${toggleRow('set-particles', 'Particles', st.particles)}
+      ${toggleRow('set-saver', 'Battery saver (30 fps, lighter sky)', st.saver)}
       ${toggleRow('set-sci', 'Scientific notation', st.numberStyle === 'scientific')}
       ${notificationsSupported() ? toggleRow('set-notify', 'Reminders (storage full, probes back, daily drop)', st.notifications) : ''}
       <h3 class="section-title">Save</h3>
@@ -123,6 +125,10 @@ export function openSettings(ctx: Ctx): void {
     if (on) setTimeout(() => haptic('medium'));
   });
   bind('set-particles', (on) => (st.particles = on));
+  bind('set-saver', (on) => {
+    st.saver = on;
+    st.saverAuto = true;
+  });
   bind('set-sci', (on) => (st.numberStyle = on ? 'scientific' : 'short'));
   el.querySelector<HTMLInputElement>('#set-notify')?.addEventListener('change', (e) => {
     const box = e.target as HTMLInputElement;

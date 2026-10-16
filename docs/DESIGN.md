@@ -180,6 +180,11 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    Run 2: store kit in docs/STORE.md (listing, content rating and data safety answers) and eight
    captioned 1080 x 1920 screenshots from tools/store-shots.mjs; Star Pass seasons now count from 1 at
    launch instead of showing the internal week-based number (it read "Season 40").
+   Run 3: pacing checked with tools/simulate.mjs (first Dark Matter at 1h 24m, inside the target) and
+   the first minutes replayed as a new player (hints lead tap, buy, comet, upgrade in order). Added
+   Battery saver in Settings: the loop runs at about 30 fps and the sky draws at 1x density. The game
+   watches the first 20 s of play once and turns it on, with a toast, when frames are slower than
+   45 ms (under about 22 fps).
 
 ## Research log
 
