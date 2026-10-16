@@ -10,6 +10,14 @@ if [ ! -d android ]; then
 fi
 npx cap sync android
 
+# Google Play only accepts new apps and updates that target Android 16 (API 36)
+# from August 31, 2026. Capacitor 7 defaults to 35, so raise compile and target.
+PLAY_TARGET_SDK=36
+sed -i -E "s/(compileSdkVersion|targetSdkVersion) = [0-9]+/\1 = $PLAY_TARGET_SDK/" android/variables.gradle
+grep -q 'suppressUnsupportedCompileSdk' android/gradle.properties \
+  || echo "android.suppressUnsupportedCompileSdk=$PLAY_TARGET_SDK" >> android/gradle.properties
+grep -E 'compileSdkVersion|targetSdkVersion' android/variables.gradle
+
 RES=android/app/src/main/res
 for dpi in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   cp resources/android/mipmap-$dpi/*.png "$RES/mipmap-$dpi/"
