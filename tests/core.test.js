@@ -731,6 +731,14 @@ test('shop purchases grant once, the vault fills in real time, and the event pas
   assert.equal(back.event.pass, true);
 });
 
+test('star pass seasons are numbered from launch week', async () => {
+  const pass = await import('../www/js/core/pass.js');
+  assert.equal(pass.seasonLabel(new Date(2026, 9, 14, 12).getTime()), 1, 'never below 1');
+  assert.equal(pass.seasonLabel(new Date(2026, 9, 20, 12).getTime()), 1);
+  const next = new Date(2026, 9, 20, 12).getTime() + pass.seasonTimeLeft(new Date(2026, 9, 20, 12).getTime()) + 3600000;
+  assert.equal(pass.seasonLabel(next), 2);
+});
+
 test('star pass counts XP from existing counters and pays both tracks', async () => {
   const pass = await import('../www/js/core/pass.js');
   const shop = await import('../www/js/core/shop.js');

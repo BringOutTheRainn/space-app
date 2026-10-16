@@ -177,6 +177,9 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
 9. **Launch sprint (Oct 16 to 19, Google Play, personal account)**: target API 36, save safety
    (backup, number repair, native copy), privacy policy (docs/PRIVACY.md, linked in Settings), then
    balance, first-time experience, low-end performance, accessibility, store listing and compliance.
+   Run 2: store kit in docs/STORE.md (listing, content rating and data safety answers) and eight
+   captioned 1080 x 1920 screenshots from tools/store-shots.mjs; Star Pass seasons now count from 1 at
+   launch instead of showing the internal week-based number (it read "Season 40").
 
 ## Research log
 

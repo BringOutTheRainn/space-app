@@ -67,6 +67,14 @@ export function seasonNumber(now = Date.now()): number {
   return Math.floor(weekNumber(now) / SEASON_WEEKS);
 }
 
+/** The season live at launch week (Oct 19, 2026) is shown to players as Season 1. */
+const FIRST_SEASON = seasonNumber(new Date(2026, 9, 19, 12).getTime());
+
+/** The season number players see: 1 at launch, counting up every four weeks. */
+export function seasonLabel(now = Date.now()): number {
+  return Math.max(1, seasonNumber(now) - FIRST_SEASON + 1);
+}
+
 /** Ms until the season ends (Monday midnight, local time). */
 export function seasonTimeLeft(now = Date.now()): number {
   const endWeek = (seasonNumber(now) + 1) * SEASON_WEEKS;

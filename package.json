@@ -11,6 +11,7 @@
     "serve": "npx http-server www -p 8080 -c-1",
     "sim": "npm run build && node tools/simulate.mjs",
     "screens": "npm run build && node tools/screens.mjs screens",
+    "store-shots": "npm run build && node tools/store-shots.mjs store",
     "icons": "node tools/make_icons.mjs",
     "android": "npm run build && bash tools/android.sh"
   },

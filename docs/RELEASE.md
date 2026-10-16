@@ -30,34 +30,8 @@
 
 ## Store listing
 
-**App name:** Stardust Empire
-
-**Short description (80 characters max):**
-Tap an asteroid, build a galactic empire, collapse the universe, do it again.
-
-**Full description:**
-
-It starts with one lonely asteroid. Tap it, harvest a speck of Stardust, and buy your first Mining
-Drone. Before long you are running Lunar Bases, Gas Giant Siphons, Dyson Swarms and Warp Gates, and
-your asteroid has grown into a moon, a planet, a star and finally a black hole.
-
-- 14 generators, from tiny Mining Drones to the reality-bending Universe Compiler
-- Around 170 upgrades, including synergies that make generators boost each other
-- Catch comets for Stardust Rushes, Lucky Hauls and 777x Supernova Taps
-- Over 100 achievements, each one making your empire stronger
-- Collapse the universe for Dark Matter and unlock a tree of permanent cosmic upgrades
-- Six anomalies: twisted universes with one strange rule and a permanent reward
-- Send probes on expeditions to find ancient Relics
-- Your empire keeps working while you are away
-- Daily supply drops and missions that always give you a next goal
-- Play offline, no account. Optional ads give boosts; you never have to watch one
-
-**Category:** Games, Simulation (Idle)
-**Content rating:** Everyone (no violence, no user content, no purchases). Declare **Contains ads**.
-**Tags:** idle, clicker, incremental, space, tycoon
-
-**Graphics:** the 512 px icon is `www/icon-512.png`. Phone screenshots can be made with
-`npm run screens`. The 1024 x 500 feature graphic is `resources/feature-graphic.png`.
+The full listing (name, descriptions, graphics, category, content rating, data safety and the closed
+test steps) is in `docs/STORE.md`. Make the eight 1080 x 1920 screenshots with `npm run store-shots`.
 
 ## Privacy
 

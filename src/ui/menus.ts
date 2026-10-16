@@ -27,7 +27,7 @@ import { FORGE_GEN, REFILL_MINUTES, SPELLS, STOKE_COOLDOWN_HOURS, cast, heatFull
 import { GOODS, MARKET_GEN, TICK_MINUTES, TIP_COOLDOWN_HOURS, TIP_TICKS, buyGood, creditValue, holdSize, insiderTip, maxBuy, nextTickIn, sellGood, syncMarket, tipReady, type GoodState } from '../core/market.js';
 import { AD_SPINS_PER_DAY, SLICES, adSpinsLeft, freeSpinReady, sliceValue, spin } from '../core/wheel.js';
 import { buyProduct, productPrice } from './store.js';
-import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonNumber, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
+import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
 import { claimMission, describeMission, missionDone, missionProgress, missionReward, swapMission } from '../core/missions.js';
 
 export const VERSION = '1.0.0';
@@ -801,7 +801,7 @@ function passCard(ctx: Ctx): string {
   const into = tier >= PASS_TIERS ? XP_PER_TIER : xp - tier * XP_PER_TIER;
   const ready = passClaimable(s);
   return `<button class="pass-card" data-pass="1">
-    <div class="pass-card-head"><span class="contract-kicker">Star Pass · Season ${seasonNumber() % 100}${p.premium ? ' · Premium' : ''}</span><span class="dim small">${fmtTime(seasonTimeLeft() / 1000)} left</span></div>
+    <div class="pass-card-head"><span class="contract-kicker">Star Pass · Season ${seasonLabel()}${p.premium ? ' · Premium' : ''}</span><span class="dim small">${fmtTime(seasonTimeLeft() / 1000)} left</span></div>
     <div class="pass-card-main"><b>Tier ${tier} of ${PASS_TIERS}</b>${ready ? `<span class="pass-ready">${ready} reward${ready === 1 ? '' : 's'} ready</span>` : '<span class="dim small">Open</span>'}</div>
     <div class="bar"><div class="bar-fill pass-fill" style="width:${(into / XP_PER_TIER) * 100}%"></div></div>
   </button>`;

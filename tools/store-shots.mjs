@@ -1,0 +1,142 @@
+// Google Play phone screenshots: 1080 x 1920 PNGs, each a game screen with a
+// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir>
+import { createRequire } from 'node:module';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { mkdirSync } from 'node:fs';
+import { extname, join, resolve } from 'node:path';
+
+const require = createRequire(import.meta.url);
+let playwright;
+try { playwright = require('playwright'); } catch { playwright = require('/opt/node22/lib/node_modules/playwright'); }
+
+const root = resolve('www');
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
+const server = createServer(async (req, res) => {
+  const path = join(root, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/\/$/, '/index.html'));
+  try {
+    const body = await readFile(path);
+    res.writeHead(200, { 'content-type': types[extname(path)] ?? 'application/octet-stream' });
+    res.end(body);
+  } catch {
+    res.writeHead(404);
+    res.end('not found');
+  }
+});
+await new Promise((r) => server.listen(0, r));
+const url = `http://127.0.0.1:${server.address().port}/index.html`;
+
+const out = process.argv[2] ?? 'store';
+mkdirSync(out, { recursive: true });
+const browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
+// 360 x 640 at 3x is 1080 x 1920; the game is framed slightly smaller under the caption.
+const page = await browser.newPage({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true });
+const frame = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+const errors = [];
+page.on('pageerror', (e) => errors.push(String(e)));
+
+const game = (fn, arg) => page.evaluate(fn, arg);
+const menus = (name) => page.evaluate(async (n) => {
+  const m = await import('./js/ui/menus.js');
+  m[n](window.__game.ctx, () => undefined);
+}, name);
+const closeModal = async () => {
+  for (let i = 0; i < 5 && (await page.locator('.modal-x').count()); i++) {
+    await page.locator('.modal-x').last().click();
+    await page.waitForTimeout(300);
+  }
+};
+
+async function shot(name, title, sub, toasts = false) {
+  // Achievement pop-ups crowd the marketing shots; only the comet shot keeps them.
+  await page.evaluate((show) => {
+    let st = document.getElementById('store-shot-style');
+    if (!st) { st = document.createElement('style'); st.id = 'store-shot-style'; document.head.append(st); }
+    st.textContent = show ? '' : '.toasts{display:none!important}';
+  }, toasts);
+  await page.waitForTimeout(700);
+  const png = (await page.screenshot()).toString('base64');
+  await frame.setContent(`<!doctype html><html><head><style>
+    html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+    body{background:radial-gradient(ellipse at 50% 0%,#3a2a8a 0%,#1a1250 40%,#07051a 100%);font-family:'Inter Display','Inter',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+    .stars{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 120px 90px,#fff8,transparent),radial-gradient(2px 2px at 900px 160px,#fff9,transparent),radial-gradient(3px 3px at 980px 60px,#9ff,transparent),radial-gradient(2px 2px at 60px 300px,#fff6,transparent),radial-gradient(2px 2px at 520px 40px,#fff7,transparent)}
+    h1{position:relative;margin:96px 60px 0;font-size:82px;line-height:1.05;font-weight:800;text-align:center;letter-spacing:-1px;text-wrap:balance}
+    h1 em{font-style:normal;color:#7ef0ff}
+    p{position:relative;margin:22px 80px 0;font-size:38px;line-height:1.3;color:#c9c3f2;text-align:center;font-weight:500}
+    img{position:relative;margin-top:56px;width:792px;height:1408px;border-radius:44px;box-shadow:0 0 0 10px #2b2266,0 30px 90px #000c,0 0 120px #6a5cff55}
+  </style></head><body><div class="stars"></div><h1>${title}</h1><p>${sub}</p><img src="data:image/png;base64,${png}"></body></html>`);
+  await frame.waitForTimeout(150);
+  await frame.screenshot({ path: join(out, name + '.png') });
+  console.log('saved', name);
+}
+
+await page.goto(url);
+await page.waitForTimeout(800);
+// Close the welcome and daily pop-ups.
+await closeModal();
+
+const box = await page.locator('#sky').boundingBox();
+await game(() => {
+  const { ctx } = window.__game;
+  const s = ctx.s;
+  s.stardust = 4.7e7; s.earnedRun = 9e7; s.earnedAll = 9e7; s.tapsAll = 900; s.tapEarnedRun = 4e5;
+  s.generators = [45, 30, 22, 14, 8, 3, 0, 0, 0, 0, 0, 0, 0, 0];
+  s.upgrades = { drone_0: true, drone_1: true, drone_2: true, harvester_0: true, harvester_1: true, lunar_0: true };
+  ctx.recalc(); ctx.dirty();
+});
+for (let i = 0; i < 18; i++) await page.mouse.click(box.x + box.width / 2 + (i % 5) * 5, box.y + box.height / 2);
+await shot('01_tap', 'Tap a rock. <em>Build an empire.</em>', 'Harvest Stardust and grow your asteroid into a star');
+
+await game(() => window.__game.spawnComet(false));
+await page.waitForTimeout(2500);
+const pos = await game(() => window.__game.cometPosition());
+if (pos) await page.mouse.click(box.x + pos[0], box.y + pos[1]);
+await page.waitForTimeout(300);
+await shot('02_comet', 'Catch <em>comets</em> for huge bonuses', 'Stardust Rushes, Lucky Hauls and 777x Supernova Taps', true);
+
+await closeModal();
+await page.click('[data-tab="upgrades"]');
+await shot('03_upgrades', 'Hundreds of <em>upgrades</em>', 'Synergies make your generators boost each other');
+
+// Late game: everything unlocked.
+await game(() => {
+  const { ctx } = window.__game;
+  const s = ctx.s;
+  s.stardust = 3e17; s.earnedRun = 4e17; s.earnedAll = 9e18; s.darkMatter = 240; s.collapses = 4;
+  s.cosmic = { glow: true, seed: true, magnet: true, fingers: true, kit: true, bay: true };
+  s.generators = [180, 160, 140, 120, 100, 90, 70, 50, 35, 20, 8, 2, 0, 0];
+  s.genLevels = s.genLevels.map((v, i) => (i < 10 ? Math.max(v, 2) : v));
+  ctx.recalc(); ctx.dirty();
+});
+await page.click('[data-tab="build"]');
+await shot('04_late', 'From asteroid to <em>black hole</em>', '14 generators, from Mining Drones to Warp Gates and beyond');
+
+await page.click('[data-tab="cosmos"]');
+await shot('05_cosmos', '<em>Collapse</em> the universe', 'Earn Dark Matter and unlock permanent cosmic power');
+
+await page.click('[data-tab="build"]');
+await page.evaluate(async () => {
+  const m = await import('./js/core/market.js');
+  const s = window.__game.ctx.s;
+  // Run the exchange for a few hours so prices have history.
+  s.market = null;
+  let r = 0.37;
+  const rng = () => (r = (r * 9301 + 49297) % 233280 / 233280);
+  m.syncMarket(s, Date.now() - 4 * 3600000, rng);
+  m.syncMarket(s, Date.now(), rng);
+});
+await menus('openMarket');
+await shot('06_market', 'Trade at the <em>Warp Exchange</em>', 'Buy low, sell high, and grow a Garden and a Forge too');
+await closeModal();
+
+await menus('openHyperdrive');
+await shot('07_boosts', 'Spin <em>Lucky Orbit</em> every day', 'Free daily spins, Hyperdrive boosts and supply drops');
+await closeModal();
+
+await menus('openMissions');
+await shot('08_missions', 'Always a <em>next goal</em>', 'Missions, achievements and expeditions. Your empire works while you are away');
+await closeModal();
+
+console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
+await browser.close();
+server.close();
