@@ -570,6 +570,12 @@ achievements were earned since it was last opened, and opening the tab clears it
 everything already earned as seen, so updating players don't get a stale dot. A test covers that
 migration, and a Playwright run confirmed the dot appears on a new achievement and clears on opening.
 
+**Run 40. Pacing re-check after runs 28 to 39.** `tools/simulate.mjs` at 3 taps per second still
+gives the first Dark Matter at 1h 24m and the first collapse at 3h 54m, the same as run 17, so Buy
+all, the Next amount and the trophy features changed convenience but not pacing (Auto-Researchers
+costs 250 Dark Matter, far past the first universes). Working out the Trophies tab's nearest
+achievements costs about 0.02 ms per refresh.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
