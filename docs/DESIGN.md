@@ -477,6 +477,13 @@ upgrade unlocks and resets after it; it disappears past 250. A test walks every 
 250 owned and checks each bar ends exactly where an upgrade really unlocks. The bar is only redrawn
 when the owned count changes.
 
+**Run 28. Buy all upgrades.** Mid-game the Upgrades tab often lists ten or more cheap upgrades
+after a return from offline, and tapping each one is busywork (Cookie Clicker and Idle Miner both
+offer a buy-all). A "Buy all (N)" button now sits beside the Available heading whenever two or more
+upgrades are affordable together. It buys cheapest first until the next one is out of reach, plays
+one sound and shows "Bought N upgrades". The count is a dry run of the same order, so the label
+matches what a tap does; a test checks that and that it stays hidden in the no-upgrades anomaly.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

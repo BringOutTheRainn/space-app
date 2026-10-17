@@ -7,7 +7,7 @@ import { abandonAnomaly, anomaliesUnlocked, enterAnomaly } from '../core/anomali
 import { COSMIC, COSMIC_BY_ID } from '../data/cosmic.js';
 import { DESTINATIONS, DESTINATION_BY_ID, RELICS } from '../data/expeditions.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
-import { availableUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
+import { affordableUpgradeCount, availableUpgrades, buyAllUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
 import { fmt, fmtPercent, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
@@ -30,18 +30,31 @@ export class UpgradesPanel implements Panel {
   private list: HTMLElement;
   private owned: HTMLElement;
   private ownedTitle: HTMLElement;
+  private buyAll: HTMLButtonElement;
 
   constructor(private root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `
-      <h3 class="section-title">${t('Available')}</h3>
+      <div class="upg-head"><h3 class="section-title">${t('Available')}</h3><button class="btn btn-plain upg-all" data-buy-all hidden></button></div>
       <div class="upg-list" id="upg-list"></div>
       <h3 class="section-title" id="upg-owned-title">${t('Bought')}</h3>
       <div class="upg-owned" id="upg-owned"></div>`;
     this.list = $('#upg-list', root);
     this.owned = $('#upg-owned', root);
     this.ownedTitle = $('#upg-owned-title', root);
+    this.buyAll = $('[data-buy-all]', root) as HTMLButtonElement;
     root.addEventListener('click', (e) => {
       const el = e.target as HTMLElement;
+      if (el.closest('[data-buy-all]')) {
+        const n = buyAllUpgrades(ctx.s, ctx.d);
+        if (n) {
+          sfxUpgrade();
+          haptic('medium');
+          ctx.recalc();
+          ctx.dirty();
+          toast(esc(t('Bought {n} upgrades', { n })));
+        } else sfxDenied();
+        return;
+      }
       const buy = el.closest<HTMLElement>('[data-buy]');
       if (buy) {
         const u = UPGRADE_BY_ID[buy.dataset.buy!];
@@ -82,6 +95,9 @@ export class UpgradesPanel implements Panel {
     this.list.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
       toggleClass(b, 'afford', upgradePrice(d, UPGRADE_BY_ID[b.dataset.buy!]) <= s.stardust);
     });
+    const n = affordableUpgradeCount(s, d);
+    setHidden(this.buyAll, n < 2);
+    if (n >= 2) setText(this.buyAll, t('Buy all ({n})', { n }));
   }
 }
 

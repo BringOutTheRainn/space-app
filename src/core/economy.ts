@@ -286,6 +286,30 @@ export function buyUpgrade(s: GameState, d: Derived, id: string): boolean {
   return true;
 }
 
+/** Upgrades affordable right now if bought cheapest first, without spending. */
+export function affordableUpgradeCount(s: GameState, d: Derived): number {
+  if (d.noUpgrades) return 0;
+  let left = s.stardust;
+  let n = 0;
+  for (const u of availableUpgrades(s)) {
+    const price = upgradePrice(d, u);
+    if (price > left) break;
+    left -= price;
+    n++;
+  }
+  return n;
+}
+
+/** Buys upgrades cheapest first until the next one is out of reach. Returns how many were bought. */
+export function buyAllUpgrades(s: GameState, d: Derived): number {
+  let n = 0;
+  for (;;) {
+    const next = availableUpgrades(s)[0];
+    if (!next || !buyUpgrade(s, d, next.id)) return n;
+    n++;
+  }
+}
+
 // ---------------------------------------------------------------- cosmic
 
 export function cosmicAvailable(s: GameState, id: string): boolean {

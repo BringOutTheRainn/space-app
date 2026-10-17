@@ -489,6 +489,8 @@ export const ES: Record<string, string> = {
   "A golden sky trail that circles your world.": "Una estela dorada que rodea tu mundo.",
   "Reduce motion (no flashes, calmer sky)": "Reducir movimiento (sin destellos, cielo más tranquilo)",
   "{n} owned; the next upgrade unlocks at {to}": "{n} en propiedad; la siguiente mejora se desbloquea en {to}",
+  "Buy all ({n})": "Comprar todo ({n})",
+  "Bought {n} upgrades": "Compraste {n} mejoras",
   // Generators
   'Mining Drone': 'Dron Minero',
   'A tiny robot that chips at the rock while you sleep.': 'Un robot diminuto que pica la roca mientras duermes.',

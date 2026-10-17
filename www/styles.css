@@ -393,6 +393,9 @@ body.has-banner #app { padding-bottom: 60px; }
   color: var(--dim);
 }
 .section-title:first-child { margin-top: 2px; }
+.upg-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.upg-head .section-title { margin: 2px 2px 8px; }
+.upg-all { min-height: 40px; padding: 8px 14px; margin-bottom: 6px; font-size: 13px; color: var(--gold); border-color: var(--gold-dim); }
 .empty, .hint-text { color: var(--dim); font-size: 13px; margin: 6px 2px; }
 .upg-list { display: flex; flex-direction: column; gap: 6px; }
 .upg-card {

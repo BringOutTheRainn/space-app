@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fmt, fmtTime, fmtPercent, setNumberStyle } from '../www/js/core/format.js';
 import { newState } from '../www/js/core/state.js';
-import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic } from '../www/js/core/economy.js';
+import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic, buyAllUpgrades, affordableUpgradeCount, upgradePrice } from '../www/js/core/economy.js';
 import { catchComet, scheduleNextComet, cometDue } from '../www/js/core/comets.js';
 import { darkMatterForEarnings, pendingDarkMatter, collapse, canCollapse } from '../www/js/core/prestige.js';
 import { checkAchievements } from '../www/js/core/achievements.js';
@@ -1192,4 +1192,21 @@ test('a save with any field of the wrong type still loads and plays', async () =
     }
   }
   assert.deepEqual(failures, []);
+});
+
+test('buy all takes upgrades cheapest first and matches the preview count', () => {
+  const s = newState(0);
+  s.generators = s.generators.map(() => 30);
+  s.earnedRun = s.earnedAll = 1e15;
+  const d = computeDerived(s);
+  const ups = availableUpgrades(s);
+  assert.ok(ups.length >= 3);
+  s.stardust = upgradePrice(d, ups[0]) + upgradePrice(d, ups[1]) + upgradePrice(d, ups[2]) - 1;
+  const preview = affordableUpgradeCount(s, d);
+  assert.equal(preview, 2);
+  assert.equal(buyAllUpgrades(s, d), preview);
+  assert.ok(s.upgrades[ups[0].id] && s.upgrades[ups[1].id] && !s.upgrades[ups[2].id]);
+  assert.ok(s.stardust >= 0);
+  assert.equal(buyAllUpgrades(s, d), 0);
+  assert.equal(affordableUpgradeCount(s, { ...d, noUpgrades: true }), 0);
 });
