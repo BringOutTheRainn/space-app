@@ -1210,3 +1210,23 @@ test('buy all takes upgrades cheapest first and matches the preview count', () =
   assert.equal(buyAllUpgrades(s, d), 0);
   assert.equal(affordableUpgradeCount(s, { ...d, noUpgrades: true }), 0);
 });
+
+test('auto-researchers make the fabricators buy affordable upgrades too', async () => {
+  const { autoBuyStep } = await import('../www/js/core/autobuy.js');
+  const s = newState(0);
+  s.stardust = 1e6;
+  s.generators[0] = 10; s.generators[1] = 5;
+  s.cosmic.fabricators = true;
+  assert.ok(availableUpgrades(s).length > 0);
+  autoBuyStep(s, computeDerived(s, 0), 0);
+  assert.equal(Object.keys(s.upgrades).length, 0, 'fabricators alone leave upgrades alone');
+  s.cosmic.scholars = true;
+  const d = computeDerived(s, 0);
+  assert.ok(d.autoUpgrade);
+  const expected = affordableUpgradeCount(s, d);
+  assert.ok(expected > 0);
+  assert.equal(autoBuyStep(s, d, 0), expected);
+  assert.equal(Object.keys(s.upgrades).length, expected);
+  s.autoBuyOn = false; s.stardust = 1e12;
+  assert.equal(autoBuyStep(s, computeDerived(s, 0)), 0, 'the Auto switch turns both off');
+});

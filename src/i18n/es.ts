@@ -491,6 +491,8 @@ export const ES: Record<string, string> = {
   "{n} owned; the next upgrade unlocks at {to}": "{n} en propiedad; la siguiente mejora se desbloquea en {to}",
   "Buy all ({n})": "Comprar todo ({n})",
   "Bought {n} upgrades": "Compraste {n} mejoras",
+  "Auto-Researchers": "Autoinvestigadores",
+  "The Auto-Fabricators also buy every upgrade you can afford, cheapest first.": "Los Autofabricadores también compran todas las mejoras que puedas pagar, de la más barata a la más cara.",
   // Generators
   'Mining Drone': 'Dron Minero',
   'A tiny robot that chips at the rock while you sleep.': 'Un robot diminuto que pica la roca mientras duermes.',

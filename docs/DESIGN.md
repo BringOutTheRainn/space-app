@@ -484,6 +484,14 @@ upgrades are affordable together. It buys cheapest first until the next one is o
 one sound and shows "Bought N upgrades". The count is a dry run of the same order, so the label
 matches what a tap does; a test checks that and that it stays hidden in the no-upgrades anomaly.
 
+**Run 29. Auto-Researchers.** Run 4 left upgrades manual on purpose, and Antimatter Dimensions
+players value automation most when it arrives after they have done the work by hand. By the late
+game, though, buying upgrades is pure upkeep after every collapse. A new 250 Dark Matter Cosmic upgrade
+below Auto-Fabricators makes the fabricators also buy every affordable upgrade each second, cheapest
+first (reusing run 28's buy-all), before they buy generators. The same Auto switch on the Build tab
+turns both off, and anomalies that forbid upgrades still forbid them. A test checks that the
+fabricators alone leave upgrades alone.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
