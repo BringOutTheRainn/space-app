@@ -517,6 +517,14 @@ Generator upgrades now carry their unlock count as data (`need`) instead of only
 list cannot drift from the real unlocks; a test checks the order and that unlocked ones move up to
 Available. Hidden in anomalies that forbid upgrades.
 
+**Run 33. Performance re-check after runs 28 to 32.** Same late-game save as run 18, CPU slowed 6x.
+With the Auto switch off, an idle screen still makes no DOM changes on any tab, so Buy all's count and
+the Coming up list (both recomputed every refresh) are cached correctly; the three upgrade helpers
+together cost about 0.04 ms per refresh. With Auto-Fabricators and Auto-Researchers running, each
+purchase updates the bought generator's row (owned count, price, tier bar) about once a second, which
+is the intended feedback. Frame times are 30 fps on the Upgrades tab and 20 to 30 on Build at 6x
+throttle, a little better than run 18, and still mostly software painting of the sky. Nothing to fix.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
