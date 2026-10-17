@@ -1288,3 +1288,22 @@ test('every reminder sentence has a Spanish and Portuguese translation', async (
     for (const p of r.parts) assert.ok(REMINDER_TEXT.includes(p.key), p.key);
   }
 });
+
+test('no English sentence in the game logic or data is missing a translation', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  const missing = [];
+  for (const dir of ['src/core', 'src/data']) {
+    for (const f of readdirSync(dir)) {
+      const src = readFileSync(`${dir}/${f}`, 'utf8');
+      for (const line of src.split('\n')) {
+        if (/^\s*(\/\/|\*|import)|throw |Error\(|console\./.test(line)) continue;
+        for (const m of line.matchAll(/(?<![\w.(])'([A-Z][^'\n]{6,})'/g)) {
+          if (m[1].includes(' ') && !(ES[m[1]] && PT[m[1]])) missing.push(`${f}: ${m[1]}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(missing, []);
+});

@@ -542,6 +542,15 @@ Comet results now carry their duration and the app words them with `t()`; remind
 sentences with values and are translated just before scheduling. 17 strings added in both languages,
 and a test fails if any reminder sentence lacks a translation.
 
+**Run 36. Translation sweep.** Following run 35, every capitalised sentence in the game logic, data
+and UI code was checked against the Spanish and Portuguese dictionaries, and every `toast()` call was
+read for text that skips `t()`. Nothing else was shown untranslated. Three leftovers were English text
+that is never shown (an old mission describer, garden seed blurbs, and the comet results' English
+title and detail, replaced in run 35), so they were deleted rather than translated. A new test scans
+`src/core` and `src/data` for any sentence without both translations, so the next one fails CI instead
+of reaching players. A full Spanish pass over every screen, and catching comets in Spanish, showed
+only Spanish text.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
