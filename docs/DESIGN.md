@@ -589,6 +589,15 @@ Spanish (Latin America) and Portuguese (Brazil), in the tagged format the Play C
 using the same names for features as the game (Ráfaga de Polvo Estelar, Bolsa de Dobra and so on).
 A copy is in `store/release-notes.txt`, and a test keeps each language under Play's 500 characters.
 
+**Run 43. Brazilian number format.** Portuguese text wrote whole numbers the Brazilian way
+(1.000 for a thousand) while prices and rates kept the English decimal point (2.5K), so the same
+screen read 1.000 as a thousand and 2.5 as two and a half. Brazil writes two and a half as 2,5, so in
+Portuguese every short number, percentage and decimal now uses a comma (2,5K, 0,6%, 1,2/s) and
+thousands keep the dot. English and Spanish (Latin America uses the point) are unchanged. Six
+places that wrote decimals directly (vault hours, market prices, the collapse multiplier) now use
+one helper. The Portuguese store screenshots were regenerated, and a test covers all three
+languages.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

@@ -1341,3 +1341,24 @@ test('Play release notes fit the 500 character limit in every language', async (
   assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'pt-BR']);
   for (const m of notes) assert.ok(m[2].length <= 500, `${m[1]}: ${m[2].length}`);
 });
+
+test('Portuguese writes decimals with a comma and thousands with a dot; English and Spanish keep the point', async () => {
+  const { setLanguage } = await import('../www/js/i18n/index.js');
+  const { fmtDec, fmtLong } = await import('../www/js/core/format.js');
+  try {
+    setLanguage('pt');
+    assert.equal(fmt(2500), '2,5K');
+    assert.equal(fmt(1.23e9), '1,23B');
+    assert.equal(fmtPercent(0.025), '2,5%');
+    assert.equal(fmtDec(3.25, 2), '3,25');
+    assert.equal(fmtLong(12345), '12.345');
+    setLanguage('es');
+    assert.equal(fmt(2500), '2.5K');
+    assert.equal(fmtPercent(0.025), '2.5%');
+  } finally {
+    setLanguage('en');
+  }
+  assert.equal(fmt(2500), '2.5K');
+  assert.equal(fmtLong(12345), '12,345');
+
+});

@@ -12,14 +12,36 @@ export function setNumberStyle(s: NumberStyle): void {
   style = s;
 }
 
+// Brazil writes 2,5 for two and a half, with dots between thousands.
+let locale = 'en-US';
+let comma = false;
+
+export function setNumberLocale(tag: string): void {
+  locale = tag;
+  comma = tag.startsWith('pt');
+}
+
+function mark(text: string): string {
+  return comma ? text.replace('.', ',') : text;
+}
+
+/** A plain decimal such as 2.5, written the local way. */
+export function fmtDec(n: number, digits = 1): string {
+  return mark(n.toFixed(digits));
+}
+
 function trimFixed(n: number, digits: number): string {
   return n.toFixed(digits).replace(/\.?0+$/, '');
 }
 
 /** Short form for counters and prices: 999, 1.23K, 45.6M, 1.00e+66. */
 export function fmt(n: number, decimalsUnder1000 = 0): string {
+  return mark(fmtRaw(n, decimalsUnder1000));
+}
+
+function fmtRaw(n: number, decimalsUnder1000: number): string {
   if (!isFinite(n)) return n > 0 ? '∞' : '-∞';
-  if (n < 0) return '-' + fmt(-n, decimalsUnder1000);
+  if (n < 0) return '-' + fmtRaw(-n, decimalsUnder1000);
   if (n < 1000) {
     if (decimalsUnder1000 > 0 && n < 100 && n !== Math.floor(n)) return trimFixed(n, decimalsUnder1000);
     return Math.floor(n).toString();
@@ -34,17 +56,17 @@ export function fmt(n: number, decimalsUnder1000 = 0): string {
   // Guard against 999.995 rounding up to "1000.00K".
   const digits = scaled >= 100 ? 1 : 2;
   let text = scaled.toFixed(digits);
-  if (parseFloat(text) >= 1000) return fmt(Math.pow(1000, tier + 1), decimalsUnder1000);
+  if (parseFloat(text) >= 1000) return fmtRaw(Math.pow(1000, tier + 1), decimalsUnder1000);
   text = trimFixed(scaled, digits);
   return text + SHORT[tier];
 }
 
 /** Long form for descriptions: "1.23 million". */
 export function fmtLong(n: number): string {
-  if (n < 1e6 || style === 'scientific') return n < 1e6 ? Math.floor(n).toLocaleString('en-US') : fmt(n);
+  if (n < 1e6 || style === 'scientific') return n < 1e6 ? Math.floor(n).toLocaleString(locale) : fmt(n);
   const tier = Math.floor(Math.log10(n) / 3);
   if (tier >= LONG.length) return fmt(n);
-  return trimFixed(n / Math.pow(1000, tier), 3) + ' ' + LONG[tier];
+  return mark(trimFixed(n / Math.pow(1000, tier), 3)) + ' ' + LONG[tier];
 }
 
 /** Rates like "0.1" or "4.5K". */
@@ -67,6 +89,6 @@ export function fmtTime(seconds: number): string {
 
 export function fmtPercent(fraction: number): string {
   const pct = fraction * 100;
-  if (pct > 0 && pct < 0.1) return '<0.1%';
-  return (pct >= 100 ? fmt(pct) : trimFixed(pct, 1)) + '%';
+  if (pct > 0 && pct < 0.1) return mark('<0.1%');
+  return (pct >= 100 ? fmt(pct) : mark(trimFixed(pct, 1))) + '%';
 }

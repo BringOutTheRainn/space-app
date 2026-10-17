@@ -7,7 +7,7 @@ import { PRODUCTS, PRODUCT_BY_ID, SKINS, type Product } from '../data/store.js';
 import { crystalsUnlocked } from '../core/crystals.js';
 import { currentEvent, eventActive, eventTimeLeft } from '../core/event.js';
 import { currentPass, seasonTimeLeft } from '../core/pass.js';
-import { fmt, fmtTime } from '../core/format.js';
+import { fmt, fmtDec, fmtTime } from '../core/format.js';
 import { HALO_STREAK } from '../core/wheel.js';
 import {
   STARTER_PCT, SUPPORTER_MULT, VAULT_CAP_HOURS, VAULT_HOURS_PER_CRYSTAL, VAULT_RATE,
@@ -224,7 +224,7 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
     parts.push(`<div class="shop-card">
       <div class="shop-row">${icon('darkMatter')}<div class="shop-main"><b>${t('Stardust Vault')}</b><span>${t('Saves {n} minutes of production every hour, even while you are away, up to {cap} hours.', { n: VAULT_RATE * 60, cap: VAULT_CAP_HOURS })}${crystalsUnlocked(s) ? ` ${t('Plus a crystal for every {n} hours saved.', { n: VAULT_HOURS_PER_CRYSTAL })}` : ''}</span></div></div>
       <div class="bar"><div class="bar-fill vault-fill" style="width:${(s.vaultHours / VAULT_CAP_HOURS) * 100}%"></div></div>
-      <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: s.vaultHours.toFixed(1), cap: VAULT_CAP_HOURS, sd: fmt(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
+      <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: fmtDec(s.vaultHours), cap: VAULT_CAP_HOURS, sd: fmt(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
       ${buyButton(ctx, 'vault_open', s.vaultHours >= 1 ? t('Open {price}', { price: productPrice('vault_open') }) : t('Filling'))}</div></div>`);
 
     const pass = currentPass(s, now);

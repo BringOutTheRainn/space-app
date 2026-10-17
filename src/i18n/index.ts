@@ -3,7 +3,7 @@
 
 import { ES } from './es.js';
 import { PT } from './pt.js';
-import { fmt } from '../core/format.js';
+import { fmt, setNumberLocale } from '../core/format.js';
 
 export type Lang = 'en' | 'es' | 'pt';
 export type LangSetting = 'auto' | Lang;
@@ -12,6 +12,8 @@ export const LANG_NAMES: Record<Lang, string> = { en: 'English', es: 'Español',
 
 /** Languages chosen automatically from the phone's language. Players can still pick any language in Settings. */
 export const AUTO_LANGS: Lang[] = ['es', 'pt'];
+
+const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
 
 const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT };
 
@@ -32,6 +34,7 @@ export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): 
 export function setLanguage(setting: LangSetting): Lang {
   lang = resolveLang(setting);
   dict = DICTS[lang];
+  setNumberLocale(LOCALES[lang]);
   if (typeof document !== 'undefined') document.documentElement.lang = lang;
   return lang;
 }
@@ -60,7 +63,6 @@ export function t(en: string, vars?: Record<string, string | number>): string {
 export type PhraseArg = string | number | { big: number };
 export type Phrase = [string, Record<string, PhraseArg>];
 
-const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
 
 export function phrase([tpl, vars]: Phrase): string {
   const out: Record<string, string> = {};

@@ -7,7 +7,7 @@ import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, pluralName } from '../data/upgrades.js';
 import { claimDaily, dailyReward, nextStreakDay, rewardMinutes } from '../core/daily.js';
-import { fmt, fmtLong, fmtPercent, fmtRate, fmtTime, setNumberStyle } from '../core/format.js';
+import { fmt, fmtDec, fmtLong, fmtPercent, fmtRate, fmtTime, setNumberStyle } from '../core/format.js';
 import { exportSave, importSave } from '../core/save.js';
 import { achievementCount, newState, totalGenerators, upgradeCount } from '../core/state.js';
 import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from './audio.js';
@@ -236,7 +236,7 @@ function awayRows(r: AwayReport): string {
     rows.push(['exchange', r.marketPL >= 0 ? t('Your goods are up {n} credits', { n: pl }) : t('Your goods are down {n} credits', { n: pl })]);
   }
   if (r.flux >= 1) rows.push(['rift', t('+{n} event Flux', { n: fmt(r.flux) })]);
-  if (r.vaultHours >= 1) rows.push(['darkMatter', t('Stardust Vault: {n} hours saved', { n: r.vaultHours.toFixed(1) })]);
+  if (r.vaultHours >= 1) rows.push(['darkMatter', t('Stardust Vault: {n} hours saved', { n: fmtDec(r.vaultHours) })]);
   if (!rows.length) return '';
   return `<ul class="away-list">${rows.map(([ico, text]) => `<li>${icon(ico)}<span>${esc(text)}</span></li>`).join('')}</ul>`;
 }
@@ -814,11 +814,11 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
       return `<div class="good${tip ? ' tipped' : ''}">
         <div class="good-top">
           <div class="good-name"><b>${esc(t(def.name))}</b>${tip ? `<span class="good-tip">${t('Tip')}</span>` : ''}<span class="dim small">${t('rests at {n}', { n: def.rest })}</span></div>
-          <div class="good-price ${move >= 0 ? 'up' : 'down'}">${g.price.toFixed(1)}<span>${move >= 0 ? '▲' : '▼'} ${Math.abs(move).toFixed(1)}</span></div>
+          <div class="good-price ${move >= 0 ? 'up' : 'down'}">${fmtDec(g.price)}<span>${move >= 0 ? '▲' : '▼'} ${fmtDec(Math.abs(move))}</span></div>
         </div>
         ${sparkline(g, def.rest)}
         <div class="good-foot">
-          <span class="good-held">${g.held} / ${hold}${g.held ? ` · ${t('paid {n}', { n: g.avg.toFixed(1) })}` : ''}${g.held ? ` · <b class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)}</b>` : ''}</span>
+          <span class="good-held">${g.held} / ${hold}${g.held ? ` · ${t('paid {n}', { n: fmtDec(g.avg) })}` : ''}${g.held ? ` · <b class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)}</b>` : ''}</span>
           <span class="good-btns">
             <button class="chip" data-buy="${i}" data-n="10" ${canBuy ? '' : 'disabled'}>+10</button>
             <button class="chip" data-buy="${i}" data-n="max" ${canBuy ? '' : 'disabled'}>${t('Max')}</button>

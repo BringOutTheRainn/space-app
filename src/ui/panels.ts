@@ -11,7 +11,7 @@ import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
 import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
-import { fmt, fmtPercent, fmtTime } from '../core/format.js';
+import { fmt, fmtDec, fmtPercent, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
 import { canCollapse, collapse, collapseGain, darkMatterPct, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
@@ -260,7 +260,7 @@ export class CosmosPanel implements Panel {
     const gainEl = $('#dm-gain', this.root);
     setHidden(gainEl, pending <= 0);
     if (pending > 0) {
-      setText(gainEl, t('Bonus +{from} → +{to} (x{mult})', { from: fmtPercent(dmPct * s.darkMatter), to: fmtPercent(dmPct * (s.darkMatter + pending)), mult: gain.toFixed(2) }));
+      setText(gainEl, t('Bonus +{from} → +{to} (x{mult})', { from: fmtPercent(dmPct * s.darkMatter), to: fmtPercent(dmPct * (s.darkMatter + pending)), mult: fmtDec(gain, 2) }));
       toggleClass(gainEl, 'good', gain >= 2);
     }
     const nextAt = earningsForNextDarkMatter(s);
