@@ -440,6 +440,15 @@ are fixed: the big owned count on generator cards (2.9:1), text on generators yo
 the red Erase button (3.8:1). Cards now fade to 86% and the count and button colours are adjusted;
 everything passes. Unaffordable cards still read as unaffordable from their red price and plain border.
 
+**Run 23. Teen ad cap and a 48-hour pacing check.** The Play listing's audience includes 13 to 15
+year olds, so AdMob now starts with the maximum ad content rating set to Teen; `docs/STORE.md` says to
+set the same cap in the AdMob console. The Android back button and pause/resume were checked and were
+already handled. A 48-hour run of the pacing bot (non-stop play, 3 taps a second) reached all 14
+generators by 11.5 hours, 16 universes and 112 achievements. Universes 7 to 13 each took under an hour
+(the Dark Matter bonus doubles each time), then runs lengthen to 8 to 12 hours. Real players are away
+most of that time, so this spreads over several days of play; balance is left as it is for launch, and
+the fast middle stretch is the first place to look if launch data shows players finishing too soon.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

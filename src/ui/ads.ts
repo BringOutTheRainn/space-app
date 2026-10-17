@@ -9,7 +9,7 @@ import { isNative } from './platform.js';
 import { suspendAudio, resumeAudio } from './audio.js';
 
 interface AdMobPlugin {
-  initialize(o: { initializeForTesting?: boolean }): Promise<void>;
+  initialize(o: { initializeForTesting?: boolean; maxAdContentRating?: 'General' | 'ParentalGuidance' | 'Teen' | 'MatureAudience' }): Promise<void>;
   requestConsentInfo?(): Promise<{ status: string; isConsentFormAvailable?: boolean; privacyOptionsRequirementStatus?: string }>;
   showConsentForm?(): Promise<unknown>;
   showPrivacyOptionsForm?(): Promise<unknown>;
@@ -53,7 +53,8 @@ async function startAds(): Promise<void> {
     return;
   }
   try {
-    await ad.initialize({ initializeForTesting: AD_CONFIG.testing });
+    // The Play listing targets 13 and over, so ads are capped at Teen content.
+    await ad.initialize({ initializeForTesting: AD_CONFIG.testing, maxAdContentRating: 'Teen' });
     // Ask for consent where the law requires it (EEA and UK).
     const info = await ad.requestConsentInfo?.();
     if (info && info.isConsentFormAvailable && info.status === 'REQUIRED') await ad.showConsentForm?.();

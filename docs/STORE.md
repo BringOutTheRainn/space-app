@@ -76,7 +76,9 @@ Orbit every day. Always a next goal.
   Crystal packs $0.99 / $4.99 / $9.99, Event Pass $2.99, Stardust Vault $2.99, Star Pass $4.99,
   four planet skins $0.99 each. None of them is a random reward, so no loot box odds are needed.
 - **Target audience:** 13 and over (13-15, 16-17, 18+). Not designed for children; the ads use
-  personalised AdMob ads, which Families policy would not allow for under-13s.
+  personalised AdMob ads, which Families policy would not allow for under-13s. Because 13-15 is in
+  the audience, the game caps ad content at the Teen rating (also set this in AdMob, Blocking
+  controls, Sensitive categories / max ad content rating, so both agree).
 - **Content rating (IARC questionnaire):** category Game. Violence, fear, sexuality, language,
   controlled substances: none. Gambling: no real-money gambling and no simulated gambling (the Lucky
   Orbit wheel is free and pays only in-game boosts, never bought with money or crystals). User
