@@ -99,6 +99,44 @@ Orbit every day. Always a next goal.
 - **News app:** No. **COVID-19 app:** No. **Government app:** No. **Financial features:** None.
 - **Health apps:** No.
 
+## Release notes for the first release
+
+Paste into **Release notes** when creating the release (closed test and production). Play limits
+each language to 500 characters; these are 423 to 495. Keep the language tags.
+
+```
+<en-US>
+Welcome to Stardust Empire!
+• Tap your asteroid and grow it into a black hole
+• 14 generators, 150+ upgrades and 150+ achievements
+• Catch comets for Stardust Rushes and Lucky Hauls
+• Collapse the universe for Dark Matter and permanent upgrades
+• Expeditions, the Warp Exchange, the Nebula Garden and weekend events
+• Plays offline, in English, Spanish and Portuguese
+Thanks for playing! Tell us what you think in a review.
+</en-US>
+<es-419>
+¡Bienvenido a Stardust Empire!
+• Toca tu asteroide y conviértelo en un agujero negro
+• 14 generadores, más de 150 mejoras y más de 150 logros
+• Atrapa cometas para conseguir Ráfagas de Polvo Estelar y Botines de la suerte
+• Colapsa el universo para ganar Materia Oscura y mejoras permanentes
+• Expediciones, el Intercambio Warp, el Jardín de la Nebulosa y eventos de fin de semana
+• Funciona sin conexión, en español, inglés y portugués
+¡Gracias por jugar! Cuéntanos qué te parece en una reseña.
+</es-419>
+<pt-BR>
+Bem-vindo ao Stardust Empire!
+• Toque no seu asteroide e transforme-o em um buraco negro
+• 14 geradores, mais de 150 melhorias e mais de 150 conquistas
+• Pegue cometas para ganhar Rajadas de Poeira Estelar e Saques da sorte
+• Colapse o universo para ganhar Matéria Escura e melhorias permanentes
+• Expedições, a Bolsa de Dobra, o Jardim da Nebulosa e eventos de fim de semana
+• Funciona offline, em português, inglês e espanhol
+Obrigado por jogar! Conte o que achou em uma avaliação.
+</pt-BR>
+```
+
 ## Closed test (required for new personal accounts)
 
 New personal developer accounts must run a closed test with at least 12 testers who stay opted in

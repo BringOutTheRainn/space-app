@@ -583,6 +583,12 @@ open Trophies on tap. Toasts sit over the sky and pass taps through to it on pur
 toast would steal taps from players tapping fast, and a stray tap would jump them to another tab.
 The new Trophies dot already does that job.
 
+**Run 42. Release notes.** Play asks for "What's new" text with every release, including the first
+closed test, and the listing docs had none. `docs/STORE.md` now has first-release notes in English,
+Spanish (Latin America) and Portuguese (Brazil), in the tagged format the Play Console accepts,
+using the same names for features as the game (Ráfaga de Polvo Estelar, Bolsa de Dobra and so on).
+A copy is in `store/release-notes.txt`, and a test keeps each language under Play's 500 characters.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

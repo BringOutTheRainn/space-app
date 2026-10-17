@@ -1333,3 +1333,11 @@ test('older saves count earned achievements as already seen, so the Trophies bad
   s.trophiesSeen = 1;
   assert.equal(deserialize(serialize(s)).trophiesSeen, 1);
 });
+
+test('Play release notes fit the 500 character limit in every language', async () => {
+  const { readFileSync } = await import('node:fs');
+  const doc = readFileSync('docs/STORE.md', 'utf8');
+  const notes = [...doc.matchAll(/<([\w-]+)>\n([\s\S]*?)\n<\/\1>/g)];
+  assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'pt-BR']);
+  for (const m of notes) assert.ok(m[2].length <= 500, `${m[1]}: ${m[2].length}`);
+});
