@@ -5,10 +5,10 @@ import { availableNews } from './data/news.js';
 import { checkAchievements, grantAchievement } from './core/achievements.js';
 import { checkAnomaly } from './core/anomalies.js';
 import { ANOMALY_BY_ID } from './data/anomalies.js';
-import { catchComet, cometDue, cometStaySeconds, rollBlack, scheduleNextComet } from './core/comets.js';
+import { catchComet, cometDue, cometStaySeconds, rollBlack, scheduleNextComet, type CometResult } from './core/comets.js';
 import { dailyReady } from './core/daily.js';
 import { freeSpinReady } from './core/wheel.js';
-import { availableUpgrades, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
+import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
 import { fmt, fmtRate, fmtTime } from './core/format.js';
 import { canCollapse } from './core/prestige.js';
 import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
@@ -136,9 +136,10 @@ function start(): void {
       ctx.recalc();
       sfxComet();
       haptic('heavy');
-      sky.floatCenter(r.title, black ? '#c58bff' : '#bff6ff', 28);
+      const [title, detail] = cometText(r);
+      sky.floatCenter(title, black ? '#c58bff' : '#bff6ff', 28);
       if (r.amount > 0) sky.floatCenter('+' + fmt(r.amount), '#ffcf5a', 26);
-      toast(`<div class="t-ico">${icon(black ? 'blackComet' : 'comet')}</div><div><b>${esc(r.title)}</b><br>${esc(r.amount > 0 ? `+${fmt(r.amount)} Stardust` : r.detail)}</div>`, r.kind === 'well' ? 'bad' : 'comet');
+      toast(`<div class="t-ico">${icon(black ? 'blackComet' : 'comet')}</div><div><b>${esc(title)}</b><br>${esc(detail)}</div>`, r.kind === 'well' ? 'bad' : 'comet');
     },
     onCometMissed: () => undefined,
   });
@@ -590,3 +591,15 @@ try {
     <textarea class="code" readonly>${esc(errorReport(VERSION))}</textarea></div>`;
 }
 
+/** A caught comet's title and detail line in the player's language. */
+function cometText(r: CometResult): [string, string] {
+  const gain = t('+{n} Stardust', { n: fmt(r.amount) });
+  switch (r.kind) {
+    case 'rush': return [t('Stardust Rush!'), t('Production x{m} for {s}s', { m: BUFF_MULT.rush, s: r.secs })];
+    case 'haul': return [t('Lucky Haul!'), gain];
+    case 'supernova': return [t('Supernova Tap!'), t('Taps x{m} for {s}s', { m: BUFF_MULT.supernova, s: r.secs })];
+    case 'horizon': return [t('Event Horizon!'), t('Production x{m} for {s}s', { m: BUFF_MULT.horizon, s: r.secs })];
+    case 'bighaul': return [t('Dark Bounty!'), gain];
+    case 'well': return [t('Gravity Well...'), t('Production halved for {s}s', { s: r.secs })];
+  }
+}

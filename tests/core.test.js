@@ -1269,3 +1269,22 @@ test('collapse gain compares the Dark Matter bonus before and after', async () =
   s.cosmic.resonance = true; s.cosmic.resonance2 = true;
   assert.ok(Math.abs(darkMatterPct(s) - 0.04) < 1e-12);
 });
+
+test('every reminder sentence has a Spanish and Portuguese translation', async () => {
+  const { planReminders, REMINDER_TEXT } = await import('../www/js/core/notify.js');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  for (const key of REMINDER_TEXT) {
+    assert.ok(ES[key], `es: ${key}`);
+    assert.ok(PT[key], `pt: ${key}`);
+  }
+  const now = new Date(2026, 9, 11, 9, 0, 0).getTime();
+  const s = newState(now);
+  s.generators[0] = 5; s.dailyStreak = 3; s.dailyLastDay = 0;
+  s.hyperEndsAt = now + 2 * 3600000;
+  s.expeditions = [{ id: 'x', startedAt: now, returnsAt: now + 3600000 }];
+  for (const r of planReminders(s, computeDerived(s, now), now)) {
+    assert.ok(REMINDER_TEXT.includes(r.title), r.title);
+    for (const p of r.parts) assert.ok(REMINDER_TEXT.includes(p.key), p.key);
+  }
+});

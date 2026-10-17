@@ -3,6 +3,7 @@
 
 import type { Reminder } from '../core/notify.js';
 import { isNative } from './platform.js';
+import { t } from '../i18n/index.js';
 
 interface LocalNotificationsPlugin {
   checkPermissions(): Promise<{ display: string }>;
@@ -42,7 +43,7 @@ export async function scheduleReminders(list: Reminder[]): Promise<void> {
   try {
     await p.cancel({ notifications: IDS.map((id) => ({ id })) });
     if (!list.length) return;
-    await p.schedule({ notifications: list.map((r) => ({ id: r.id, title: r.title, body: r.body, schedule: { at: new Date(r.at) } })) });
+    await p.schedule({ notifications: list.map((r) => ({ id: r.id, title: t(r.title), body: r.parts.map((part) => t(part.key, part.vars)).join(' '), schedule: { at: new Date(r.at) } })) });
   } catch {
     /* notifications are a nice-to-have */
   }

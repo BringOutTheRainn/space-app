@@ -14,6 +14,8 @@ export interface CometResult {
   title: string;
   detail: string;
   amount: number;
+  /** How long the buff lasts, 0 for a payout. */
+  secs: number;
   black: boolean;
 }
 
@@ -55,27 +57,27 @@ export function catchComet(s: GameState, d: Derived, black: boolean, rng: Rng = 
     if (roll < 0.45) {
       const secs = Math.round(77 * dur);
       addBuff(s, 'rush', secs);
-      return { kind: 'rush', title: 'Stardust Rush!', detail: `Production x${BUFF_MULT.rush} for ${secs}s`, amount: 0, black };
+      return { kind: 'rush', title: 'Stardust Rush!', detail: `Production x${BUFF_MULT.rush} for ${secs}s`, amount: 0, secs, black };
     }
     if (roll < 0.9) {
       const amount = Math.min(s.stardust * 0.15, d.baseSps * 900) + 13;
       earn(s, amount);
-      return { kind: 'haul', title: 'Lucky Haul!', detail: 'Free Stardust', amount, black };
+      return { kind: 'haul', title: 'Lucky Haul!', detail: 'Free Stardust', amount, secs: 0, black };
     }
     const secs = Math.round(13 * dur);
     addBuff(s, 'supernova', secs);
-    return { kind: 'supernova', title: 'Supernova Tap!', detail: `Taps x${BUFF_MULT.supernova} for ${secs}s`, amount: 0, black };
+    return { kind: 'supernova', title: 'Supernova Tap!', detail: `Taps x${BUFF_MULT.supernova} for ${secs}s`, amount: 0, secs, black };
   }
   if (roll < 0.45) {
     const secs = Math.round(13 * dur);
     addBuff(s, 'horizon', secs);
-    return { kind: 'horizon', title: 'Event Horizon!', detail: `Production x${BUFF_MULT.horizon} for ${secs}s`, amount: 0, black };
+    return { kind: 'horizon', title: 'Event Horizon!', detail: `Production x${BUFF_MULT.horizon} for ${secs}s`, amount: 0, secs, black };
   }
   if (roll < 0.75) {
     const amount = Math.min(s.stardust * 0.3, d.baseSps * 3600) + 13;
     earn(s, amount);
-    return { kind: 'bighaul', title: 'Dark Bounty!', detail: 'A huge pile of Stardust', amount, black };
+    return { kind: 'bighaul', title: 'Dark Bounty!', detail: 'A huge pile of Stardust', amount, secs: 0, black };
   }
   addBuff(s, 'well', 66);
-  return { kind: 'well', title: 'Gravity Well...', detail: 'Production halved for 66s', amount: 0, black };
+  return { kind: 'well', title: 'Gravity Well...', detail: 'Production halved for 66s', amount: 0, secs: 66, black };
 }

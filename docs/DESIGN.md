@@ -532,6 +532,16 @@ knowing what you already have. Under "Collapse now for" the Cosmos tab now reads
 gentle hint that the run has paid off. The Dark Matter percent now comes from one function shared with
 the Cosmos card (it was worked out twice), and a test covers the ratio and the Resonance upgrades.
 
+**Run 35. Store screenshots refreshed, and two translation gaps closed.** All 24 Play screenshots
+(English, es-419, pt-BR) were regenerated so they show the Next buy chip, Buy all and the collapse
+bonus line. Reviewing the Portuguese set turned up a real bug: comet pop-ups ("Supernova Tap! Taps x777
+for 13s") were built as English text in the game logic and shown as is, so Spanish and Portuguese
+players saw English on every comet. The same was true of all four phone reminders (storage full,
+Hyperdrive ended, probe returned, daily drop), which are the only text players see outside the app.
+Comet results now carry their duration and the app words them with `t()`; reminders carry their
+sentences with values and are translated just before scheduling. 17 strings added in both languages,
+and a test fails if any reminder sentence lacks a translation.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
