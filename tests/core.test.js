@@ -1323,3 +1323,13 @@ test('almost there lists the unearned achievements closest to done, and progress
     if (p !== null) assert.equal(p >= 1, a.check(s, 0), a.id);
   }
 });
+
+test('older saves count earned achievements as already seen, so the Trophies badge starts clear', () => {
+  const s = newState(0);
+  s.achievements = { earn_0: 1, taps_0: 2 };
+  const raw = JSON.parse(serialize(s));
+  delete raw.trophiesSeen;
+  assert.equal(deserialize(JSON.stringify(raw)).trophiesSeen, 2);
+  s.trophiesSeen = 1;
+  assert.equal(deserialize(serialize(s)).trophiesSeen, 1);
+});

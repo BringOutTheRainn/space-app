@@ -12,7 +12,7 @@ import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, 
 import { fmt, fmtRate, fmtTime } from './core/format.js';
 import { canCollapse } from './core/prestige.js';
 import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
-import { newState, type GameState } from './core/state.js';
+import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
@@ -383,6 +383,8 @@ function start(): void {
     toggleClass(document.querySelector('[data-tab="cosmos"]')!, 'locked', !cosmosUnlocked(ctx));
     badge('upgrades', !d.noUpgrades && availableUpgrades(s).some((u) => upgradePrice(d, u) <= s.stardust));
     badge('cosmos', canCollapse(s) && s.collapses === 0);
+    if (activeTab === 'trophies') s.trophiesSeen = achievementCount(s);
+    badge('trophies', achievementCount(s) > s.trophiesSeen);
     badge('probes', s.expeditions.some((e) => e.returnsAt <= Date.now()) || (d.expeditions && s.expeditions.length < d.expeditionSlots));
 
     if (rebuildAll || force) {

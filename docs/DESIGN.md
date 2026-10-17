@@ -564,6 +564,12 @@ ones) now carries its goal and current count. Progress is plain count over goal,
 made 659 of 1,000 per second look 94% done. A test checks the order and that a full bar always
 matches the achievement's own check.
 
+**Run 39. New trophy badge.** Earning an achievement only showed a toast, so a player who missed it
+had no reason to open Trophies. The Trophies tab now shows the same red dot as Upgrades whenever
+achievements were earned since it was last opened, and opening the tab clears it. Older saves count
+everything already earned as seen, so updating players don't get a stale dot. A test covers that
+migration, and a Playwright run confirmed the dot appears on a new achievement and clears on opening.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

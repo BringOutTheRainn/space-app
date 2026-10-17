@@ -93,6 +93,8 @@ export function deserialize(text: string, now = Date.now()): GameState {
   const s = { ...base, ...raw, version: SAVE_VERSION } as GameState;
   repairShapes(s, base);
   s.settings = { ...base.settings, ...(raw.settings as object) };
+  // Saves from before the Trophies badge count everything earned so far as seen.
+  if (typeof raw.trophiesSeen !== 'number') s.trophiesSeen = Object.keys(s.achievements ?? {}).length;
   // New generators added after this save was made start at zero.
   const gens = Array.isArray(raw.generators) ? (raw.generators as number[]) : [];
   s.generators = GENERATORS.map((_, i) => (typeof gens[i] === 'number' && gens[i] >= 0 ? Math.floor(gens[i]) : 0));

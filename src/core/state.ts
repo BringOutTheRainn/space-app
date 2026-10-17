@@ -58,6 +58,8 @@ export interface GameState {
   tapEarnedAll: number;
   tapsRun: number;
   tapsAll: number;
+  /** Achievements earned when the Trophies tab was last opened, for its badge. */
+  trophiesSeen: number;
   generators: number[];
   upgrades: Record<string, true>;
   achievements: Record<string, number>;
@@ -178,6 +180,7 @@ export function newState(now = Date.now()): GameState {
     tapEarnedAll: 0,
     tapsRun: 0,
     tapsAll: 0,
+    trophiesSeen: 0,
     generators: GENERATORS.map(() => 0),
     upgrades: {},
     achievements: {},
