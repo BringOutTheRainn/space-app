@@ -1243,3 +1243,16 @@ test('the Next buy amount lands exactly on the next tier upgrade', async () => {
     assert.ok(TIER_OWNED.includes(after), `${owned} -> ${after}`);
   }
 });
+
+test('coming-up upgrades show the next locked tier of owned generators, closest first', async () => {
+  const { upcomingUpgrades } = await import('../www/js/core/economy.js');
+  const s = newState(0);
+  assert.deepEqual(upcomingUpgrades(s), []);
+  s.generators[0] = 12; s.generators[1] = 21; s.generators[2] = 2;
+  const soon = upcomingUpgrades(s);
+  assert.deepEqual(soon.map((u) => u.id), ['harvester_2', 'drone_3', 'lunar_1']);
+  assert.ok(soon.every((u) => !u.unlock(s)));
+  s.generators[1] = 25;
+  assert.ok(!upcomingUpgrades(s).some((u) => u.id === 'harvester_2'), 'unlocked ones move to Available');
+  assert.ok(upcomingUpgrades(s, 5).some((u) => u.id === 'harvester_3'));
+});

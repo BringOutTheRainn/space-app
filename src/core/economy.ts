@@ -289,6 +289,22 @@ export function buyUpgrade(s: GameState, d: Derived, id: string): boolean {
   return true;
 }
 
+/**
+ * The next locked tier upgrade of each generator the player owns, closest to
+ * unlocking first (by the share of the way still to go).
+ */
+export function upcomingUpgrades(s: GameState, limit = 3): UpgradeDef[] {
+  const seen = new Set<number>();
+  const next: UpgradeDef[] = [];
+  for (const u of UPGRADES) {
+    if (!u.need || seen.has(u.need.gen) || s.upgrades[u.id] || u.unlock(s)) continue;
+    seen.add(u.need.gen);
+    if (s.generators[u.need.gen] > 0) next.push(u);
+  }
+  const left = (u: UpgradeDef) => 1 - s.generators[u.need!.gen] / u.need!.owned;
+  return next.sort((a, b) => left(a) - left(b) || a.cost - b.cost).slice(0, limit);
+}
+
 /** Upgrades affordable right now if bought cheapest first, without spending. */
 export function affordableUpgradeCount(s: GameState, d: Derived): number {
   if (d.noUpgrades) return 0;

@@ -495,6 +495,8 @@ export const ES: Record<string, string> = {
   "The Auto-Fabricators also buy every upgrade you can afford, cheapest first.": "Los Autofabricadores también compran todas las mejoras que puedas pagar, de la más barata a la más cara.",
   "Next": "Sig.",
   "Buy up to the next tier upgrade": "Comprar hasta la siguiente mejora de nivel",
+  "Coming up": "Próximamente",
+  "{gen}: {have} of {need}": "{gen}: {have} de {need}",
   // Generators
   'Mining Drone': 'Dron Minero',
   'A tiny robot that chips at the rock while you sleep.': 'Un robot diminuto que pica la roca mientras duermes.',

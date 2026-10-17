@@ -509,6 +509,14 @@ without moving the text). The seven 13px checkboxes it lists sit inside their fu
 rows, which are the real targets. A full Portuguese pass over every screen showed no missing strings
 and no errors after runs 28 to 30.
 
+**Run 32. Coming up.** Cookie Clicker's store shows the next upgrades before they can be bought, which
+gives every purchase a visible "almost there". The Upgrades tab now ends its Available list with a
+"Coming up" section: the next locked tier upgrade for up to three owned generators, closest to
+unlocking first, each with "Orbital Station: 4 of 5" and the same cyan-to-gold bar as the Build tab.
+Generator upgrades now carry their unlock count as data (`need`) instead of only a closure, so the
+list cannot drift from the real unlocks; a test checks the order and that unlocked ones move up to
+Available. Hidden in anomalies that forbid upgrades.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

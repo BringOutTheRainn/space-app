@@ -6,8 +6,9 @@ import { ANOMALIES, ANOMALY_BY_ID } from '../data/anomalies.js';
 import { abandonAnomaly, anomaliesUnlocked, enterAnomaly } from '../core/anomalies.js';
 import { COSMIC, COSMIC_BY_ID } from '../data/cosmic.js';
 import { DESTINATIONS, DESTINATION_BY_ID, RELICS } from '../data/expeditions.js';
+import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
-import { affordableUpgradeCount, availableUpgrades, buyAllUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
+import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
 import { fmt, fmtPercent, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
@@ -31,17 +32,24 @@ export class UpgradesPanel implements Panel {
   private owned: HTMLElement;
   private ownedTitle: HTMLElement;
   private buyAll: HTMLButtonElement;
+  private next: HTMLElement;
+  private nextTitle: HTMLElement;
+  private nextKey = '';
 
   constructor(private root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `
       <div class="upg-head"><h3 class="section-title">${t('Available')}</h3><button class="btn btn-plain upg-all" data-buy-all hidden></button></div>
       <div class="upg-list" id="upg-list"></div>
+      <h3 class="section-title" id="upg-next-title" hidden>${t('Coming up')}</h3>
+      <div class="upg-list upg-next" id="upg-next"></div>
       <h3 class="section-title" id="upg-owned-title">${t('Bought')}</h3>
       <div class="upg-owned" id="upg-owned"></div>`;
     this.list = $('#upg-list', root);
     this.owned = $('#upg-owned', root);
     this.ownedTitle = $('#upg-owned-title', root);
     this.buyAll = $('[data-buy-all]', root) as HTMLButtonElement;
+    this.next = $('#upg-next', root);
+    this.nextTitle = $('#upg-next-title', root);
     root.addEventListener('click', (e) => {
       const el = e.target as HTMLElement;
       if (el.closest('[data-buy-all]')) {
@@ -95,6 +103,23 @@ export class UpgradesPanel implements Panel {
     this.list.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
       toggleClass(b, 'afford', upgradePrice(d, UPGRADE_BY_ID[b.dataset.buy!]) <= s.stardust);
     });
+    const soon = d.noUpgrades ? [] : upcomingUpgrades(s);
+    const nextKey = soon.map((u) => `${u.id}:${s.generators[u.need!.gen]}`).join(',');
+    if (nextKey !== this.nextKey) {
+      this.nextKey = nextKey;
+      setHidden(this.nextTitle, !soon.length);
+      this.next.innerHTML = soon.map((u) => {
+        const { gen, owned } = u.need!;
+        const have = s.generators[gen];
+        return `
+          <div class="upg-card upg-soon">
+            <div class="upg-ico">${icon(u.icon)}</div>
+            <div class="upg-text"><div class="upg-name">${esc(tName(u))}</div>
+              <div class="upg-desc">${esc(t('{gen}: {have} of {need}', { gen: t(GENERATORS[gen].name), have, need: owned }))}</div>
+              <div class="gen-tier" aria-hidden="true"><i style="width:${(100 * have) / owned}%"></i></div></div>
+          </div>`;
+      }).join('');
+    }
     const n = affordableUpgradeCount(s, d);
     setHidden(this.buyAll, n < 2);
     if (n >= 2) setText(this.buyAll, t('Buy all ({n})', { n }));

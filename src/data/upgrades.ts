@@ -33,6 +33,8 @@ export interface UpgradeDef {
   icon: string;
   tier: number;
   unlock: (s: GameState) => boolean;
+  /** For generator lines: the owned count that unlocks it, shown as "coming up". */
+  need?: { gen: number; owned: number };
   effects: Effect[];
 }
 
@@ -86,7 +88,7 @@ function buildUpgrades(): UpgradeDef[] {
     [250, 1e14, 'Everywhere at Once', [{ k: 'droneFlatMult', mult: 20 }], 'Multiplies the Swarm Protocol bonus by 20.'],
   ];
   droneTiers.forEach(([n, cost, name, effects, desc], i) => {
-    list.push({ id: `drone_${i}`, name, desc, cost, group: 'generator', icon: 'drone', tier: i, unlock: owns(0, n), effects });
+    list.push({ id: `drone_${i}`, name, desc, cost, group: 'generator', icon: 'drone', tier: i, unlock: owns(0, n), need: { gen: 0, owned: n }, effects });
   });
 
   for (let g = 1; g < GENERATORS.length; g++) {
@@ -103,6 +105,7 @@ function buildUpgrades(): UpgradeDef[] {
         icon: def.id,
         tier: t,
         unlock: owns(g, n),
+        need: { gen: g, owned: n },
         effects: [{ k: 'gen', gen: g, mult: 2 }],
       });
     });
