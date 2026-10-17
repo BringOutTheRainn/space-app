@@ -487,6 +487,7 @@ export const ES: Record<string, string> = {
   "{n}-day spin streak": "Racha de {n} días",
   "Golden Halo": "Halo Dorado",
   "A golden sky trail that circles your world.": "Una estela dorada que rodea tu mundo.",
+  "Reduce motion (no flashes, calmer sky)": "Reducir movimiento (sin destellos, cielo más tranquilo)",
   // Generators
   'Mining Drone': 'Dron Minero',
   'A tiny robot that chips at the rock while you sleep.': 'Un robot diminuto que pica la roca mientras duermes.',

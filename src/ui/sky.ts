@@ -55,6 +55,8 @@ export class Sky {
   private rockShape: number[] = [];
   private craters: Array<[number, number, number]> = [];
   particlesOn = true;
+  /** Reduce motion: no full-screen flash or squash, and the sky moves at a third of the speed. */
+  reduceMotion = false;
   /** Battery saver draws the sky at 1x pixel density. */
   private lowRes = false;
   aura: 'none' | 'rush' | 'horizon' | 'well' | 'supernova' = 'none';
@@ -231,7 +233,11 @@ export class Sky {
   }
 
   frame(dt: number): void {
-    this.t += dt;
+    this.t += this.reduceMotion ? dt / 3 : dt;
+    if (this.reduceMotion) {
+      this.squash = 0;
+      this.stageFlash = 0;
+    }
     this.squash = Math.max(0, this.squash - dt * 6);
     this.stageFlash = Math.max(0, this.stageFlash - dt * 0.8);
     this.updateEntities(dt);

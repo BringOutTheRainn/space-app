@@ -664,8 +664,17 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .ticker-text.run { animation-duration: 30s; }
-  .gift-btn, .hint, .gen.pulse, .mission-btn.ready { animation: none; }
+  html .gift-btn, html .hint, html .gen.pulse, html .mission-btn.ready, html .plot.ready, html .event-btn.ready, html .ev-rift { animation: none; }
+  body.collapsing #app { animation: collapse-calm 1.6s ease-in-out; }
 }
+/* The same, from the in-game Reduce motion setting. */
+html.reduce-motion .ticker-text.run { animation-duration: 30s; }
+html.reduce-motion .gift-btn, html.reduce-motion .hint, html.reduce-motion .gen.pulse, html.reduce-motion .mission-btn.ready,
+html.reduce-motion .plot.ready, html.reduce-motion .event-btn.ready, html.reduce-motion .ev-rift,
+html.reduce-motion .wheel-wrap.golden { animation: none; }
+html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-out; }
+/* A collapse without the bright flash: a slow dim and back. */
+@keyframes collapse-calm { 50% { opacity: .25; } }
 
 /* Nebula Garden */
 .seeds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }

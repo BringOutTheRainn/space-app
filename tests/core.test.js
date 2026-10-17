@@ -796,6 +796,15 @@ test('a 28-day spin streak earns the Golden Halo once; ad spins and broken strea
   assert.equal(back.haloOn, false);
 });
 
+test('reduce motion is off by default and older saves load with it off', () => {
+  assert.equal(newState(0).settings.reduceMotion, false);
+  const old = JSON.parse(serialize(newState(0)));
+  delete old.settings.reduceMotion;
+  assert.equal(deserialize(JSON.stringify(old)).settings.reduceMotion, false);
+  const on = newState(0); on.settings.reduceMotion = true;
+  assert.equal(deserialize(serialize(on)).settings.reduceMotion, true);
+});
+
 test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
   const r = await import('../www/js/core/rating.js');
   const DAY = 86400000;

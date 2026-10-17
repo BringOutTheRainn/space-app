@@ -103,6 +103,9 @@ export function applySettings(ctx: Ctx): void {
   setVibration(st.vibration);
   setNumberStyle(st.numberStyle);
   ctx.sky.particlesOn = st.particles;
+  const systemReduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  ctx.sky.reduceMotion = st.reduceMotion || systemReduce;
+  document.documentElement.classList.toggle('reduce-motion', st.reduceMotion);
   ctx.sky.halo = ctx.s.haloEarned && ctx.s.haloOn;
   ctx.sky.setLowRes(st.saver);
 }
@@ -116,6 +119,7 @@ export function openSettings(ctx: Ctx): void {
       ${toggleRow('set-music', t('Ambient music'), st.music)}
       ${toggleRow('set-vibration', t('Vibration'), st.vibration)}
       ${toggleRow('set-particles', t('Particles'), st.particles)}
+      ${toggleRow('set-motion', t('Reduce motion (no flashes, calmer sky)'), st.reduceMotion)}
       ${toggleRow('set-saver', t('Battery saver (30 fps, lighter sky)'), st.saver)}
       ${toggleRow('set-sci', t('Scientific notation'), st.numberStyle === 'scientific')}
       ${notificationsSupported() ? toggleRow('set-notify', t('Reminders (storage full, probes back, daily drop)'), st.notifications) : ''}
@@ -145,6 +149,7 @@ export function openSettings(ctx: Ctx): void {
     if (on) setTimeout(() => haptic('medium'));
   });
   bind('set-particles', (on) => (st.particles = on));
+  bind('set-motion', (on) => (st.reduceMotion = on));
   bind('set-saver', (on) => {
     st.saver = on;
     st.saverAuto = true;

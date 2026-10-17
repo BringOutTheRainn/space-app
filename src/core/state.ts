@@ -28,6 +28,8 @@ export interface Settings {
   vibration: boolean;
   numberStyle: NumberStyle;
   particles: boolean;
+  /** Calmer sky and no flashes, on top of the system's reduce-motion setting. */
+  reduceMotion: boolean;
   /** Reminder notifications, on the phone only. Off until the player opts in. */
   notifications: boolean;
   /** Battery saver: 30 fps and a sharper-but-cheaper sky for slow or hot phones. */
@@ -250,7 +252,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false, saver: false, saverAuto: false, lang: 'auto' },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, lang: 'auto' },
   };
 }
 

@@ -419,6 +419,13 @@ for it (before it is earned, the card says what earns it). The wheel says how to
 It is looks only and works with every skin. Spanish and Portuguese text added; a test covers the
 28th day, ad spins not counting, earning it once, the off switch sticking, and older saves.
 
+**Run 20. Reduce motion.** Settings has a Reduce motion switch, and the phone's own reduce-motion
+setting turns on the same behaviour. With it, the sky never flashes white on a new stage, the body
+does not squash on a tap, and stars, drones and the Golden Halo move at a third of the speed. The
+universe collapse dims and returns instead of a bright flash, and the pulsing and bobbing buttons,
+the garden glow and the spinning rift stand still. A media-query rule that never applied to the
+garden, event and rift animations (an equal-specificity rule further down won) now does.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
