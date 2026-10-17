@@ -53,7 +53,26 @@ export interface ModalOptions {
   dismissable?: boolean;
 }
 
-const stack: Array<{ el: HTMLElement; opts: ModalOptions }> = [];
+const stack: Array<{ el: HTMLElement; opts: ModalOptions; returnTo: Element | null }> = [];
+
+const FOCUSABLE = 'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])';
+
+/** Keeps Tab inside the top dialog, the way Android's own dialogs behave with a keyboard or switch access. */
+function trapTab(e: KeyboardEvent, el: HTMLElement): void {
+  if (e.key !== 'Tab' || stack[stack.length - 1]?.el !== el) return;
+  const items = [...el.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((x) => x.offsetParent !== null || x.matches('.toggle input'));
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const at = document.activeElement;
+  if (e.shiftKey && (at === first || !items.includes(at as HTMLElement))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (at === last || !el.contains(at))) {
+    e.preventDefault();
+    first.focus();
+  }
+}
 
 export function openModal(opts: ModalOptions): HTMLElement {
   const root = document.getElementById('modals')!;
@@ -61,7 +80,7 @@ export function openModal(opts: ModalOptions): HTMLElement {
   el.className = 'modal-backdrop';
   const buttons = opts.buttons ?? [{ label: t('Close'), kind: 'primary' }];
   el.innerHTML = `
-    <div class="modal${opts.wide ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(opts.title)}">
+    <div class="modal${opts.wide ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(opts.title)}" tabindex="-1">
       <div class="modal-head"><h2>${esc(opts.title)}</h2>${opts.dismissable === false ? '' : `<button class="modal-x" aria-label="${t('Close')}">✕</button>`}</div>
       <div class="modal-body">${opts.body}</div>
       <div class="modal-buttons">${buttons.map((b, i) => `<button class="btn btn-${b.kind ?? 'plain'}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>
@@ -82,8 +101,12 @@ export function openModal(opts: ModalOptions): HTMLElement {
       if (b.onClick?.(el) !== false) closeModal(el);
     }
   });
+  el.addEventListener('keydown', (e) => trapTab(e, el));
+  const returnTo = document.activeElement;
   root.appendChild(el);
-  stack.push({ el, opts });
+  stack.push({ el, opts, returnTo });
+  // Move focus into the dialog so screen readers and keyboards start there, not behind it.
+  el.querySelector<HTMLElement>('.modal')!.focus({ preventScroll: true });
   requestAnimationFrame(() => el.classList.add('in'));
   return el;
 }
@@ -94,6 +117,8 @@ export function closeModal(el?: HTMLElement): boolean {
   stack.splice(stack.indexOf(entry), 1);
   entry.el.classList.remove('in');
   setTimeout(() => entry.el.remove(), 200);
+  const back = stack.length ? stack[stack.length - 1].el.querySelector<HTMLElement>('.modal') : entry.returnTo;
+  if (entry.el.contains(document.activeElement) && back instanceof HTMLElement && back.isConnected) back.focus({ preventScroll: true });
   entry.opts.onClose?.();
   return true;
 }

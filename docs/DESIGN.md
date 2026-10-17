@@ -449,6 +449,14 @@ generators by 11.5 hours, 16 universes and 112 achievements. Universes 7 to 13 e
 most of that time, so this spreads over several days of play; balance is left as it is for launch, and
 the fast middle stretch is the first place to look if launch data shows players finishing too soon.
 
+**Run 24. Keyboard and switch access.** A replay of a new player's first minutes found nothing in the
+way (the hints are tap-through and step aside after the first drone). A keyboard pass found three
+problems: dialogs opened without moving focus, so Tab and screen readers stayed on the game behind
+them; the Settings switches showed no focus at all, and focusing one scrolled the dialog to the
+bottom because its hidden checkbox sat outside its row. Dialogs now take focus when they open, keep
+Tab and Shift+Tab inside, and hand focus back to the button that opened them. Every button, link,
+select and switch shows the same cyan focus ring.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
