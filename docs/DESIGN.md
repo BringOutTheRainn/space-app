@@ -576,6 +576,13 @@ all, the Next amount and the trophy features changed convenience but not pacing 
 costs 250 Dark Matter, far past the first universes). Working out the Trophies tab's nearest
 achievements costs about 0.02 ms per refresh.
 
+**Run 41. Performance re-check after runs 38 and 39.** Same late-game save, CPU slowed 6x. An idle
+Trophies tab makes no DOM changes, so the Almost there list is cached correctly, and frame times are
+unchanged (Upgrades about 60 fps, Build 20 to 30). **Tried and dropped:** making achievement toasts
+open Trophies on tap. Toasts sit over the sky and pass taps through to it on purpose, so a tappable
+toast would steal taps from players tapping fast, and a stray tap would jump them to another tab.
+The new Trophies dot already does that job.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
