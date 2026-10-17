@@ -901,3 +901,4 @@ html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-
 button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-visible:not(#sky) { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .toggle input:focus-visible + .switch { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .modal:focus { outline: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

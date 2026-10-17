@@ -6,7 +6,7 @@ import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorR
 import { fmt, fmtPercent, fmtRate } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
 import type { BuyAmount, Ctx, Panel } from './ctx.js';
-import { $, esc, setHidden, setText, toast, toggleClass } from './dom.js';
+import { $, esc, setAttr, setHidden, setText, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { crystalsUnlocked } from '../core/crystals.js';
@@ -159,6 +159,7 @@ export class BuildPanel implements Panel {
     const { s, d } = ctx;
     this.root.querySelectorAll<HTMLElement>('[data-amt]').forEach((b) => {
       toggleClass(b, 'on', String(ctx.buyAmount) === b.dataset.amt);
+      setAttr(b, 'aria-pressed', String(String(ctx.buyAmount) === b.dataset.amt));
     });
     const chip = this.root.querySelector<HTMLElement>('[data-crystals]')!;
     setHidden(chip, !crystalsUnlocked(s));

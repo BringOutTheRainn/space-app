@@ -463,6 +463,12 @@ screenshot tool now hides tutorial hints (a "Tap the comet" bubble sat over the 
 shows the Golden Halo around the late-game star, and opens the Boosts shot on day 7 of a spin streak,
 so the wheel appears as a Golden Orbit with a full row of streak dots.
 
+**Run 26. Screen reader roles.** Chrome's accessibility tree showed the bottom tabs with no selected
+state, the x1/x10/x100/Max buttons with no pressed state, and the big Stardust number with no label.
+Tabs now carry `aria-selected` and point at their panels (`role="tabpanel"`), the buy-amount buttons
+carry `aria-pressed`, and TalkBack reads "Stardust: 47M" for the counter. A new `setAttr` helper
+writes these only when they change, so the idle screen still makes no DOM changes.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

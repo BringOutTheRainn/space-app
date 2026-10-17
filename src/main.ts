@@ -16,7 +16,7 @@ import { newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
-import { $, closeModal, esc, modalOpen, setHidden, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
+import { $, closeModal, esc, modalOpen, setAttr, setHidden, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
 import { VERSION, applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
@@ -52,7 +52,7 @@ function layout(): void {
   $('#app').innerHTML = `
     <header class="top">
       <div class="bank">
-        <div class="amount-row"><span class="sd-dot big"></span><span class="amount" id="amount">0</span></div>
+        <div class="amount-row"><span class="sd-dot big"></span><span class="sr-only">${t('Stardust')}: </span><span class="amount" id="amount">0</span></div>
         <div class="rate" id="rate">${t('{n} per second', { n: 0 })}</div>
       </div>
       <button class="icon-btn shop-btn" id="btn-shop" aria-label="${t('Shop')}">${icon('cart')}</button>
@@ -74,10 +74,10 @@ function layout(): void {
     </section>
     <section class="panel">
       <div class="tab-bodies">
-        ${TABS.map((tab) => `<div class="tab-body" id="tab-${tab.id}" hidden></div>`).join('')}
+        ${TABS.map((tab) => `<div class="tab-body" id="tab-${tab.id}" role="tabpanel" aria-label="${t(tab.label)}" hidden></div>`).join('')}
       </div>
       <nav class="tabs" role="tablist">
-        ${TABS.map((tab) => `<button class="tab" role="tab" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden></i></button>`).join('')}
+        ${TABS.map((tab) => `<button class="tab" role="tab" aria-selected="false" aria-controls="tab-${tab.id}" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden></i></button>`).join('')}
       </nav>
     </section>
     <div id="modals"></div>`;
@@ -187,7 +187,10 @@ function start(): void {
     },
     showTab(id: string) {
       activeTab = id;
-      document.querySelectorAll<HTMLElement>('.tab').forEach((b) => toggleClass(b, 'on', b.dataset.tab === id));
+      document.querySelectorAll<HTMLElement>('.tab').forEach((b) => {
+        toggleClass(b, 'on', b.dataset.tab === id);
+        setAttr(b, 'aria-selected', String(b.dataset.tab === id));
+      });
       document.querySelectorAll<HTMLElement>('.tab-body').forEach((b) => (b.hidden = b.id !== `tab-${id}`));
       $(`#tab-${id}`).scrollTop = 0;
       panels[id]?.refresh(ctx);

@@ -26,6 +26,11 @@ export function toggleClass(el: Element, cls: string, on: boolean): void {
   if (el.classList.contains(cls) !== on) el.classList.toggle(cls, on);
 }
 
+/** Sets an attribute only when it changes, like setText, so refreshes cost no DOM writes. */
+export function setAttr(el: Element, name: string, value: string): void {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
 let toastRoot: HTMLElement | null = null;
 
 export function toast(html: string, kind: 'info' | 'good' | 'trophy' | 'comet' | 'bad' = 'info', ms = 3200): void {
