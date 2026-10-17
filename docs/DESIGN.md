@@ -426,6 +426,13 @@ universe collapse dims and returns instead of a bright flash, and the pulsing an
 the garden glow and the spinning rift stand still. A media-query rule that never applied to the
 garden, event and rift animations (an equal-specificity rule further down won) now does.
 
+**Run 21. Play Console product list and touch targets.** The Play Console setup table in
+`docs/RELEASE.md` was missing `star_pass`, so Star Pass Premium would have failed to buy at launch if
+the products were created from that table. It is listed now, and a test fails if any Shop product id
+is missing from the table. A tap-size scan found the modal close button (36 px), Shop price buttons
+(34 to 38 px), the purple Cosmos buttons and dialog buttons under Android's 48 px guideline; each now
+has an invisible hit area grown to 48 px, so they look the same but are easier to hit.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

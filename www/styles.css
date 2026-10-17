@@ -890,3 +890,10 @@ html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-
 @keyframes golden-pulse { 50% { transform: scale(1.03); } }
 .shop-halo { margin-top: 10px; }
 .halo-swatch { flex: none; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #3e5fa8 0 34%, transparent 36%), radial-gradient(ellipse 50% 18% at 50% 50%, transparent 72%, #ffd36a 76%, transparent 86%); }
+/* Touch targets: grow the tappable area of compact buttons to at least 48 px without changing their look. */
+.modal-x, .shop-buy, .btn-cosmic, .modal .btn { position: relative; }
+.modal-x::before, .shop-buy::before, .btn-cosmic::before, .modal .btn::before {
+  content: ''; position: absolute;
+  top: min(0px, calc(50% - 24px)); bottom: min(0px, calc(50% - 24px));
+  left: min(0px, calc(50% - 24px)); right: min(0px, calc(50% - 24px));
+}

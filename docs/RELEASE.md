@@ -97,6 +97,7 @@ Products, **In-app products**, with exactly these ids, then activate them:
 | `crystals_80` | Consumable | $9.99 | 80 Quasar Crystals |
 | `event_pass` | Consumable | $2.99 | This weekend: double Flux and a Platinum badge |
 | `vault_open` | Consumable | $2.99 | Pays out the Stardust Vault (up to 12 h of production) |
+| `star_pass` | Consumable | $4.99 | This season's Star Pass premium track (bought again each season) |
 | `skin_lava`, `skin_ice`, `skin_neon`, `skin_gold` | One-time | $0.99 each | Planet skins |
 
 Play Console only lets you create products after an APK or bundle with the billing permission has

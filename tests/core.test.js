@@ -805,6 +805,14 @@ test('reduce motion is off by default and older saves load with it off', () => {
   assert.equal(deserialize(serialize(on)).settings.reduceMotion, true);
 });
 
+test('every Shop product id is listed in the Play Console setup table in docs/RELEASE.md', async () => {
+  const { PRODUCTS } = await import('../www/js/data/store.js');
+  const { readFileSync } = await import('node:fs');
+  const doc = readFileSync(new URL('../docs/RELEASE.md', import.meta.url), 'utf8');
+  const missing = PRODUCTS.map((p) => p.id).filter((id) => !doc.includes('`' + id + '`'));
+  assert.deepEqual(missing, [], 'create these in Play Console too');
+});
+
 test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
   const r = await import('../www/js/core/rating.js');
   const DAY = 86400000;
