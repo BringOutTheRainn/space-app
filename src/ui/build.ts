@@ -1,7 +1,7 @@
 // The Build tab: buy amount, the strip of ready upgrades and the generator list.
 
 import { GENERATORS } from '../data/generators.js';
-import { UPGRADE_BY_ID, tierBand } from '../data/upgrades.js';
+import { UPGRADE_BY_ID, tierBand, toNextTier } from '../data/upgrades.js';
 import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorRevealed, generatorVisible, maxAffordable, upgradePrice } from '../core/economy.js';
 import { fmt, fmtPercent, fmtRate } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
@@ -37,7 +37,7 @@ export class BuildPanel implements Panel {
       <div class="buy-row" role="group" aria-label="${t('Buy amount')}">
         <span class="buy-label">${t('Buy')}</span>
         <button class="crystal-chip" data-crystals="1" hidden aria-label="${t('Quasar Crystals')}">${icon('crystal')}<b class="crystal-n">0</b></button>
-        ${(['1', '10', '100', 'max'] as const).map((a) => `<button class="chip" data-amt="${a}">${a === 'max' ? t('Max') : 'x' + a}</button>`).join('')}
+        ${(['1', '10', '100', 'next', 'max'] as const).map((a) => `<button class="chip" data-amt="${a}"${a === 'next' ? ` title="${t('Buy up to the next tier upgrade')}"` : ''}>${a === 'max' ? t('Max') : a === 'next' ? t('Next') : 'x' + a}</button>`).join('')}
         <button class="chip chip-auto" data-auto="1" hidden aria-pressed="false" title="${t('Auto-Fabricators')}">${t('Auto')}</button>
       </div>
       <div class="mini-row" hidden>
@@ -89,14 +89,14 @@ export class BuildPanel implements Panel {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-amt]');
       if (!b) return;
       const v = b.dataset.amt!;
-      ctx.buyAmount = (v === 'max' ? 'max' : Number(v)) as BuyAmount;
+      ctx.buyAmount = (v === 'max' || v === 'next' ? v : Number(v)) as BuyAmount;
       this.refresh(ctx);
     });
 
     const buyRow = (el: HTMLElement): boolean => {
       const gen = Number(el.dataset.gen);
       if (!generatorVisible(ctx.s, gen)) return false;
-      const n = buyGenerator(ctx.s, ctx.d, gen, ctx.buyAmount);
+      const n = buyGenerator(ctx.s, ctx.d, gen, ctx.buyAmount === 'next' ? toNextTier(gen, ctx.s.generators[gen]) : ctx.buyAmount);
       if (n <= 0) return false;
       sfxBuy();
       haptic('light');
@@ -230,7 +230,8 @@ export class BuildPanel implements Panel {
       toggleClass(row.el, 'mystery', !revealed);
       const g = GENERATORS[i];
       setText(row.name, revealed ? t(g.name) : '???');
-      const amount = ctx.buyAmount === 'max' ? Math.max(1, maxAffordable(s, d, i)) : ctx.buyAmount;
+      const amount = ctx.buyAmount === 'max' ? Math.max(1, maxAffordable(s, d, i))
+        : ctx.buyAmount === 'next' ? toNextTier(i, s.generators[i]) : ctx.buyAmount;
       const price = generatorPrice(s, d, i, amount);
       setText(row.price, fmt(price));
       setText(row.qty, amount > 1 ? ` x${amount}` : '');

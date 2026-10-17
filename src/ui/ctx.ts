@@ -4,7 +4,7 @@ import type { Derived } from '../core/economy.js';
 import type { GameState } from '../core/state.js';
 import type { Sky } from './sky.js';
 
-export type BuyAmount = 1 | 10 | 100 | 'max';
+export type BuyAmount = 1 | 10 | 100 | 'next' | 'max';
 
 export interface Ctx {
   s: GameState;

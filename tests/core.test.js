@@ -1230,3 +1230,16 @@ test('auto-researchers make the fabricators buy affordable upgrades too', async 
   s.autoBuyOn = false; s.stardust = 1e12;
   assert.equal(autoBuyStep(s, computeDerived(s, 0)), 0, 'the Auto switch turns both off');
 });
+
+test('the Next buy amount lands exactly on the next tier upgrade', async () => {
+  const { toNextTier, TIER_OWNED } = await import('../www/js/data/upgrades.js');
+  assert.equal(toNextTier(1, 0), 1);
+  assert.equal(toNextTier(1, 21), 4);
+  assert.equal(toNextTier(1, 25), 25);
+  assert.equal(toNextTier(0, 40), 10, 'drones use their own tiers');
+  assert.equal(toNextTier(1, TIER_OWNED[TIER_OWNED.length - 1]), 1, 'one at a time past the last tier');
+  for (let owned = 0; owned < 250; owned++) {
+    const after = owned + toNextTier(3, owned);
+    assert.ok(TIER_OWNED.includes(after), `${owned} -> ${after}`);
+  }
+});

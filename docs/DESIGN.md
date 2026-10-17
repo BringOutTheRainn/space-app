@@ -492,6 +492,14 @@ first (reusing run 28's buy-all), before they buy generators. The same Auto swit
 turns both off, and anomalies that forbid upgrades still forbid them. A test checks that the
 fabricators alone leave upgrades alone.
 
+**Run 30. "Next" buy amount.** AdVenture Capitalist's buy toggle has a "Next" setting that buys
+exactly enough to reach the next milestone, and with run 27's tier bars showing the target it was
+the obvious missing step. The Build tab's buy row is now x1 / x10 / x100 / Next / Max; Next prices
+each card for the count that lands on its next tier upgrade (21 Harvesters shows x4) and falls back
+to one at a time past 250. The chips now share the row's width so the crystal and Auto chips still
+fit at 360px, and the "Buy" label steps aside when crystals are shown (the row keeps its spoken label).
+A test walks 0 to 250 owned and checks Next always lands on a tier.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

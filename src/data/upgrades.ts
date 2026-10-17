@@ -48,6 +48,11 @@ export function tierBand(gen: number, owned: number): { from: number; to: number
   if (i < 0) return null;
   return { from: i === 0 ? 0 : tiers[i - 1], to: tiers[i] };
 }
+/** How many to buy to reach the next tier upgrade (1 once every tier is reached). */
+export function toNextTier(gen: number, owned: number): number {
+  const band = tierBand(gen, owned);
+  return band ? band.to - owned : 1;
+}
 const TIER_COST = [10, 50, 500, 5e4, 5e6, 5e8, 5e11, 5e14];
 const TIER_PREFIX = ['Reinforced', 'Overclocked', 'Quantum', 'Hyperdense', 'Exotic', 'Singularity', 'Transcendent', 'Omega'];
 
