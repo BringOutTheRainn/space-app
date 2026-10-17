@@ -12,7 +12,7 @@ import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgr
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
 import { fmt, fmtPercent, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
-import { canCollapse, collapse, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
+import { canCollapse, collapse, collapseGain, darkMatterPct, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
@@ -200,6 +200,7 @@ export class CosmosPanel implements Panel {
       </div>
       <div class="collapse-card">
         <div class="collapse-row"><span>${t('Collapse now for')}</span><b id="dm-pending"></b></div>
+        <div class="collapse-gain" id="dm-gain"></div>
         <div class="bar"><div class="bar-fill" id="dm-bar"></div></div>
         <div class="collapse-note" id="dm-next"></div>
         <button class="btn btn-cosmic btn-wide" id="btn-collapse">${t('Collapse the Universe')}</button>
@@ -229,9 +230,17 @@ export class CosmosPanel implements Panel {
     if (!this.built) this.build();
     const pending = pendingDarkMatter(s);
     setText($('#dm-amount', this.root), t('{n} Dark Matter', { n: fmt(s.darkMatter) }));
-    const dmPct = (s.cosmic.resonance ? 0.03 : 0.02) + (s.cosmic.resonance2 ? 0.01 : 0);
+    const dmPct = darkMatterPct(s);
     setText($('#dm-sub', this.root), t('{n} to spend · +{pct} production', { n: fmt(darkMatterAvailable(s)), pct: fmtPercent(dmPct * s.darkMatter) }));
     setText($('#dm-pending', this.root), t('+{n} Dark Matter', { n: fmt(pending) }));
+    // What the collapse is worth: the production bonus before and after, and the multiplier.
+    const gain = collapseGain(s);
+    const gainEl = $('#dm-gain', this.root);
+    setHidden(gainEl, pending <= 0);
+    if (pending > 0) {
+      setText(gainEl, t('Bonus +{from} → +{to} (x{mult})', { from: fmtPercent(dmPct * s.darkMatter), to: fmtPercent(dmPct * (s.darkMatter + pending)), mult: gain.toFixed(2) }));
+      toggleClass(gainEl, 'good', gain >= 2);
+    }
     const nextAt = earningsForNextDarkMatter(s);
     const prevTotal = Math.pow(Math.cbrt(nextAt / DM_SCALE) - 1, 3) * DM_SCALE;
     const frac = Math.max(0, Math.min(1, (s.earnedAll - prevTotal) / (nextAt - prevTotal)));

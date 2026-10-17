@@ -497,6 +497,7 @@ export const ES: Record<string, string> = {
   "Buy up to the next tier upgrade": "Comprar hasta la siguiente mejora de nivel",
   "Coming up": "Próximamente",
   "{gen}: {have} of {need}": "{gen}: {have} de {need}",
+  "Bonus +{from} → +{to} (x{mult})": "Bono +{from} → +{to} (x{mult})",
   // Generators
   'Mining Drone': 'Dron Minero',
   'A tiny robot that chips at the rock while you sleep.': 'Un robot diminuto que pica la roca mientras duermes.',

@@ -486,6 +486,8 @@ body.has-banner #app { padding-bottom: 60px; }
 .collapse-row { display: flex; justify-content: space-between; align-items: baseline; }
 .collapse-row b { color: var(--violet); font-size: 18px; }
 .collapse-note { color: var(--dim); font-size: 12px; }
+.collapse-gain { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; }
+.collapse-gain.good { color: var(--gold); font-weight: 700; }
 
 .tree { position: relative; margin: 8px 0 20px; }
 .tree-lines { position: absolute; left: 0; top: 0; overflow: visible; }

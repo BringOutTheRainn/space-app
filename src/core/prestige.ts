@@ -69,3 +69,19 @@ export function resetRun(s: GameState, d: Derived, now = Date.now()): void {
   s.runStartClock = s.time;
   s.nextCometAt = s.time + 90;
 }
+
+/** Production bonus per Dark Matter held: 2%, plus the Resonance Cosmic upgrades. */
+export function darkMatterPct(s: GameState): number {
+  let pct = 0.02;
+  for (const c of COSMIC) {
+    if (!s.cosmic[c.id]) continue;
+    for (const e of c.effects) if (e.k === 'dmBonus') pct += e.pct;
+  }
+  return pct;
+}
+
+/** How much a collapse now would multiply the Dark Matter production bonus (1 = no change). */
+export function collapseGain(s: GameState): number {
+  const pct = darkMatterPct(s);
+  return (1 + pct * (s.darkMatter + pendingDarkMatter(s))) / (1 + pct * s.darkMatter);
+}

@@ -525,6 +525,13 @@ purchase updates the bought generator's row (owned count, price, tier bar) about
 is the intended feedback. Frame times are 30 fps on the Upgrades tab and 20 to 30 on Build at 6x
 throttle, a little better than run 18, and still mostly software painting of the sky. Nothing to fix.
 
+**Run 34. What a collapse is worth.** Egg, Inc. and AdVenture Capitalist both show the prestige
+bonus you would end up with, not only the currency, because "+18 Dark Matter" means little without
+knowing what you already have. Under "Collapse now for" the Cosmos tab now reads "Bonus +24% → +60%
+(x1.29)": the production bonus now, after collapsing, and the ratio. It turns gold at x2 or more, a
+gentle hint that the run has paid off. The Dark Matter percent now comes from one function shared with
+the Cosmos card (it was worked out twice), and a test covers the ratio and the Resonance upgrades.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

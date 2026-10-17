@@ -1256,3 +1256,16 @@ test('coming-up upgrades show the next locked tier of owned generators, closest 
   assert.ok(!upcomingUpgrades(s).some((u) => u.id === 'harvester_2'), 'unlocked ones move to Available');
   assert.ok(upcomingUpgrades(s, 5).some((u) => u.id === 'harvester_3'));
 });
+
+test('collapse gain compares the Dark Matter bonus before and after', async () => {
+  const { collapseGain, darkMatterPct } = await import('../www/js/core/prestige.js');
+  const s = newState(0);
+  assert.equal(darkMatterPct(s), 0.02);
+  assert.equal(collapseGain(s), 1, 'nothing pending');
+  s.earnedAll = 1e10 * 1000; // 10 Dark Matter in total
+  assert.ok(Math.abs(collapseGain(s) - 1.2) < 1e-9);
+  s.darkMatter = 5;
+  assert.ok(Math.abs(collapseGain(s) - 1.2 / 1.1) < 1e-9);
+  s.cosmic.resonance = true; s.cosmic.resonance2 = true;
+  assert.ok(Math.abs(darkMatterPct(s) - 0.04) < 1e-12);
+});
