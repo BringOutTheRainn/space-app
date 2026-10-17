@@ -469,6 +469,14 @@ Tabs now carry `aria-selected` and point at their panels (`role="tabpanel"`), th
 carry `aria-pressed`, and TalkBack reads "Stardust: 47M" for the counter. A new `setAttr` helper
 writes these only when they change, so the idle screen still makes no DOM changes.
 
+**Run 27. Tier progress bars.** AdVenture Capitalist's best-loved pacing cue is the bar on each
+business showing how close you are to the next milestone. Our tier upgrades already unlock at set
+owned counts (1, 5, 25, 50 ... 250; Mining Drones use 1, 10, 25 ...), but nothing on the Build tab said
+so. Each generator card now has a thin cyan-to-gold bar that fills toward the count where its next
+upgrade unlocks and resets after it; it disappears past 250. A test walks every generator from 0 to
+250 owned and checks each bar ends exactly where an upgrade really unlocks. The bar is only redrawn
+when the owned count changes.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

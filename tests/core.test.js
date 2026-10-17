@@ -813,6 +813,22 @@ test('every Shop product id is listed in the Play Console setup table in docs/RE
   assert.deepEqual(missing, [], 'create these in Play Console too');
 });
 
+test('tier bands end exactly where each generator unlocks a new upgrade, and stop after the last', async () => {
+  const { tierBand, UPGRADES } = await import('../www/js/data/upgrades.js');
+  assert.deepEqual(tierBand(1, 12), { from: 5, to: 25 });
+  assert.deepEqual(tierBand(0, 3), { from: 1, to: 10 });
+  assert.equal(tierBand(4, 250), null);
+  for (let g = 0; g < GENERATORS.length; g++) {
+    const own = (n) => { const s = newState(0); s.generators[g] = n; return UPGRADES.filter((u) => u.unlock(s)).length; };
+    for (let n = 1; n <= 250; n++) {
+      const band = tierBand(g, n - 1);
+      const unlocks = own(n) > own(n - 1);
+      if (unlocks) assert.equal(band?.to, n, `generator ${g}: an upgrade unlocks at ${n} but the bar points at ${band?.to}`);
+    }
+    assert.equal(tierBand(g, 250), null);
+  }
+});
+
 test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
   const r = await import('../www/js/core/rating.js');
   const DAY = 86400000;

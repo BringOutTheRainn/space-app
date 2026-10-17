@@ -1,7 +1,7 @@
 // The Build tab: buy amount, the strip of ready upgrades and the generator list.
 
 import { GENERATORS } from '../data/generators.js';
-import { UPGRADE_BY_ID } from '../data/upgrades.js';
+import { UPGRADE_BY_ID, tierBand } from '../data/upgrades.js';
 import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorRevealed, generatorVisible, maxAffordable, upgradePrice } from '../core/economy.js';
 import { fmt, fmtPercent, fmtRate } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
@@ -18,6 +18,8 @@ import { t, tDesc, tName } from '../i18n/index.js';
 
 interface Row {
   el: HTMLElement;
+  tier: HTMLElement;
+  tierKey: string;
   name: HTMLElement;
   price: HTMLElement;
   sub: HTMLElement;
@@ -57,10 +59,11 @@ export class BuildPanel implements Panel {
           <div class="gen-name"></div>
           <div class="gen-price"><span class="sd-dot"></span><span class="p"></span><span class="q"></span></div>
           <div class="gen-sub"></div>
+          <div class="gen-tier" aria-hidden="true" hidden><i></i></div>
         </div>
         <div class="gen-owned"></div>`;
       list.appendChild(el);
-      this.rows.push({ el, name: $('.gen-name', el), price: $('.p', el), qty: $('.q', el), sub: $('.gen-sub', el), owned: $('.gen-owned', el) });
+      this.rows.push({ el, tier: $('.gen-tier', el), tierKey: '', name: $('.gen-name', el), price: $('.p', el), qty: $('.q', el), sub: $('.gen-sub', el), owned: $('.gen-owned', el) });
     });
 
     root.querySelector('.mini-row')!.addEventListener('click', (e) => {
@@ -234,6 +237,17 @@ export class BuildPanel implements Panel {
       toggleClass(row.el, 'afford', visible && !locked && price <= s.stardust);
       const owned = s.generators[i];
       setText(row.owned, owned ? String(owned) : '');
+      // Progress toward the next tier upgrade (5, 25, 50 ... 250 owned), the bar resets at each one.
+      const band = owned > 0 && !locked ? tierBand(i, owned) : null;
+      const key = band ? `${owned}/${band.to}` : '';
+      if (key !== row.tierKey) {
+        row.tierKey = key;
+        setHidden(row.tier, !band);
+        if (band) {
+          (row.tier.firstElementChild as HTMLElement).style.width = `${(100 * (owned - band.from)) / (band.to - band.from)}%`;
+          row.tier.title = t('{n} owned; the next upgrade unlocks at {to}', { n: owned, to: band.to });
+        }
+      }
       if (locked) {
         setText(row.sub, t('Cannot be built in this anomaly'));
       } else if (!revealed) {

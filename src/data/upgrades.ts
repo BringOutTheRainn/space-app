@@ -36,7 +36,18 @@ export interface UpgradeDef {
   effects: Effect[];
 }
 
-const TIER_OWNED = [1, 5, 25, 50, 100, 150, 200, 250];
+export const TIER_OWNED = [1, 5, 25, 50, 100, 150, 200, 250];
+
+/** Mining Drones have their own line: two upgrades at 1, then 10 instead of 5. */
+export const DRONE_TIER_OWNED = [1, 10, 25, 50, 100, 150, 200, 250];
+
+/** The owned-count band a generator is in on its way to its next tier upgrade, or null past the last. */
+export function tierBand(gen: number, owned: number): { from: number; to: number } | null {
+  const tiers = gen === 0 ? DRONE_TIER_OWNED : TIER_OWNED;
+  const i = tiers.findIndex((n) => owned < n);
+  if (i < 0) return null;
+  return { from: i === 0 ? 0 : tiers[i - 1], to: tiers[i] };
+}
 const TIER_COST = [10, 50, 500, 5e4, 5e6, 5e8, 5e11, 5e14];
 const TIER_PREFIX = ['Reinforced', 'Overclocked', 'Quantum', 'Hyperdense', 'Exotic', 'Singularity', 'Transcendent', 'Omega'];
 
