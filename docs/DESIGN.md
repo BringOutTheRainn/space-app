@@ -433,6 +433,13 @@ is missing from the table. A tap-size scan found the modal close button (36 px),
 (34 to 38 px), the purple Cosmos buttons and dialog buttons under Android's 48 px guideline; each now
 has an invisible hit area grown to 48 px, so they look the same but are easier to hit.
 
+**Run 22. Text contrast.** A new check, `tools/contrast-check.mjs`, measures text contrast against
+WCAG AA (4.5:1, or 3:1 for large text) on every tab and window, top and bottom. Four things failed and
+are fixed: the big owned count on generator cards (2.9:1), text on generators you cannot afford yet
+(their 62% fade took prices and captions to 3.0:1), the same fade on event generators, and white on
+the red Erase button (3.8:1). Cards now fade to 86% and the count and button colours are adjusted;
+everything passes. Unaffordable cards still read as unaffordable from their red price and plain border.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
