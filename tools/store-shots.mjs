@@ -86,11 +86,11 @@ const closeModal = async () => {
 };
 
 async function shot(name, title, sub, toasts = false) {
-  // Achievement pop-ups crowd the marketing shots; only the comet shot keeps them.
+  // Achievement pop-ups and tutorial hints crowd the marketing shots; only the comet shot keeps them.
   await page.evaluate((show) => {
     let st = document.getElementById('store-shot-style');
     if (!st) { st = document.createElement('style'); st.id = 'store-shot-style'; document.head.append(st); }
-    st.textContent = show ? '' : '.toasts{display:none!important}';
+    st.textContent = show ? '' : '.toasts,.hint{display:none!important}';
   }, toasts);
   await page.waitForTimeout(700);
   const png = (await page.screenshot()).toString('base64');
@@ -144,6 +144,8 @@ await game(() => {
   s.cosmic = { glow: true, seed: true, magnet: true, fingers: true, kit: true, bay: true };
   s.generators = [180, 160, 140, 120, 100, 90, 70, 50, 35, 20, 8, 2, 0, 0];
   s.genLevels = s.genLevels.map((v, i) => (i < 10 ? Math.max(v, 2) : v));
+  // Show the Golden Halo, the 28-day spin streak reward.
+  s.haloEarned = true; s.haloOn = true; ctx.sky.halo = true;
   ctx.recalc(); ctx.dirty();
 });
 await page.click('[data-tab="build"]');
@@ -167,6 +169,12 @@ await menus('openMarket');
 await shot('06_market', ...cap[5]);
 await closeModal();
 
+// Day 7 of a spin streak: the Golden Orbit is ready.
+await page.evaluate(async () => {
+  const { dayNumber } = await import('./js/core/daily.js');
+  const s = window.__game.ctx.s;
+  s.wheelStreak = 6; s.wheelStreakDay = dayNumber(Date.now()) - 1; s.wheelDay = -1;
+});
 await menus('openHyperdrive');
 await shot('07_boosts', ...cap[6]);
 await closeModal();

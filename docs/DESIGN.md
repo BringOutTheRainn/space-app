@@ -457,6 +457,12 @@ bottom because its hidden checkbox sat outside its row. Dialogs now take focus w
 Tab and Shift+Tab inside, and hand focus back to the button that opened them. Every button, link,
 select and switch shows the same cyan focus ring.
 
+**Run 25. Store screenshots refreshed.** All 24 Play screenshots (English, Spanish and Portuguese)
+were remade from the current build, so they show this week's contrast and layout fixes. The
+screenshot tool now hides tutorial hints (a "Tap the comet" bubble sat over the sky in two shots),
+shows the Golden Halo around the late-game star, and opens the Boosts shot on day 7 of a spin streak,
+so the wheel appears as a Golden Orbit with a full row of streak dots.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
