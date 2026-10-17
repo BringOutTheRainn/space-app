@@ -3,6 +3,7 @@
 import { noteHappyMoment } from './rating.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from '../data/achievements.js';
 import { ANOMALIES, ANOMALY_BY_ID } from '../data/anomalies.js';
+import { closestAchievements } from '../core/achievements.js';
 import { abandonAnomaly, anomaliesUnlocked, enterAnomaly } from '../core/anomalies.js';
 import { COSMIC, COSMIC_BY_ID } from '../data/cosmic.js';
 import { DESTINATIONS, DESTINATION_BY_ID, RELICS } from '../data/expeditions.js';
@@ -132,11 +133,19 @@ export class TrophiesPanel implements Panel {
   private key = '';
   private grid: HTMLElement;
   private summary: HTMLElement;
+  private near: HTMLElement;
+  private nearTitle: HTMLElement;
+  private nearKey = '';
 
   constructor(private root: HTMLElement, ctx: Ctx) {
-    root.innerHTML = `<div class="trophy-summary" id="trophy-summary"></div><div class="trophy-grid" id="trophy-grid"></div>`;
+    root.innerHTML = `<div class="trophy-summary" id="trophy-summary"></div>
+      <h3 class="section-title" id="trophy-near-title" hidden>${t('Almost there')}</h3>
+      <div class="upg-list" id="trophy-near"></div>
+      <div class="trophy-grid" id="trophy-grid"></div>`;
     this.grid = $('#trophy-grid', root);
     this.summary = $('#trophy-summary', root);
+    this.near = $('#trophy-near', root);
+    this.nearTitle = $('#trophy-near-title', root);
     this.grid.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-ach]');
       if (!el) return;
@@ -150,6 +159,19 @@ export class TrophiesPanel implements Panel {
 
   refresh(ctx: Ctx): void {
     const s = ctx.s;
+    const close = closestAchievements(s, ctx.d ? ctx.d.sps : 0);
+    const nearKey = close.map(({ a, p }) => `${a.id}:${Math.floor(p * 100)}`).join(',');
+    if (nearKey !== this.nearKey) {
+      this.nearKey = nearKey;
+      setHidden(this.nearTitle, !close.length);
+      this.near.innerHTML = close.map(({ a, p }) => `
+        <div class="upg-card upg-soon">
+          <div class="upg-ico">${icon('trophy')}</div>
+          <div class="upg-text"><div class="upg-name">${esc(tName(a))}</div>
+            <div class="upg-desc">${esc(tDesc(a))}</div>
+            <div class="gen-tier" role="progressbar" aria-label="${esc(tName(a))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.floor(p * 100)}"><i style="width:${(100 * p).toFixed(1)}%"></i></div></div>
+        </div>`).join('');
+    }
     const n = achievementCount(s);
     const key = String(n);
     if (key === this.key) return;

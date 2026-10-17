@@ -556,6 +556,14 @@ and three from a late save with every system unlocked, produced no page errors. 
 finite and each save reloaded to the same state. The only console message was the browser refusing
 vibration before the first tap, so the web build now skips vibration until the player has tapped.
 
+**Run 38. Almost there.** The Trophies tab only showed a grid of locks, so players had no idea which
+achievement was next. Most idle games point at the nearest goal, so the tab now opens with up to
+three unearned achievements closest to done, each with its description and a progress bar (also
+announced to screen readers). Every counted achievement (20 families, 153 in all minus the secret
+ones) now carries its goal and current count. Progress is plain count over goal, since a log scale
+made 659 of 1,000 per second look 94% done. A test checks the order and that a full bar always
+matches the achievement's own check.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

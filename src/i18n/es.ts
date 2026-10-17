@@ -496,6 +496,7 @@ export const ES: Record<string, string> = {
   "Next": "Sig.",
   "Buy up to the next tier upgrade": "Comprar hasta la siguiente mejora de nivel",
   "Coming up": "Próximamente",
+  "Almost there": "Casi lo logras",
   "{gen}: {have} of {need}": "{gen}: {have} de {need}",
   "Bonus +{from} → +{to} (x{mult})": "Bono +{from} → +{to} (x{mult})",
   "Stardust Rush!": "¡Ráfaga de Polvo Estelar!",

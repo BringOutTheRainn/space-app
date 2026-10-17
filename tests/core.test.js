@@ -6,7 +6,7 @@ import { newState } from '../www/js/core/state.js';
 import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic, buyAllUpgrades, affordableUpgradeCount, upgradePrice } from '../www/js/core/economy.js';
 import { catchComet, scheduleNextComet, cometDue } from '../www/js/core/comets.js';
 import { darkMatterForEarnings, pendingDarkMatter, collapse, canCollapse } from '../www/js/core/prestige.js';
-import { checkAchievements } from '../www/js/core/achievements.js';
+import { checkAchievements, closestAchievements, achievementProgress } from '../www/js/core/achievements.js';
 import { serialize, deserialize, exportSave, importSave, applyOffline } from '../www/js/core/save.js';
 import { claimDaily, dayNumber, dailyReady } from '../www/js/core/daily.js';
 import { startExpedition, collectExpeditions } from '../www/js/core/expeditions.js';
@@ -1306,4 +1306,20 @@ test('no English sentence in the game logic or data is missing a translation', a
     }
   }
   assert.deepEqual(missing, []);
+});
+
+test('almost there lists the unearned achievements closest to done, and progress agrees with the check', () => {
+  const s = newState(0);
+  s.generators[0] = 45; s.tapsAll = 90;
+  checkAchievements(s, 0);
+  const close = closestAchievements(s, 0);
+  assert.equal(close.length, 3);
+  assert.equal(close[0].a.id, 'taps_1');
+  assert.equal(close[1].a.id, `own_${GENERATORS[0].id}_1`);
+  for (let i = 1; i < close.length; i++) assert.ok(close[i - 1].p >= close[i].p);
+  for (const { a } of close) assert.ok(!(a.id in s.achievements) && !a.hidden);
+  for (const a of ACHIEVEMENTS) {
+    const p = achievementProgress(a, s, 0);
+    if (p !== null) assert.equal(p >= 1, a.check(s, 0), a.id);
+  }
 });
