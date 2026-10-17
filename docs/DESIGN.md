@@ -551,6 +551,11 @@ title and detail, replaced in run 35), so they were deleted rather than translat
 of reaching players. A full Spanish pass over every screen, and catching comets in Spanish, showed
 only Spanish text.
 
+**Run 37. Random-tap stability check.** Six sessions of 500 random taps each, three from a fresh game
+and three from a late save with every system unlocked, produced no page errors. Every number stayed
+finite and each save reloaded to the same state. The only console message was the browser refusing
+vibration before the first tap, so the web build now skips vibration until the player has tapped.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

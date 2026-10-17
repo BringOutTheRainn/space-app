@@ -36,6 +36,9 @@ export function haptic(kind: 'light' | 'medium' | 'heavy' = 'light'): void {
     (h.impact as (o: { style: string }) => Promise<void>)({ style: kind.toUpperCase() }).catch(() => undefined);
     return;
   }
+  // Browsers refuse (and log a warning) before the player's first tap.
+  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  if (ua && !ua.hasBeenActive) return;
   if (navigator.vibrate) navigator.vibrate(kind === 'light' ? 8 : kind === 'medium' ? 20 : 45);
 }
 
