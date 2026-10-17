@@ -500,6 +500,15 @@ to one at a time past 250. The chips now share the row's width so the crystal an
 fit at 360px, and the "Buy" label steps aside when crystals are shown (the row keeps its spoken label).
 A test walks 0 to 250 owned and checks Next always lands on a tier.
 
+**Run 31. Tap target sweep.** Play's pre-launch accessibility report flags touch targets under 48 dp.
+A script now opens every tab and window at 360px (Build, Upgrades, Trophies, Cosmos, Shop, Stats,
+Settings, the event, Goals, Boosts and Crystals windows) and lists anything under 44px that has no
+invisible hit extender. Two were found, both recent: the Upgrades tab's Buy all button (40px, now 44
+plus an extender) and the Privacy policy link in Settings (15px tall text, now padded to a 47px target
+without moving the text). The seven 13px checkboxes it lists sit inside their full-width toggle
+rows, which are the real targets. A full Portuguese pass over every screen showed no missing strings
+and no errors after runs 28 to 30.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
