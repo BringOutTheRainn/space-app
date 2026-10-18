@@ -661,5 +661,12 @@ Stardust Empire?" window and a trip to the store. Play's rules forbid asking a q
 the card appears on its own. Builds without the plugin keep the old window. The "Rate" button in
 Settings still opens the Play page. Checked with a mocked plugin in Playwright, both paths.
 
+**Run 53. Old WebView safety net.** The game is compiled for ES2020 and needs Chrome 80 or newer in
+Android System WebView. A phone whose WebView was never updated would load the module, fail to parse
+it, and sit on the splash screen forever, which reads as a crash (and counts as one in Play's
+vitals). A tiny classic script in `index.html` now tests for the syntax first and, if it is missing,
+hides the splash and says in the phone's language (English, Spanish, Portuguese) to update Android
+System WebView and Chrome from Google Play. Checked by faking an old engine in Playwright.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

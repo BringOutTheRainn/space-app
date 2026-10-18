@@ -15,6 +15,23 @@
 <body>
   <div id="app"><div class="boot">Stardust Empire</div></div>
   <noscript>Stardust Empire needs JavaScript to run.</noscript>
+  <script>
+    // Phones with a very old Android System WebView cannot run the game (it needs Chrome 80
+    // features). Say so, instead of leaving the loading screen up forever.
+    (function () {
+      try { new Function('var a = {}; return a?.b ?? 1;'); return; } catch (e) { /* too old */ }
+      var l = (navigator.language || 'en').slice(0, 2);
+      var m = {
+        es: 'Stardust Empire necesita una versión más reciente de Android System WebView. Actualízala (y Chrome) desde Google Play y vuelve a abrir el juego.',
+        pt: 'Stardust Empire precisa de uma versão mais recente do Android System WebView. Atualize-o (e o Chrome) pelo Google Play e abra o jogo de novo.'
+      }[l] || 'Stardust Empire needs a newer Android System WebView. Update it (and Chrome) from Google Play, then open the game again.';
+      var app = document.getElementById('app');
+      app.innerHTML = '<div class="boot old-webview"></div>';
+      app.firstChild.textContent = m;
+      // The game normally hides the splash screen itself.
+      try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
