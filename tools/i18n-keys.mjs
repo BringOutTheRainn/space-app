@@ -11,6 +11,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ES } from '../www/js/i18n/es.js';
 import { PT } from '../www/js/i18n/pt.js';
+import { FR } from '../www/js/i18n/fr.js';
 
 const keys = new Set();
 const add = (x) => {
@@ -29,7 +30,7 @@ for (const file of walk('src')) {
   const src = readFileSync(file, 'utf8');
   for (const m of src.matchAll(/\bt\((['"])((?:\\.|(?!\1).)*)\1/g)) keys.add(m[2].replace(/\\(.)/g, '$1'));
 }
-for (const [lang, dict] of [['es', ES], ['pt', PT]]) {
+for (const [lang, dict] of [['es', ES], ['pt', PT], ['fr', FR]]) {
   const miss = [...keys].filter((k) => !(k in dict));
   console.log(`${lang}: ${miss.length} missing of ${keys.size}`);
   if (process.argv.includes('--list')) for (const k of miss) console.log('  ' + JSON.stringify(k));

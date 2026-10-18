@@ -730,5 +730,14 @@ version ordering and that every changelog line has Spanish and Portuguese. Perfo
 late-game save and the CPU slowed 6x is unchanged since run 41 (Upgrades 60 fps, Build about 20
 fps in headless software rendering; the profile is almost all drawing, with game code under 5%).
 
+**Run 62. French, part 1.** The contrast check still passes with the new windows (What's new,
+sharing, the comeback gift). With Spanish and Portuguese done, French is next: France, Belgium,
+Switzerland, Quebec and French-speaking Africa, with high ad rates in Europe and Canada. It is built
+the same way, in `src/i18n/fr.ts` and `fr-data.ts`, with no-break spaces before ! ? : ; as French
+typography wants and a comma for decimals. It stays out of Settings and device detection until every
+string is done (`npm run i18n` tracks it: 141 of 857 so far, covering the main screen, the Build,
+Upgrades and Cosmos tabs and Probes). Terms: Poussière d'étoiles, Matière noire, Hyperpropulsion,
+Cristaux de quasar, Effondrer l'Univers, Échos stellaires.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
