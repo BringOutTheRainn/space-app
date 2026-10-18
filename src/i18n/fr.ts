@@ -1,4 +1,4 @@
-// French (France). Keys are the English text. In progress: not offered in Settings until complete.
+// French (France). Keys are the English text.
 
 import { FR_DATA } from './fr-data.js';
 
@@ -538,7 +538,7 @@ export const FR: Record<string, string> = {
   "Keep your {n} day streak going.": "Gardez votre série de {n} jours.",
   "Mining Drone": "Drone minier",
   "A tiny robot that chips at the rock while you sleep.": "Un petit robot qui grignote la roche pendant que vous dormez.",
-  "Asteroid Harvester": "Moissonneuse d'astéroïdes",
+  "Asteroid Harvester": "Broyeur d'astéroïdes",
   "Swallows small asteroids whole and spits out dust.": "Avale les petits astéroïdes tout entiers et recrache de la poussière.",
   "Lunar Base": "Base lunaire",
   "Low gravity, high yield. The coffee is terrible.": "Gravité faible, rendement élevé. Le café est atroce.",

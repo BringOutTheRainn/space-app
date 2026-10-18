@@ -241,7 +241,8 @@ on the web. IDs and pacing live in `src/data/ads.ts`. Release steps are in RELEA
    Run 14 (done): the weekend event, the shop, the starter offer and the browser ad stand-in. A scan of
    every tab and window in both languages finds no English left, so `AUTO_LANGS` is now `['es', 'pt']`:
    phones set to Spanish or Portuguese start in that language, everyone else gets English, and Settings
-   still lets anyone pick. The "Some text is still in English" note is gone.
+   still lets anyone pick. The "Some text is still in English" note is gone. French followed in runs
+   62 to 64.
 
 ## Research log
 
@@ -744,6 +745,15 @@ Orbit, missions and contracts, the Star Pass, crystals, the Nebula Garden, the S
 Exchange, weekend events, the shop, ads, reminders, settings and the welcome-back window. What is
 left is game data (upgrade and achievement names and descriptions, cosmic upgrades, anomalies,
 relics): 521 of 857 keys done.
+
+**Run 64. French, done.** The game data (upgrades, achievements, cosmic upgrades, anomalies,
+expeditions, relics, news headlines) is translated, so French is complete (857 of 857) and switched
+on: phones set to French start in French, Settings offers "Français", decimals use a comma, and the
+old-WebView message has a French version. A scan of every tab and window in French finds no English
+and no clipped text after one fix (the Asteroid Harvester is a "Broyeur d'astéroïdes", as
+"Moissonneuse d'astéroïdes" was cut off on its card). The Play listing, release notes and screenshot
+captions are in `docs/STORE-fr.md` and `tools/store-shots.mjs`; the 8 French screenshots are in
+`store/fr-FR/` in the project files. The i18n tests now cover French too.
 
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

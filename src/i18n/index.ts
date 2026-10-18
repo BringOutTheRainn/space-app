@@ -3,19 +3,20 @@
 
 import { ES } from './es.js';
 import { PT } from './pt.js';
+import { FR } from './fr.js';
 import { fmt, setNumberLocale } from '../core/format.js';
 
-export type Lang = 'en' | 'es' | 'pt';
+export type Lang = 'en' | 'es' | 'pt' | 'fr';
 export type LangSetting = 'auto' | Lang;
 
-export const LANG_NAMES: Record<Lang, string> = { en: 'English', es: 'Español', pt: 'Português' };
+export const LANG_NAMES: Record<Lang, string> = { en: 'English', es: 'Español', pt: 'Português', fr: 'Français' };
 
 /** Languages chosen automatically from the phone's language. Players can still pick any language in Settings. */
-export const AUTO_LANGS: Lang[] = ['es', 'pt'];
+export const AUTO_LANGS: Lang[] = ['es', 'pt', 'fr'];
 
-const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
+const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR', fr: 'fr-FR' };
 
-const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT };
+const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT, fr: FR };
 
 let lang: Lang = 'en';
 let dict: Record<string, string> | null = null;
@@ -23,7 +24,7 @@ const missing = new Set<string>();
 
 export function deviceLang(): Lang {
   const code = (typeof navigator === 'undefined' ? 'en' : navigator.language || 'en').slice(0, 2).toLowerCase();
-  return code === 'es' ? 'es' : code === 'pt' ? 'pt' : 'en';
+  return code === 'es' || code === 'pt' || code === 'fr' ? code : 'en';
 }
 
 export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): Lang {

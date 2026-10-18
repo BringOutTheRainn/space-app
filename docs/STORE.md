@@ -48,7 +48,7 @@ asteroid grows into a moon, a planet, a star and finally a black hole.
 
 Contains ads and optional in-app purchases.
 
-Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in `docs/STORE-es-pt.md`.
+Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in `docs/STORE-es-pt.md`, and French (France) is in `docs/STORE-fr.md`.
 
 ## Graphics
 
@@ -117,7 +117,7 @@ Welcome to Stardust Empire!
 • Catch comets for Stardust Rushes and Lucky Hauls
 • Collapse the universe for Dark Matter and permanent upgrades
 • Expeditions, the Warp Exchange, the Nebula Garden and weekend events
-• Plays offline, in English, Spanish and Portuguese
+• Plays offline, in English, Spanish, Portuguese and French
 Thanks for playing! Tell us what you think in a review.
 </en-US>
 <es-419>

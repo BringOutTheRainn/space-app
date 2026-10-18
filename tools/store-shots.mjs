@@ -1,7 +1,7 @@
 // Google Play phone screenshots: 1080 x 1920 PNGs, each a game screen with a
-// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt] [tablet]
+// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt|fr] [tablet]
 // With "tablet", makes 1920 x 1080 landscape shots of the side-by-side tablet layout instead.
-// The game picks its language from the phone's, so es and pt shots are taken with that locale.
+// The game picks its language from the phone's, so es, pt and fr shots are taken with that locale.
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -31,7 +31,7 @@ const url = `http://127.0.0.1:${server.address().port}/index.html`;
 const out = process.argv[2] ?? 'store';
 const lang = process.argv[3] ?? 'en';
 const tablet = process.argv[4] === 'tablet';
-const LOCALES = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
+const LOCALES = { en: 'en-US', es: 'es-419', pt: 'pt-BR', fr: 'fr-FR' };
 // Captions: [title with <em>, subtitle] per shot, in order.
 const CAPTIONS = {
   en: [
@@ -63,6 +63,16 @@ const CAPTIONS = {
     ['Negocie na <em>Bolsa de Dobra</em>', 'Compre barato, venda caro, e cultive um Jardim e uma Forja'],
     ['Gire a <em>Órbita da Sorte</em> todo dia', 'Giros diários grátis, Hiperpropulsão e suprimentos'],
     ['Sempre uma <em>nova meta</em>', 'Missões, conquistas e expedições. Seu império trabalha enquanto você está fora'],
+  ],
+  fr: [
+    ['Touchez un caillou. <em>Bâtissez un empire.</em>', "Récoltez de la Poussière d'étoiles et faites de votre astéroïde une étoile"],
+    ['Attrapez des <em>comètes</em> pour d\'énormes bonus', 'Ruées de poussière, Butins chanceux et Touchers supernova x777'],
+    ["Des centaines d'<em>améliorations</em>", 'Les synergies font grandir vos générateurs ensemble'],
+    ["De l'astéroïde au <em>trou noir</em>", '14 générateurs, des Drones miniers aux Portails de distorsion et au-delà'],
+    ["<em>Effondrez</em> l'univers", 'Gagnez de la Matière noire et débloquez une puissance cosmique permanente'],
+    ['Négociez à la <em>Bourse de distorsion</em>', 'Achetez bas, vendez haut, et cultivez un Jardin et une Forge'],
+    ["Faites tourner l'<em>Orbite chanceuse</em>", 'Tours gratuits chaque jour, Hyperpropulsion et ravitaillements'],
+    ['Toujours un <em>nouvel objectif</em>', 'Missions, succès et expéditions. Votre empire travaille pendant votre absence'],
   ],
 };
 const cap = CAPTIONS[lang];

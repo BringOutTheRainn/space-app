@@ -1057,9 +1057,10 @@ test('Spanish and Portuguese cover the same text with the same placeholders', as
 test('language setting falls back to English and fills placeholders', async () => {
   const i18n = await import('../www/js/i18n/index.js');
   assert.equal(i18n.resolveLang('es', 'en'), 'es');
-  assert.equal(i18n.resolveLang('auto', 'fr'), 'en');
+  assert.equal(i18n.resolveLang('auto', 'de'), 'en');
   assert.equal(i18n.resolveLang('auto', 'es'), 'es');
   assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');
+  assert.equal(i18n.resolveLang('auto', 'fr'), 'fr');
   assert.equal(i18n.resolveLang('en', 'es'), 'en');
   i18n.setLanguage('pt');
   assert.equal(i18n.t('{n} per second', { n: '5' }), '5 por segundo');
@@ -1078,7 +1079,7 @@ test('every upgrade and achievement has Spanish and Portuguese text', async () =
     assert.equal(i18n.tName(x), x.name);
     assert.equal(i18n.tDesc(x), x.desc);
   }
-  for (const lang of ['es', 'pt']) {
+  for (const lang of ['es', 'pt', 'fr']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const x of items) {
@@ -1101,7 +1102,7 @@ test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese te
     ...[...DESTINATIONS, ...RELICS].flatMap((x) => [x.name, x.desc]),
     ...NEWS.map((n) => n.text),
   ];
-  for (const lang of ['es', 'pt']) {
+  for (const lang of ['es', 'pt', 'fr']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
@@ -1115,7 +1116,7 @@ test('wheel prizes and weekly contracts have Spanish and Portuguese text', async
   const { SLICES } = await import('../www/js/core/wheel.js');
   const { CONTRACTS } = await import('../www/js/core/contracts.js');
   const texts = [...SLICES.map((w) => w.label), ...CONTRACTS.flatMap((c) => [c.name, c.goalText])];
-  for (const lang of ['es', 'pt']) {
+  for (const lang of ['es', 'pt', 'fr']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
@@ -1130,7 +1131,7 @@ test('garden spores, forge spells and market goods have Spanish and Portuguese t
   const { SPELLS } = await import('../www/js/core/forge.js');
   const { GOODS } = await import('../www/js/core/market.js');
   const texts = [...SEEDS.map((x) => x.name), ...SPELLS.flatMap((x) => (x.id === 'smelt' ? [x.name] : [x.name, x.desc])), ...GOODS.map((x) => x.name)];
-  for (const lang of ['es', 'pt']) {
+  for (const lang of ['es', 'pt', 'fr']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
