@@ -58,6 +58,9 @@ export const ES: Record<string, string> = {
   'Evolution! {from} → {to}': '¡Evolución! {from} → {to}',
   'Next form: {name} at {n} Stardust this universe.': 'Próxima forma: {name} con {n} de Polvo Estelar en este universo.',
   'This is the final form.': 'Esta es la forma final.',
+  'Next form': 'Próxima forma',
+  'Final form reached': 'Forma final alcanzada',
+  '{name} at {n} ({pct})': '{name} con {n} ({pct})',
   'Storage filled up after {h} hours.': 'El almacén se llenó a las {h} horas.',
   'Cosmic upgrades let it hold more.': 'Las mejoras cósmicas le dan más capacidad.',
 

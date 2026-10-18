@@ -628,6 +628,11 @@ had measured them against the line itself; and toasts caught half-faded behind a
 ignores parent backgrounds that don't sit behind the text, hides toasts while scanning, and also
 covers the welcome-back window. Everything passes WCAG AA, and a planted dark label is still caught.
 
+**Run 48. Next form in Stats.** Following run 45's evolution toast, Stats now has a "Next form" row
+under Earned this universe: the next form, the Stardust it needs this universe and how far along you
+are ("Rocky Planet at 100M (34%)"), or "Final form reached" at the black hole. Translated, and checked
+in English and Portuguese.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

@@ -3,6 +3,7 @@
 import { markRatingDone } from '../core/rating.js';
 import { noteHappyMoment, openPlayPage } from './rating.js';
 import { AUTO_LANGS, LANG_NAMES, currentLang, t, type Lang, type LangSetting } from '../i18n/index.js';
+import { STAGES, stageFor } from './sky.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, pluralName } from '../data/upgrades.js';
@@ -38,6 +39,13 @@ import { claimMission, missionDone, missionProgress, missionReward, swapMission,
 export const VERSION = '1.0.0';
 export const PRIVACY_URL = 'https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md';
 
+/** The celestial body's next form and how far this universe is towards it. */
+function nextForm(earned: number): string {
+  const next = STAGES[stageFor(earned) + 1];
+  if (!next) return t('Final form reached');
+  return t('{name} at {n} ({pct})', { name: t(next.name), n: fmt(next.at), pct: fmtPercent(Math.min(0.999, earned / next.at)) });
+}
+
 export function openStats(ctx: Ctx): void {
   const long = (n: number): string => (currentLang() === 'en' ? fmtLong(n) : fmt(n));
   const render = (): string => {
@@ -46,6 +54,7 @@ export function openStats(ctx: Ctx): void {
       // English uses full number words; other languages use the short form.
       [t('Stardust in bank'), long(s.stardust)],
       [t('Earned this universe'), long(s.earnedRun)],
+      [t('Next form'), nextForm(s.earnedRun)],
       [t('Earned all time'), long(s.earnedAll)],
       [t('Production'), t('{n} per second', { n: fmtRate(d.sps) })],
       [t('Best production'), t('{n} per second', { n: fmtRate(s.highestSps) })],
