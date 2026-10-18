@@ -1,7 +1,7 @@
 // Modal screens: stats, settings, offline earnings and the daily reward.
 
 import { markRatingDone } from '../core/rating.js';
-import { noteHappyMoment, openPlayPage } from './rating.js';
+import { noteHappyMoment, openPlayPage, PLAY_URL } from './rating.js';
 import { AUTO_LANGS, LANG_NAMES, currentLang, t, type Lang, type LangSetting } from '../i18n/index.js';
 import { STAGES, stageFor } from './sky.js';
 import { ACHIEVEMENTS } from '../data/achievements.js';
@@ -15,7 +15,7 @@ import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from '.
 import type { Ctx } from './ctx.js';
 import { closeModal, confirmModal, esc, openModal, toast } from './dom.js';
 import { icon } from './icons.js';
-import { copyText, haptic, isNative, setVibration } from './platform.js';
+import { copyText, haptic, isNative, setVibration, shareText } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
 import { errorReport, hasErrors } from './errors.js';
 import { adPrivacyOptionsAvailable, rewardedAvailable, showAdPrivacyOptions, showRewarded } from './ads.js';
@@ -86,11 +86,32 @@ export function openStats(ctx: Ctx): void {
     return `<table class="stats">${rows.map(([k, v]) => `<tr><td>${k}</td><td colspan="2">${v}</td></tr>`).join('')}</table>
       ${gens ? `<h3 class="section-title">${t('Generators')}</h3><table class="stats">${gens}</table>` : ''}`;
   };
-  const el = openModal({ title: t('Stats'), body: render(), wide: true, onClose: () => clearInterval(timer) });
+  const el = openModal({
+    title: t('Stats'), body: render(), wide: true, onClose: () => clearInterval(timer),
+    buttons: [{ label: t('Share my empire'), kind: 'primary', onClick: () => { void shareEmpire(ctx); return false; } }],
+  });
   const timer = setInterval(() => {
     const body = el.querySelector('.modal-body');
     if (body) body.innerHTML = render();
   }, 1000);
+}
+
+/** The line players share: their production, collapses and the Play link. */
+export function shareLine(ctx: Ctx): string {
+  const rate = fmtRate(Math.max(ctx.d.sps, ctx.s.highestSps));
+  const brag = ctx.s.collapses === 1
+    ? t('My space empire makes {n} Stardust per second and has collapsed its first universe. Can you beat it?', { n: rate })
+    : ctx.s.collapses > 1
+    ? t('My space empire makes {n} Stardust per second and has collapsed {c} universes. Can you beat it?', { n: rate, c: ctx.s.collapses })
+    : t('My space empire makes {n} Stardust per second. Can you beat it?', { n: rate });
+  return `${brag} ${t('Stardust Empire on Google Play:')} ${PLAY_URL}`;
+}
+
+async function shareEmpire(ctx: Ctx): Promise<void> {
+  const text = shareLine(ctx);
+  if (await shareText(text, t('Share my empire'))) return;
+  if (await copyText(text)) toast(t('Copied. Paste it anywhere to share.'), 'good');
+  else openModal({ title: t('Share my empire'), body: `<textarea class="code" readonly>${esc(text)}</textarea>` });
 }
 
 function toggleRow(id: string, label: string, on: boolean): string {

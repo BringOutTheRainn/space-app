@@ -708,5 +708,13 @@ waiting: come back for 2 hours of free Hyperdrive". It is skipped for players wh
 got a gift in the last week, and is cancelled like the others when the game opens. The reminder
 opt-in text now mentions gifts. Translated, covered by the reminder test.
 
+**Run 59. Share my empire.** Word of mouth is free installs, and the game had no way to show it
+off. The Stats screen now has a "Share my empire" button. It shares one line, such as "My space
+empire makes 1.2T Stardust per second and has collapsed 3 universes. Can you beat it?", with the
+Google Play link. On the phone it opens Android's share sheet through a small `ShareText` plugin
+written by `tools/android.sh`; in a browser it uses the Web Share API, or copies the line and says
+so. Nothing is sent anywhere by the game itself. Also fixed: toasts fired while a window was open
+(such as "Save code copied") were hidden behind it; they now show above it. Translated.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

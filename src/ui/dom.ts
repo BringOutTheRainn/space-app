@@ -40,6 +40,8 @@ export function toast(html: string, kind: 'info' | 'good' | 'trophy' | 'comet' |
   el.className = `toast toast-${kind}`;
   el.innerHTML = html;
   el.addEventListener('click', () => el.remove());
+  // Over an open window, so a toast it fires (a copy, a share) is seen.
+  toastRoot.classList.toggle('over-modal', !!document.querySelector('.modal-backdrop'));
   toastRoot.appendChild(el);
   while (toastRoot.children.length > 2) toastRoot.firstElementChild?.remove();
   setTimeout(() => {

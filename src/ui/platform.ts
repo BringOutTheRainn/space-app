@@ -86,6 +86,28 @@ export async function requestInAppReview(): Promise<boolean> {
   }
 }
 
+/**
+ * Opens the phone's share sheet with a line of text: Android's own sheet in the app,
+ * the Web Share API in a browser that has it. Resolves false when neither is there
+ * or the player backs out, so the caller can copy the text instead.
+ */
+export async function shareText(text: string, title: string): Promise<boolean> {
+  const p = plugin('ShareText');
+  try {
+    if (p && typeof p.share === 'function') {
+      await (p.share as (o: { text: string; title: string }) => Promise<void>)({ text, title });
+      return true;
+    }
+    if (typeof navigator.share === 'function') {
+      await navigator.share({ text, title });
+      return true;
+    }
+  } catch {
+    /* backed out, or not available */
+  }
+  return false;
+}
+
 export function hideSplash(): void {
   const s = plugin('SplashScreen');
   if (s && typeof s.hide === 'function') (s.hide as () => Promise<void>)().catch(() => undefined);

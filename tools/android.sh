@@ -68,6 +68,7 @@ fi
 # - Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
 #   past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
 # - An InAppReview plugin that shows Google Play's in-app review card (ui/rating.ts).
+# - A ShareText plugin that opens Android's share sheet with a line of text (Stats screen).
 # - Apps targeting Android 15+ are drawn edge to edge, under the status and navigation
 #   bars. Pad the game's view by the bars (and any camera cutout) so the header and the
 #   bottom tabs stay clear of them, with light bar icons on the dark background.
@@ -91,6 +92,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(InAppReviewPlugin.class);
+        registerPlugin(ShareTextPlugin.class);
         super.onCreate(savedInstanceState);
         if (getBridge() != null && getBridge().getWebView() != null) {
             float scale = Math.min(getResources().getConfiguration().fontScale, MAX_TEXT_SCALE);
@@ -140,9 +142,35 @@ public class InAppReviewPlugin extends Plugin {
     }
 }
 JAVA
+  cat > "$(dirname "$ACTIVITY")/ShareTextPlugin.java" <<JAVA
+$PKG
+
+import android.content.Intent;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+@CapacitorPlugin(name = "ShareText")
+public class ShareTextPlugin extends Plugin {
+    @PluginMethod
+    public void share(PluginCall call) {
+        String text = call.getString("text", "");
+        Intent send = new Intent(Intent.ACTION_SEND);
+        send.setType("text/plain");
+        send.putExtra(Intent.EXTRA_TEXT, text);
+        try {
+            getActivity().startActivity(Intent.createChooser(send, call.getString("title", "")));
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Sharing is not available");
+        }
+    }
+}
+JAVA
   grep -q 'com.google.android.play:review' android/app/build.gradle \
     || sed -i '0,/^dependencies {/s##dependencies {\n    implementation "com.google.android.play:review:2.0.1"#' android/app/build.gradle
-  echo "Text zoom cap, system bar insets and in-app review added in $(dirname "$ACTIVITY")"
+  echo "Text zoom cap, system bar insets, in-app review and sharing added in $(dirname "$ACTIVITY")"
 fi
 
 # Version: name from package.json, code from VERSION_CODE (CI run number) or 1.
