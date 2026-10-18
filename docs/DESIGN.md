@@ -621,6 +621,13 @@ so a player away for 12 hours saw 12 hours and an amount worth 8. It now adds "S
 after 8 hours." when the cap was hit, plus "Cosmic upgrades let it hold more." until the 24-hour
 upgrade is owned, which points at the Event Horizon Cache and Timeless Engines nodes.
 
+**Run 47. Contrast re-check.** `tools/contrast-check.mjs` re-run over every tab and window after the
+new Trophies list, evolution toasts and storage note. Its only failures were false alarms, which it
+now skips: event badge labels (Bronze, Silver...) hang below their 2-pixel marker line, and the check
+had measured them against the line itself; and toasts caught half-faded behind a window. The check now
+ignores parent backgrounds that don't sit behind the text, hides toasts while scanning, and also
+covers the welcome-back window. Everything passes WCAG AA, and a planted dark label is still caught.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

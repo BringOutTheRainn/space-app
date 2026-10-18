@@ -12,10 +12,13 @@ await p.evaluate(() => { const { ctx } = window.__game; const s = ctx.s; s.tutor
   s.generators = [100, 80, 60, 40, 30, 20, 10, 5, 3, 2, 1, 0, 0, 0]; ctx.recalc(); ctx.save(); location.reload(); });
 await p.waitForTimeout(1500);
 await p.evaluate(() => document.querySelectorAll('.modal .btn').forEach((x) => { if (/close|ok/i.test(x.textContent)) x.click(); }));
+// Toasts fade in and out over whatever is underneath, so they are checked in their settled state
+// on the sky only (white on a dark panel); hide them so a half-faded one doesn't count.
+await p.addStyleTag({ content: '.toasts{display:none!important}' });
 const scan = (label) => p.evaluate((label) => {
   const parse = (s) => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const v = m[1].split(/[ ,\/]+/).filter(Boolean).map(Number); return [v[0], v[1], v[2], v[3] ?? 1]; };
   const lum = ([r, g, b]) => { const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
-  const bgOf = (el) => { const layers = []; for (let e = el; e; e = e.parentElement) { const st = getComputedStyle(e); if (st.backgroundImage.includes('gradient') && !layers.length) { const ms = [...st.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((m) => parse(m[0])).filter((c) => c[3] > 0.9); if (ms.length) { const avg = [0,1,2].map((i) => ms.reduce((n, c) => n + c[i], 0) / ms.length); layers.push([...avg, 1]); break; } } const c = parse(st.backgroundColor); if (c && c[3] > 0) { layers.push(c); if (c[3] >= 1) break; } }
+  const bgOf = (el) => { const layers = []; const r0 = el.getBoundingClientRect(); const cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2; for (let e = el; e; e = e.parentElement) { const st = getComputedStyle(e); if (e !== el) { const r = e.getBoundingClientRect(); if (cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) continue; } if (st.backgroundImage.includes('gradient') && !layers.length) { const ms = [...st.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((m) => parse(m[0])).filter((c) => c[3] > 0.9); if (ms.length) { const avg = [0,1,2].map((i) => ms.reduce((n, c) => n + c[i], 0) / ms.length); layers.push([...avg, 1]); break; } } const c = parse(st.backgroundColor); if (c && c[3] > 0) { layers.push(c); if (c[3] >= 1) break; } }
     let col = [11, 13, 28]; for (const l of layers.reverse()) col = col.map((v, i) => v * (1 - l[3]) + l[i] * l[3]); return col; };
   const out = new Map();
   for (const el of document.querySelectorAll('body *')) {
@@ -45,4 +48,8 @@ for (const fn of ['openStats','openSettings','openHyperdrive','openCrystals','op
   await p.evaluate(() => { document.querySelectorAll('.modal-body').forEach((b) => b.scrollTop = 99999); }); await p.waitForTimeout(200); pr(await scan(fn + ' bottom'));
   await close();
 }
+// Welcome back after a long absence, including the storage-full note.
+await p.evaluate(async () => { const m = await import('./js/ui/menus.js'); m.showOffline(window.__game.ctx, 12 * 3600, 5e9); }); await p.waitForTimeout(600);
+pr(await scan('showOffline'));
+await close();
 await b.close();
