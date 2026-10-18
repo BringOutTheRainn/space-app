@@ -1422,6 +1422,10 @@ test('A comeback gift of Hyperdrive after 3 days away, at most once a week, only
   capped.hyperEndsAt = now + 7.5 * 3600000;
   assert.equal(comebackGift(capped, 5 * 86400, now), 30, 'stays within the 8 hour Hyperdrive cap');
   assert.equal(capped.hyperEndsAt, now + 8 * 3600000);
+  const future = newState();
+  future.playSeconds = 3600;
+  future.comebackAt = now + 365 * 86400000;
+  assert.equal(comebackGift(future, 4 * 86400, now), 120, 'a gift stamped in the future does not block gifts');
   const old = deserialize(JSON.stringify({ ...newState(), comebackAt: undefined }));
   assert.equal(old.comebackAt, 0);
 });

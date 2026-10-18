@@ -716,5 +716,10 @@ written by `tools/android.sh`; in a browser it uses the Web Share API, or copies
 so. Nothing is sent anywhere by the game itself. Also fixed: toasts fired while a window was open
 (such as "Save code copied") were hidden behind it; they now show above it. Translated.
 
+**Run 60. Check after runs 57 to 59.** Two random-tap sessions (fresh and late game) were clean
+after the comeback gift and sharing. One fix: if a phone's clock was set far ahead and then back, the
+last gift's date would sit in the future and block gifts for months; a future date is now ignored.
+Covered by the comeback test.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

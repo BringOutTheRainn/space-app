@@ -42,6 +42,8 @@ export const COMEBACK_HYPER_MINUTES = 120;
  */
 export function comebackGift(s: GameState, awaySeconds: number, now = Date.now()): number {
   if (awaySeconds * 1000 < COMEBACK_AWAY_MS || s.playSeconds < COMEBACK_MIN_PLAY) return 0;
+  // A gift stamped in the future means the clock was moved back; do not lock gifts out for good.
+  if (s.comebackAt > now) s.comebackAt = 0;
   if (s.comebackAt && now - s.comebackAt < COMEBACK_EVERY_MS) return 0;
   const start = Math.max(now, s.hyperEndsAt);
   const end = Math.min(now + AD_CONFIG.hyperCapMinutes * 60000, start + COMEBACK_HYPER_MINUTES * 60000);
