@@ -113,7 +113,7 @@ rare "Relics" that give permanent small multipliers. Gives players a reason to c
 ## Daily and session features
 
 - Offline earnings popup on return, with a "double it" rewarded ad button.
-- Comeback gift: 2 hours of free Hyperdrive after 3+ days away, at most once a week.
+- Comeback gift: 2 hours of free Hyperdrive after 3+ days away, at most once a week, with one reminder when it is due.
 - Daily login reward streak (Stardust boost, Dark Matter shard on day 7).
 - News ticker with funny space headlines that change with progress.
 
@@ -701,6 +701,12 @@ storage stops filling after 8 hours. Now a player who comes back after 3 or more
 played at least 30 minutes in total) gets 2 hours of free Hyperdrive, listed in the welcome-back
 window as "Welcome-back gift". It is given at most once a week, stays within the 8 hour Hyperdrive
 cap, needs no ad and is saved as `comebackAt`. Translated, with a test.
+
+**Run 58. Comeback reminder.** For players who turned reminders on, leaving the game now also
+schedules one more: on the evening the comeback gift becomes due (3 days later), "A gift is
+waiting: come back for 2 hours of free Hyperdrive". It is skipped for players who barely played or
+got a gift in the last week, and is cancelled like the others when the game opens. The reminder
+opt-in text now mentions gifts. Translated, covered by the reminder test.
 
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

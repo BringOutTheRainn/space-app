@@ -297,7 +297,7 @@ function askReminders(ctx: Ctx): void {
   openModal({
     title: t('Want a heads-up?'),
     body: `<div class="offline"><div class="big-ico">${icon('drone')}</div>
-      <p>${t('Get a ping when your storage is full, a probe is back, or your daily drop is waiting. Nothing else.')}</p></div>`,
+      <p>${t('Get a ping when your storage is full, a probe is back, or a gift or your daily drop is waiting. Nothing else.')}</p></div>`,
     buttons: [
       { label: t('No thanks') },
       {

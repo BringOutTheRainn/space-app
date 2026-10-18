@@ -445,6 +445,13 @@ test('reminders cover storage, hyperdrive, probes and the daily drop, never too 
   assert.ok(list.every((r, i) => i === 0 || r.at >= list[i - 1].at), 'sorted by time');
   s.hyperEndsAt = now + 60000;
   assert.ok(!planReminders(s, computeDerived(s, now), now).some((r) => r.id === 2), 'skips events under 10 minutes away');
+  assert.ok(!list.some((r) => r.id === 5), 'no comeback nudge for a player who barely played');
+  s.playSeconds = 3600;
+  const gift = planReminders(s, computeDerived(s, now), now).find((r) => r.id === 5);
+  assert.ok(gift && gift.at >= now + 3 * 86400000 && new Date(gift.at).getHours() === 18, 'comeback nudge on the evening the gift is due');
+  assert.match(gift.body, /2 hours of free Hyperdrive/);
+  s.comebackAt = now - 86400000;
+  assert.ok(!planReminders(s, computeDerived(s, now), now).some((r) => r.id === 5), 'no nudge while the last gift is under a week old');
 });
 
 test('weekly contracts rotate by week, pay three tiers and award a permanent medal', async () => {

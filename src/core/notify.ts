@@ -2,6 +2,7 @@
 // get a notification, at most one of each kind, so they stay welcome.
 
 import { AD_CONFIG } from '../data/ads.js';
+import { COMEBACK_AWAY_MS, COMEBACK_EVERY_MS, COMEBACK_HYPER_MINUTES, COMEBACK_MIN_PLAY } from './away.js';
 import { dailyReady, dayNumber } from './daily.js';
 import type { Derived } from './economy.js';
 import type { GameState } from './state.js';
@@ -29,6 +30,7 @@ export const REMINDER_TEXT = [
   'An expedition is back with loot. Open it before you send the next one.',
   'A free supply drop is waiting.',
   'Keep your {n} day streak going.',
+  'A gift is waiting', 'Come back for {h} hours of free Hyperdrive. Your empire missed you.',
 ];
 
 function reminder(id: number, at: number, title: string, ...parts: ReminderPart[]): Reminder {
@@ -66,5 +68,11 @@ export function planReminders(s: GameState, d: Derived, now = Date.now()): Remin
   const parts: ReminderPart[] = [{ key: 'A free supply drop is waiting.' }];
   if (s.dailyStreak > 1 && s.dailyLastDay >= dayNumber(now) - 1) parts.push({ key: 'Keep your {n} day streak going.', vars: { n: s.dailyStreak } });
   out.push(reminder(4, nextLocalHour(Math.max(readyAt, now + MIN_DELAY), DAILY_HOUR), 'Daily supply drop', ...parts));
+  // Comeback gift: one nudge on the evening it becomes due, if it will be.
+  const giftAt = nextLocalHour(now + COMEBACK_AWAY_MS, DAILY_HOUR);
+  if (s.playSeconds >= COMEBACK_MIN_PLAY && (!s.comebackAt || giftAt - s.comebackAt >= COMEBACK_EVERY_MS)) {
+    out.push(reminder(5, giftAt, 'A gift is waiting',
+      { key: 'Come back for {h} hours of free Hyperdrive. Your empire missed you.', vars: { h: COMEBACK_HYPER_MINUTES / 60 } }));
+  }
   return out.filter((r) => r.at - now >= MIN_DELAY).sort((a, b) => a.at - b.at);
 }

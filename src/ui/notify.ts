@@ -12,7 +12,7 @@ interface LocalNotificationsPlugin {
   cancel(o: { notifications: Array<{ id: number }> }): Promise<void>;
 }
 
-const IDS = [1, 2, 3, 4];
+const IDS = [1, 2, 3, 4, 5];
 
 function plugin(): LocalNotificationsPlugin | undefined {
   if (!isNative()) return undefined;
