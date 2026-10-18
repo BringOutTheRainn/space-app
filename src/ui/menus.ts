@@ -236,6 +236,7 @@ export function openSettings(ctx: Ctx): void {
 
 function awayRows(r: AwayReport): string {
   const rows: Array<[string, string]> = [];
+  if (r.giftMinutes) rows.push(['gift', t('Welcome-back gift: {time} of Hyperdrive (x2 production)', { time: fmtTime(r.giftMinutes * 60) })]);
   if (r.probes) rows.push(['probe', r.probes === 1 ? t('1 probe is back with loot') : t('{n} probes are back with loot', { n: r.probes })]);
   if (r.plants) rows.push(['sprout', r.plants === 1 ? t('1 plant is ready to harvest') : t('{n} plants are ready to harvest', { n: r.plants })]);
   if (r.crystals) rows.push(['crystal', r.crystals === 1 ? t('A Quasar Crystal formed') : t('{n} Quasar Crystals formed', { n: r.crystals })]);

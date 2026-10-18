@@ -211,7 +211,7 @@ function start(): void {
 
   // Offline progress since the last session.
   const off = applyOffline(ctx.s, ctx.d);
-  const offReport = awayReport(ctx.s);
+  const offReport = awayReport(ctx.s, Date.now(), off.seconds);
   if (off.earned > 0) {
     if (off.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
     showOffline(ctx, off.seconds, off.earned, offReport);
@@ -264,7 +264,7 @@ function start(): void {
       resumeAudio();
       void clearReminders();
       const back = applyOffline(ctx.s, ctx.d);
-      const backReport = awayReport(ctx.s);
+      const backReport = awayReport(ctx.s, Date.now(), back.seconds);
       if (back.earned > 0 && back.seconds >= 60) {
         if (back.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
         showOffline(ctx, back.seconds, back.earned, backReport);

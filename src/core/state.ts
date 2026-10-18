@@ -69,6 +69,8 @@ export interface GameState {
   darkMatterSpent: number;
   /** Stellar Echo levels: a repeatable Dark Matter upgrade once the tree is complete. */
   echoes: number;
+  /** Real-time ms of the last comeback gift (free Hyperdrive after days away); 0 for never. */
+  comebackAt: number;
   collapses: number;
   cometsRun: number;
   cometsAll: number;
@@ -190,6 +192,7 @@ export function newState(now = Date.now()): GameState {
     darkMatter: 0,
     darkMatterSpent: 0,
     echoes: 0,
+    comebackAt: 0,
     collapses: 0,
     cometsRun: 0,
     cometsAll: 0,

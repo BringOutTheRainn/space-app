@@ -113,6 +113,7 @@ rare "Relics" that give permanent small multipliers. Gives players a reason to c
 ## Daily and session features
 
 - Offline earnings popup on return, with a "double it" rewarded ad button.
+- Comeback gift: 2 hours of free Hyperdrive after 3+ days away, at most once a week.
 - Daily login reward streak (Stardust boost, Dark Matter shard on day 7).
 - News ticker with funny space headlines that change with progress.
 
@@ -693,6 +694,13 @@ were clean. A late-game save with every achievement, upgrade and cosmic node is 
 size is no concern. The contrast check now also covers the Cosmos tab with the tree complete and
 Echoes buyable (passes). Buying the last cosmic upgrade now also shows "Stellar Echoes unlocked" so
 players know where their Dark Matter goes next.
+
+**Run 57. Comeback gift.** A 2026 retention guide names winning back lapsed players as one of the
+main levers for day 7 and day 30 retention, and here a player who leaves for days gets nothing extra:
+storage stops filling after 8 hours. Now a player who comes back after 3 or more days away (and has
+played at least 30 minutes in total) gets 2 hours of free Hyperdrive, listed in the welcome-back
+window as "Welcome-back gift". It is given at most once a week, stays within the 8 hour Hyperdrive
+cap, needs no ad and is saved as `comebackAt`. Translated, with a test.
 
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

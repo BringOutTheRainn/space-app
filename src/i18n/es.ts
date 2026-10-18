@@ -58,6 +58,7 @@ export const ES: Record<string, string> = {
   'Evolution! {from} → {to}': '¡Evolución! {from} → {to}',
   'Next form: {name} at {n} Stardust this universe.': 'Próxima forma: {name} con {n} de Polvo Estelar en este universo.',
   'This is the final form.': 'Esta es la forma final.',
+  'Welcome-back gift: {time} of Hyperdrive (x2 production)': 'Regalo de bienvenida: {time} de Hiperimpulso (producción x2)',
   'Stellar Echoes unlocked': 'Ecos Estelares desbloqueados',
   'The tree is complete. Spend Dark Matter on Echoes below it.': 'El árbol está completo. Gasta Materia Oscura en Ecos debajo de él.',
   'Stellar Echoes · level {n}': 'Ecos Estelares · nivel {n}',

@@ -1395,3 +1395,26 @@ test('Stellar Echoes unlock with the full cosmic tree, double in price and survi
   old.echoes = 'x';
   assert.equal(deserialize(JSON.stringify(old)).echoes, 0);
 });
+
+test('A comeback gift of Hyperdrive after 3 days away, at most once a week, only for real players', async () => {
+  const { comebackGift, awayReport } = await import('../www/js/core/away.js');
+  const now = Date.UTC(2026, 9, 18, 12);
+  const s = newState();
+  s.playSeconds = 3600;
+  assert.equal(comebackGift(s, 2 * 86400, now), 0, 'two days is not enough');
+  assert.equal(comebackGift(s, 3 * 86400, now), 120);
+  assert.equal(s.hyperEndsAt, now + 120 * 60000);
+  assert.equal(comebackGift(s, 4 * 86400, now + 5 * 86400000), 0, 'once a week');
+  const later = now + 8 * 86400000;
+  assert.equal(awayReport(s, later, 4 * 86400).giftMinutes, 120);
+  const fresh = newState();
+  fresh.playSeconds = 600;
+  assert.equal(comebackGift(fresh, 10 * 86400, now), 0, 'not for players who barely played');
+  const capped = newState();
+  capped.playSeconds = 3600;
+  capped.hyperEndsAt = now + 7.5 * 3600000;
+  assert.equal(comebackGift(capped, 5 * 86400, now), 30, 'stays within the 8 hour Hyperdrive cap');
+  assert.equal(capped.hyperEndsAt, now + 8 * 3600000);
+  const old = deserialize(JSON.stringify({ ...newState(), comebackAt: undefined }));
+  assert.equal(old.comebackAt, 0);
+});
