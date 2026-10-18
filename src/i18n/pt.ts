@@ -55,6 +55,9 @@ export const PT: Record<string, string> = {
   'Star': 'Estrela',
   'Pulsar': 'Pulsar',
   'Black Hole': 'Buraco negro',
+  'Evolution! {from} → {to}': 'Evolução! {from} → {to}',
+  'Next form: {name} at {n} Stardust this universe.': 'Próxima forma: {name} com {n} de Poeira Estelar neste universo.',
+  'This is the final form.': 'Esta é a forma final.',
 
   // Build tab
   'Buy amount': 'Quantidade a comprar',

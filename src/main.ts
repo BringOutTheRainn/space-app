@@ -290,6 +290,8 @@ function start(): void {
   const eventText = $('#event-text');
   let shownAmount = state.stardust;
 
+  let shownStage = -1;
+
   function refreshSlow(force = false): void {
     const { s, d } = ctx;
     maybeAskRating(ctx);
@@ -317,8 +319,16 @@ function start(): void {
       rebuildAll = true;
     }
 
-    // Stage of the celestial body.
+    // Stage of the celestial body. Growing into the next form is celebrated once.
     const stage = stageFor(s.earnedRun);
+    if (stage > shownStage && shownStage >= 0) {
+      const next = STAGES[stage + 1];
+      const sub = next ? t('Next form: {name} at {n} Stardust this universe.', { name: t(next.name), n: fmt(next.at) }) : t('This is the final form.');
+      toast(`<div class="t-ico">${icon('cosmos')}</div><div><b>${esc(t('Evolution! {from} → {to}', { from: t(STAGES[shownStage].name), to: t(STAGES[stage].name) }))}</b><br>${esc(sub)}</div>`, 'good', 5000);
+      sfxAchievement();
+      haptic('medium');
+    }
+    shownStage = stage;
     sky.setStage(stage);
     sky.setDrones(s.generators[0]);
     sky.setOwned(s.generators);

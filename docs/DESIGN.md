@@ -607,6 +607,13 @@ keeping them equal. And a signed bundle could be uploaded still showing test ads
 AdMob IDs, a version mismatch and an unreachable privacy policy. Warnings only, because the closed
 test can run on test ads while AdMob reviews the app.
 
+**Run 45. Evolution moment.** The celestial body's seven forms (asteroid to black hole) are the
+game's most visible progress, but growing into the next one only flashed the sky, and nothing said
+when the next form comes. Now each evolution gets a toast ("Evolution! Asteroid → Moon"), the
+achievement sound and a medium buzz, plus how much Stardust this universe the next form needs
+("This is the final form." at the black hole). It fires on growth only, never on loading a save, and
+again in each new universe after a collapse. Checked in English and Portuguese with no page errors.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
