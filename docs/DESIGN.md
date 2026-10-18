@@ -755,5 +755,15 @@ and no clipped text after one fix (the Asteroid Harvester is a "Broyeur d'astér
 captions are in `docs/STORE-fr.md` and `tools/store-shots.mjs`; the 8 French screenshots are in
 `store/fr-FR/` in the project files. The i18n tests now cover French too.
 
+**Run 65. Check after French, and German, part 1.** Two random-tap sessions with the phone set
+to French (fresh and late game) were clean. German is next: Germany, Austria and Switzerland have
+some of the highest ad rates and a large Play audience. It is built like French, in
+`src/i18n/de.ts` and `de-data.ts`, using "du" as German games usually do, and stays out of Settings
+and device detection until every string is done (`npm run i18n`: 141 of 857 so far, the main
+screen, Build, Upgrades, Cosmos and Probes). Terms: Sternenstaub, Dunkle Materie, Hyperantrieb,
+Quasarkristalle, Universum kollabieren, Sternenechos. A trial scan in German found no clipped
+buttons, but the Forge card already cuts "Schmiede" short; to fix before switching German on, along
+with the decimal comma.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

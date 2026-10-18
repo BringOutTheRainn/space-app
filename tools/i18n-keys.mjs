@@ -1,4 +1,4 @@
-// Lists the English text in the game data that Spanish or Portuguese still lack.
+// Lists the English text in the game data that a translation still lacks.
 // Usage: npm run build && node tools/i18n-keys.mjs
 import { UPGRADES } from '../www/js/data/upgrades.js';
 import { ACHIEVEMENTS } from '../www/js/data/achievements.js';
@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { ES } from '../www/js/i18n/es.js';
 import { PT } from '../www/js/i18n/pt.js';
 import { FR } from '../www/js/i18n/fr.js';
+import { DE } from '../www/js/i18n/de.js';
 
 const keys = new Set();
 const add = (x) => {
@@ -30,7 +31,7 @@ for (const file of walk('src')) {
   const src = readFileSync(file, 'utf8');
   for (const m of src.matchAll(/\bt\((['"])((?:\\.|(?!\1).)*)\1/g)) keys.add(m[2].replace(/\\(.)/g, '$1'));
 }
-for (const [lang, dict] of [['es', ES], ['pt', PT], ['fr', FR]]) {
+for (const [lang, dict] of [['es', ES], ['pt', PT], ['fr', FR], ['de', DE]]) {
   const miss = [...keys].filter((k) => !(k in dict));
   console.log(`${lang}: ${miss.length} missing of ${keys.size}`);
   if (process.argv.includes('--list')) for (const k of miss) console.log('  ' + JSON.stringify(k));
