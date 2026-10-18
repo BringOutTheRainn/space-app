@@ -1362,3 +1362,10 @@ test('Portuguese writes decimals with a comma and thousands with a dot; English 
   assert.equal(fmtLong(12345), '12,345');
 
 });
+
+test('Settings shows the same version Play gets from package.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')).version;
+  const shown = /export const VERSION = '([^']+)'/.exec(readFileSync('src/ui/menus.ts', 'utf8'))[1];
+  assert.equal(shown, pkg);
+});

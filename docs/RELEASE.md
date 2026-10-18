@@ -8,6 +8,10 @@
 - The version name comes from `package.json` and the version code from the workflow run number, so each
   build uploads as a newer version.
 
+- Every Android build runs `tools/preflight.mjs` (also `npm run preflight`), which warns while ads are
+  still in test mode, the AdMob IDs are Google's test ones, the version numbers disagree, or the
+  privacy policy link doesn't open. The warnings show on the run summary.
+
 ## One-time setup
 
 1. **Create an upload key** on your computer (keep the file and passwords safe; losing them is painful):
@@ -47,6 +51,7 @@ permission (the build adds it). No push server is involved.
 
 The privacy policy is `docs/PRIVACY.md`; use its GitHub address as the Play Console privacy policy URL:
 https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md (Settings in the game links to it).
+That address only works once this branch is merged into `main`, so merge before submitting the app.
 It names AdMob and links https://policies.google.com/technologies/partner-sites.
 The app asks for consent in the EEA and UK through Google's consent form (configure a GDPR message in
 AdMob under Privacy & messaging).

@@ -598,6 +598,15 @@ places that wrote decimals directly (vault hours, market prices, the collapse mu
 one helper. The Portuguese store screenshots were regenerated, and a test covers all three
 languages.
 
+**Run 44. Release checklist.** Three things would have gone wrong silently at upload. The privacy
+policy link in Settings and in the Play listing points at `docs/PRIVACY.md` on `main`, which returns
+404 until this branch is merged, and Play rejects apps whose policy page is missing. Play's version
+name came from `package.json` (0.1.0) while Settings showed 1.0.0; both are now 1.0.0, with a test
+keeping them equal. And a signed bundle could be uploaded still showing test ads. A new
+`tools/preflight.mjs` (run on every Android build, warnings only) flags test-mode ads, Google's test
+AdMob IDs, a version mismatch and an unreachable privacy policy. Warnings only, because the closed
+test can run on test ads while AdMob reviews the app.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

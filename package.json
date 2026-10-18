@@ -1,6 +1,6 @@
 {
   "name": "stardust-empire",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "A space-themed incremental clicker for phones.",
   "type": "module",
@@ -14,7 +14,8 @@
     "store-shots": "npm run build && node tools/store-shots.mjs store",
     "icons": "node tools/make_icons.mjs",
     "android": "npm run build && bash tools/android.sh",
-    "i18n": "npm run build && node tools/i18n-keys.mjs --list"
+    "i18n": "npm run build && node tools/i18n-keys.mjs --list",
+    "preflight": "node tools/preflight.mjs"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
