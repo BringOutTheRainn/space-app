@@ -1429,3 +1429,20 @@ test('A comeback gift of Hyperdrive after 3 days away, at most once a week, only
   const old = deserialize(JSON.stringify({ ...newState(), comebackAt: undefined }));
   assert.equal(old.comebackAt, 0);
 });
+
+test("What's new lists only versions after the one a save last ran, and every line is translated", async () => {
+  const { unseenChanges, compareVersions } = await import('../www/js/core/changelog.js');
+  const { CHANGELOG } = await import('../www/js/data/changelog.js');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  assert.ok(compareVersions('1.10.0', '1.9.3') > 0);
+  assert.equal(compareVersions('1.0', '1.0.0'), 0);
+  const log = [{ version: '1.2.0', items: ['b'] }, { version: '1.1.0', items: ['a'] }, { version: '1.3.0', items: ['c'] }];
+  assert.deepEqual(unseenChanges(log, '1.0.0', '1.2.0').map((e) => e.version), ['1.2.0', '1.1.0'], 'newest first, nothing from the future');
+  assert.deepEqual(unseenChanges(log, '1.2.0', '1.2.0'), [], 'already seen');
+  assert.deepEqual(unseenChanges(log, '', '1.3.0'), [], 'new players see nothing');
+  for (const e of CHANGELOG) for (const line of e.items) {
+    assert.ok(ES[line] && PT[line], `translate: ${line}`);
+  }
+  assert.equal(deserialize(JSON.stringify({ ...newState(), versionSeen: 7 })).versionSeen, '');
+});

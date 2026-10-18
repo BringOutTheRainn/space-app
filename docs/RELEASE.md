@@ -114,3 +114,14 @@ in between replays the purchase on next launch rather than losing it. Purchases 
 phone only; if fraud becomes a problem, add server-side receipt validation (for example with
 RevenueCat or a Firebase function). A "Restore purchases" button sits at the bottom of the Shop.
 In a browser the Shop runs a test checkout and nothing is charged.
+
+## Later releases
+
+For each update after the first:
+
+1. Raise `version` in `package.json` and `VERSION` in `src/ui/menus.ts` to the same number (a test
+   checks they match).
+2. Add an entry at the top of `src/data/changelog.ts` with one short line per change players will
+   notice, and add each line to `src/i18n/es.ts` and `src/i18n/pt.ts` (a test fails until both are
+   there). Players who update see these once in a "What's new" window; new players never do.
+3. Write the Play "What's new" release notes from the same lines (500 characters per language).

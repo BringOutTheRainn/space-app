@@ -35,6 +35,8 @@ import { buyProduct, productPrice } from './store.js';
 import { PASS_TIERS, XP_PER_TIER, XP_RATES, claimPass, currentPass, passClaimable, passTier, passXp, seasonLabel, seasonTimeLeft, tierReward as passReward, type PassReward } from '../core/pass.js';
 import type { AwayReport } from '../core/away.js';
 import { claimMission, missionDone, missionProgress, missionReward, swapMission, type Mission } from '../core/missions.js';
+import { CHANGELOG } from '../data/changelog.js';
+import { unseenChanges } from '../core/changelog.js';
 
 export const VERSION = '1.0.0';
 export const PRIVACY_URL = 'https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md';
@@ -112,6 +114,22 @@ async function shareEmpire(ctx: Ctx): Promise<void> {
   if (await shareText(text, t('Share my empire'))) return;
   if (await copyText(text)) toast(t('Copied. Paste it anywhere to share.'), 'good');
   else openModal({ title: t('Share my empire'), body: `<textarea class="code" readonly>${esc(text)}</textarea>` });
+}
+
+/**
+ * Once per update, lists what changed since the version this save last ran on.
+ * New players just get the current version recorded.
+ */
+export function showWhatsNew(ctx: Ctx): void {
+  const s = ctx.s;
+  if (s.versionSeen === VERSION) return;
+  const fresh = unseenChanges(CHANGELOG, s.versionSeen, VERSION);
+  s.versionSeen = VERSION;
+  ctx.save();
+  if (!fresh.length) return;
+  const body = fresh.map((e) => `<h3 class="section-title">${esc(t('Version {v}', { v: e.version }))}</h3>
+    <ul class="result-list">${e.items.map((x) => `<li>${esc(t(x))}</li>`).join('')}</ul>`).join('');
+  openModal({ title: t("What's new"), body, buttons: [{ label: t('Got it'), kind: 'primary' }] });
 }
 
 function toggleRow(id: string, label: string, on: boolean): string {

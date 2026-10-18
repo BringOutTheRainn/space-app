@@ -721,5 +721,14 @@ after the comeback gift and sharing. One fix: if a phone's clock was set far ahe
 last gift's date would sit in the future and block gifts for months; a future date is now ignored.
 Covered by the comeback test.
 
+**Run 61. "What's new" after updates, and a performance re-check.** Updates after launch need a
+way to tell players what changed, or new features go unnoticed. Saves now record the app version
+they last ran on (`versionSeen`). When a player opens a newer version, a "What's new" window lists
+the lines from `src/data/changelog.ts` for every version since, once; new players never see it. The
+list is empty for 1.0.0, and `docs/RELEASE.md` now has the steps for later releases. A test checks
+version ordering and that every changelog line has Spanish and Portuguese. Performance with a
+late-game save and the CPU slowed 6x is unchanged since run 41 (Upgrades 60 fps, Build about 20
+fps in headless software rendering; the profile is almost all drawing, with game code under 5%).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

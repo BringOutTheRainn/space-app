@@ -71,6 +71,8 @@ export interface GameState {
   echoes: number;
   /** Real-time ms of the last comeback gift (free Hyperdrive after days away); 0 for never. */
   comebackAt: number;
+  /** App version this save last ran on, for the one-time "What's new" window; '' before any. */
+  versionSeen: string;
   collapses: number;
   cometsRun: number;
   cometsAll: number;
@@ -193,6 +195,7 @@ export function newState(now = Date.now()): GameState {
     darkMatterSpent: 0,
     echoes: 0,
     comebackAt: 0,
+    versionSeen: '',
     collapses: 0,
     cometsRun: 0,
     cometsAll: 0,

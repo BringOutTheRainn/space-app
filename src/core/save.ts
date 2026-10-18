@@ -95,6 +95,7 @@ export function deserialize(text: string, now = Date.now()): GameState {
   s.settings = { ...base.settings, ...(raw.settings as object) };
   s.echoes = Math.max(0, Math.floor(Number(s.echoes) || 0));
   s.comebackAt = Math.max(0, Number(s.comebackAt) || 0);
+  s.versionSeen = typeof s.versionSeen === 'string' ? s.versionSeen : '';
   // Saves from before the Trophies badge count everything earned so far as seen.
   if (typeof raw.trophiesSeen !== 'number') s.trophiesSeen = Object.keys(s.achievements ?? {}).length;
   // New generators added after this save was made start at zero.

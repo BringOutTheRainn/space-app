@@ -18,7 +18,7 @@ import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
 import { $, closeModal, esc, modalOpen, setAttr, setHidden, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
-import { VERSION, applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
+import { VERSION, applySettings, showWhatsNew, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
 import { contractClaimable } from './core/contracts.js';
 import { autoBuyStep } from './core/autobuy.js';
@@ -216,6 +216,7 @@ function start(): void {
     if (off.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
     showOffline(ctx, off.seconds, off.earned, offReport);
   }
+  showWhatsNew(ctx);
 
   document.querySelector('.tabs')!.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]');
