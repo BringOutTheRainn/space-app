@@ -263,10 +263,19 @@ export function showOffline(ctx: Ctx, seconds: number, earned: number, report?: 
     body: `<div class="offline"><div class="big-ico">${icon('drone')}</div>
       <p>${t('While you were away for <b>{time}</b>, your empire harvested', { time: fmtTime(seconds) })}</p>
       <p class="offline-amount"><span class="sd-dot big"></span>${fmt(earned)}</p><p class="dim">${t('Stardust')}</p>
+      ${capNote(ctx, seconds)}
       ${report ? awayRows(report) : ''}</div>`,
     buttons,
     onClose: () => { if (seconds >= 1800) askReminders(ctx); },
   });
+}
+
+/** Says when storage filled up before the player came back, and how to hold more. */
+function capNote(ctx: Ctx, seconds: number): string {
+  const cap = ctx.d.offlineCapHours;
+  if (seconds <= cap * 3600) return '';
+  const more = cap < 24 ? ' ' + t('Cosmic upgrades let it hold more.') : '';
+  return `<p class="dim small cap-note">${t('Storage filled up after {h} hours.', { h: cap })}${more}</p>`;
 }
 
 /** One polite ask, the first time a player comes back after a while. */

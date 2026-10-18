@@ -614,6 +614,13 @@ achievement sound and a medium buzz, plus how much Stardust this universe the ne
 ("This is the final form." at the black hole). It fires on growth only, never on loading a save, and
 again in each new universe after a collapse. Checked in English and Portuguese with no page errors.
 
+**Run 46. Stability re-check and a storage-full note.** Four more sessions of 500 random taps (two
+fresh, two late game) after runs 38 to 45 gave no page errors, finite numbers and clean reloads.
+The welcome-back screen never said that offline earnings stop at the storage cap (8 hours at first),
+so a player away for 12 hours saw 12 hours and an amount worth 8. It now adds "Storage filled up
+after 8 hours." when the cap was hit, plus "Cosmic upgrades let it hold more." until the 24-hour
+upgrade is owned, which points at the Event Horizon Cache and Timeless Engines nodes.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
