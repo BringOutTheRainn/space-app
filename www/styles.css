@@ -660,7 +660,9 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 
 /* ------------------------------------------------------------------ wide screens */
 
-@media (min-width: 860px) and (orientation: landscape) {
+/* Landscape tablets, and short split-screen windows (Android 16 ignores the portrait lock on
+   large screens), put the shop beside the sky instead of squeezing it under it. */
+@media (min-width: 560px) and (orientation: landscape) {
   #app {
     display: grid;
     grid-template-columns: 1fr minmax(380px, 460px);
@@ -669,6 +671,10 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
   .top { grid-column: 1; grid-row: 1; }
   .sky-wrap { grid-column: 1; grid-row: 2; flex: none; min-height: 0; }
   .panel { grid-column: 2; grid-row: 1 / span 2; border-top: 0; border-left: 1px solid var(--line); }
+}
+
+@media (min-width: 560px) and (max-width: 859px) and (orientation: landscape) {
+  #app { grid-template-columns: 1fr 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -633,6 +633,13 @@ under Earned this universe: the next form, the Stardust it needs this universe a
 are ("Rocky Planet at 100M (34%)"), or "Final form reached" at the black hole. Translated, and checked
 in English and Portuguese.
 
+**Run 49. Large screens and split screen.** Play builds target API 36, and Android 16 ignores the
+portrait lock on tablets and foldables, so the game must work in any window shape. Checked at
+1280x800, 960x600, 800x1280, 673x841, 1280x400 and 400x900 with no errors or sideways scroll. One
+real gap: a short landscape window under 860px wide (split screen on a tablet, 640x400) hid the
+whole shop under the sky. Landscape windows from 560px wide now put the shop beside the sky, half
+and half below 860px. Also removed two stray test screenshots from the repo root.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.
