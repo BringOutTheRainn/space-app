@@ -765,5 +765,13 @@ Quasarkristalle, Universum kollabieren, Sternenechos. A trial scan in German fou
 buttons, but the Forge card already cuts "Schmiede" short; to fix before switching German on, along
 with the decimal comma.
 
+**Run 66. German, part 2, and small-phone shortcut cards.** Every German interface string is done
+(521 of 857; game data is next). A wider scan for clipped text, in every language, found that the
+Garden, Forge and Market shortcuts on the Build tab cut their status line short on 360-pixel phones
+even in English ("Plots em…", "60/60 h…"). Below 420 pixels the status now gets its own full-width
+line under a smaller icon, and below 340 pixels the icon is dropped; all five languages now fit at
+360 pixels. German keeps "Schmiede" whole this way, and two German labels were shortened to fit
+("Ziel" for the buy-to-next-tier button, "{n}/s je Stück · {pct} Anteil" on generator cards).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

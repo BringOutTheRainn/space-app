@@ -758,6 +758,18 @@ html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-
 .mini span { display: flex; flex-direction: column; min-width: 0; }
 .mini b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-sub { font-size: 11px; font-style: normal; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Small phones: three cards share about 100px each, so the subtitle gets its own full-width line. */
+@media (max-width: 420px) {
+  .mini { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 6px; row-gap: 2px; padding: 6px 8px; }
+  .mini .ico { width: 22px; height: 22px; }
+  .mini span { display: contents; }
+  .mini b { font-size: 12px; }
+  .mini-sub { grid-column: 1 / -1; }
+}
+@media (max-width: 340px) {
+  .mini { grid-template-columns: minmax(0, 1fr); }
+  .mini .ico { display: none; }
+}
 .mini[data-garden].ready { border-color: #7dffb0; box-shadow: 0 0 10px rgba(125, 255, 176, .35); }
 .mini[data-garden].ready .mini-sub { color: #7dffb0; }
 .mini-forge.ready { border-color: #ff9a4d; box-shadow: 0 0 10px rgba(255, 154, 77, .35); }
