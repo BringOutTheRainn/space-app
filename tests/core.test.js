@@ -1057,7 +1057,8 @@ test('Spanish and Portuguese cover the same text with the same placeholders', as
 test('language setting falls back to English and fills placeholders', async () => {
   const i18n = await import('../www/js/i18n/index.js');
   assert.equal(i18n.resolveLang('es', 'en'), 'es');
-  assert.equal(i18n.resolveLang('auto', 'de'), 'en');
+  assert.equal(i18n.resolveLang('auto', 'it'), 'en');
+  assert.equal(i18n.resolveLang('auto', 'de'), 'de');
   assert.equal(i18n.resolveLang('auto', 'es'), 'es');
   assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');
   assert.equal(i18n.resolveLang('auto', 'fr'), 'fr');
@@ -1079,7 +1080,7 @@ test('every upgrade and achievement has Spanish and Portuguese text', async () =
     assert.equal(i18n.tName(x), x.name);
     assert.equal(i18n.tDesc(x), x.desc);
   }
-  for (const lang of ['es', 'pt', 'fr']) {
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const x of items) {
@@ -1102,7 +1103,7 @@ test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese te
     ...[...DESTINATIONS, ...RELICS].flatMap((x) => [x.name, x.desc]),
     ...NEWS.map((n) => n.text),
   ];
-  for (const lang of ['es', 'pt', 'fr']) {
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
@@ -1116,7 +1117,7 @@ test('wheel prizes and weekly contracts have Spanish and Portuguese text', async
   const { SLICES } = await import('../www/js/core/wheel.js');
   const { CONTRACTS } = await import('../www/js/core/contracts.js');
   const texts = [...SLICES.map((w) => w.label), ...CONTRACTS.flatMap((c) => [c.name, c.goalText])];
-  for (const lang of ['es', 'pt', 'fr']) {
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
@@ -1131,7 +1132,7 @@ test('garden spores, forge spells and market goods have Spanish and Portuguese t
   const { SPELLS } = await import('../www/js/core/forge.js');
   const { GOODS } = await import('../www/js/core/market.js');
   const texts = [...SEEDS.map((x) => x.name), ...SPELLS.flatMap((x) => (x.id === 'smelt' ? [x.name] : [x.name, x.desc])), ...GOODS.map((x) => x.name)];
-  for (const lang of ['es', 'pt', 'fr']) {
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
     i18n.setLanguage(lang);
     const before = new Set(i18n.missingText());
     for (const text of texts) i18n.t(text);
@@ -1276,6 +1277,19 @@ test('collapse gain compares the Dark Matter bonus before and after', async () =
   assert.ok(Math.abs(collapseGain(s) - 1.2 / 1.1) < 1e-9);
   s.cosmic.resonance = true; s.cosmic.resonance2 = true;
   assert.ok(Math.abs(darkMatterPct(s) - 0.04) < 1e-12);
+});
+
+test('French and German cover the same text as Spanish, with the same placeholders', async () => {
+  const { ES } = await import('../www/js/i18n/es.js');
+  const holes = (s) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+  for (const file of ['fr', 'de']) {
+    const dict = Object.values(await import(`../www/js/i18n/${file}.js`))[0];
+    assert.deepEqual(Object.keys(dict).sort(), Object.keys(ES).sort(), file);
+    for (const [en, tr] of Object.entries(dict)) {
+      assert.ok(tr.trim(), `${file}: empty translation for ${en}`);
+      assert.equal(holes(tr), holes(en), `${file}: placeholders differ for ${en}`);
+    }
+  }
 });
 
 test('every reminder sentence has a Spanish and Portuguese translation', async () => {

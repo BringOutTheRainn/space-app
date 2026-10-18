@@ -12,13 +12,13 @@ export function setNumberStyle(s: NumberStyle): void {
   style = s;
 }
 
-// Brazil and France write 2,5 for two and a half.
+// Brazil, France and Germany write 2,5 for two and a half.
 let locale = 'en-US';
 let comma = false;
 
 export function setNumberLocale(tag: string): void {
   locale = tag;
-  comma = tag.startsWith('pt') || tag.startsWith('fr');
+  comma = tag.startsWith('pt') || tag.startsWith('fr') || tag.startsWith('de');
 }
 
 function mark(text: string): string {

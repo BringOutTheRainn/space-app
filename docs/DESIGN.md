@@ -773,5 +773,13 @@ line under a smaller icon, and below 340 pixels the icon is dropped; all five la
 360 pixels. German keeps "Schmiede" whole this way, and two German labels were shortened to fit
 ("Ziel" for the buy-to-next-tier button, "{n}/s je Stück · {pct} Anteil" on generator cards).
 
+**Run 67. German, done.** The game data (upgrades, achievements, cosmic upgrades, anomalies,
+expeditions, relics, news) is translated, so German is complete (857 of 857) and switched on:
+phones set to German start in German, Settings offers "Deutsch", decimals use a comma, and the
+old-WebView message has a German version. A scan of every tab and window in German finds no
+English and no clipped labels, and two random-tap sessions with the phone in German were clean. A
+new test checks that French and German cover exactly the same text as Spanish with the same
+placeholders. Still to do: the German Play listing and screenshots.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
