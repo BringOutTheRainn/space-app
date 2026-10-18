@@ -739,5 +739,11 @@ string is done (`npm run i18n` tracks it: 141 of 857 so far, covering the main s
 Upgrades and Cosmos tabs and Probes). Terms: Poussière d'étoiles, Matière noire, Hyperpropulsion,
 Cristaux de quasar, Effondrer l'Univers, Échos stellaires.
 
+**Run 63. French, part 2.** Every interface string is now in French: stats, boosts, the Lucky
+Orbit, missions and contracts, the Star Pass, crystals, the Nebula Garden, the Star Forge, the Warp
+Exchange, weekend events, the shop, ads, reminders, settings and the welcome-back window. What is
+left is game data (upgrade and achievement names and descriptions, cosmic upgrades, anomalies,
+relics): 521 of 857 keys done.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
