@@ -180,6 +180,7 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
 
   globalMult *= 1 + achPct * achievementCount(s);
   globalMult *= 1 + dmPct * s.darkMatter;
+  globalMult *= Math.pow(ECHO_MULT, s.echoes);
   globalMult *= astronomerMult;
   // Contract Medals: +5% each (MEDAL_PCT in contracts.ts).
   globalMult *= 1 + 0.05 * s.contractMedals;
@@ -341,6 +342,27 @@ export function buyCosmic(s: GameState, id: string): boolean {
   if (!c || !cosmicAvailable(s, id) || darkMatterAvailable(s) < c.cost) return false;
   s.darkMatterSpent += c.cost;
   s.cosmic[id] = true;
+  return true;
+}
+
+// Stellar Echoes: once every cosmic upgrade is owned, Dark Matter still has a use.
+// Each level multiplies all production; the price doubles every level.
+export const ECHO_MULT = 1.25;
+export const ECHO_BASE_COST = 1000;
+
+export function echoesUnlocked(s: GameState): boolean {
+  return COSMIC.every((c) => s.cosmic[c.id]);
+}
+
+export function echoCost(level: number): number {
+  return ECHO_BASE_COST * Math.pow(2, level);
+}
+
+export function buyEcho(s: GameState): boolean {
+  const cost = echoCost(s.echoes);
+  if (!echoesUnlocked(s) || darkMatterAvailable(s) < cost) return false;
+  s.darkMatterSpent += cost;
+  s.echoes++;
   return true;
 }
 

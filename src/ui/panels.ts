@@ -9,7 +9,7 @@ import { COSMIC, COSMIC_BY_ID } from '../data/cosmic.js';
 import { DESTINATIONS, DESTINATION_BY_ID, RELICS } from '../data/expeditions.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
-import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
+import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyEcho, buyUpgrade, cosmicAvailable, ECHO_MULT, echoCost, echoesUnlocked, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
 import { fmt, fmtDec, fmtPercent, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
@@ -197,6 +197,11 @@ export function cosmosUnlocked(ctx: Ctx): boolean {
   return ctx.s.earnedAll >= COSMOS_UNLOCK || ctx.s.collapses > 0;
 }
 
+function echoMultText(level: number): string {
+  const m = Math.pow(ECHO_MULT, level);
+  return m < 1000 ? fmtDec(m, 2) : fmt(m);
+}
+
 export class CosmosPanel implements Panel {
   private built = false;
   private treeKey = '';
@@ -210,6 +215,7 @@ export class CosmosPanel implements Panel {
       const enter = el.closest<HTMLElement>('[data-anomaly]');
       if (enter) this.askAnomaly(enter.dataset.anomaly!);
       if (el.closest('#btn-abandon')) this.askAbandon();
+      if (el.closest('#btn-echo')) this.echo();
     });
   }
 
@@ -230,7 +236,8 @@ export class CosmosPanel implements Panel {
       <div id="anomalies"></div>
       <h3 class="section-title">${t('Cosmic upgrades')}</h3>
       <p class="hint-text">${t('Bought with Dark Matter. Kept forever. Spending Dark Matter does not lower its production bonus.')}</p>
-      <div class="tree" id="tree"></div>`;
+      <div class="tree" id="tree"></div>
+      <div id="echo"></div>`;
   }
 
   refresh(ctx: Ctx): void {
@@ -373,6 +380,38 @@ export class CosmosPanel implements Panel {
     }).join('');
     $('#tree', this.root).innerHTML = `<svg class="tree-lines" width="100%" height="${rows * rowH}">${lines}</svg>${nodes}`;
     ($('#tree', this.root) as HTMLElement).style.height = `${rows * rowH}px`;
+    this.renderEcho(ctx);
+  }
+
+  private renderEcho(ctx: Ctx): void {
+    const s = ctx.s;
+    const owned = COSMIC.filter((c) => s.cosmic[c.id]).length;
+    const unlocked = echoesUnlocked(s);
+    const cost = echoCost(s.echoes);
+    $('#echo', this.root).innerHTML = `
+      <h3 class="section-title">${s.echoes ? t('Stellar Echoes · level {n}', { n: s.echoes }) : t('Stellar Echoes')}</h3>
+      <div class="anomaly echo-card ${unlocked ? '' : 'locked'}">
+        <div class="dim">${t('Each echo multiplies all production by x{mult}, forever. The price doubles each time.', { mult: fmtDec(ECHO_MULT, 2) })}</div>
+        ${s.echoes ? `<div class="anomaly-reward">${t('Now x{mult} production', { mult: echoMultText(s.echoes) })}</div>` : ''}
+        ${unlocked
+          ? `<button class="btn btn-cosmic" id="btn-echo" ${darkMatterAvailable(s) >= cost ? '' : 'disabled'}>${t('Echo for {n} Dark Matter', { n: fmt(cost) })}</button>`
+          : `<div class="dim small">${t('Unlocks when every cosmic upgrade is owned ({n} of {total}).', { n: owned, total: COSMIC.length })}</div>`}
+      </div>`;
+  }
+
+  private echo(): void {
+    const ctx = this.ctx;
+    if (!buyEcho(ctx.s)) {
+      sfxDenied();
+      return;
+    }
+    sfxUpgrade();
+    haptic('medium');
+    ctx.recalc();
+    ctx.dirty();
+    ctx.save();
+    this.treeKey = '';
+    this.refresh(ctx);
   }
 
   private showCosmic(id: string): void {

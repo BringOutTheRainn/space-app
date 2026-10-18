@@ -1369,3 +1369,29 @@ test('Settings shows the same version Play gets from package.json', async () => 
   const shown = /export const VERSION = '([^']+)'/.exec(readFileSync('src/ui/menus.ts', 'utf8'))[1];
   assert.equal(shown, pkg);
 });
+
+test('Stellar Echoes unlock with the full cosmic tree, double in price and survive a collapse', async () => {
+  const { buyEcho, echoCost, echoesUnlocked, ECHO_MULT } = await import('../www/js/core/economy.js');
+  const s = newState(0);
+  s.generators[0] = 10;
+  s.darkMatter = 1e6;
+  assert.equal(echoesUnlocked(s), false);
+  assert.equal(buyEcho(s), false);
+  for (const c of COSMIC) s.cosmic[c.id] = true;
+  const before = computeDerived(s).sps;
+  assert.equal(echoCost(0), 1000);
+  assert.equal(echoCost(3), 8000);
+  assert.ok(buyEcho(s) && buyEcho(s));
+  assert.equal(s.echoes, 2);
+  assert.equal(s.darkMatterSpent, 3000);
+  assert.ok(Math.abs(computeDerived(s).sps / before - ECHO_MULT ** 2) < 1e-9);
+  s.darkMatterSpent = s.darkMatter - 3999;
+  assert.equal(buyEcho(s), false, 'level 3 costs 4000');
+  collapse(s, computeDerived(s), 0);
+  assert.equal(s.echoes, 2);
+  const old = JSON.parse(serialize(s));
+  delete old.echoes;
+  assert.equal(deserialize(JSON.stringify(old)).echoes, 0);
+  old.echoes = 'x';
+  assert.equal(deserialize(JSON.stringify(old)).echoes, 0);
+});

@@ -67,6 +67,8 @@ export interface GameState {
   /** Total Dark Matter ever earned; drives the production bonus. */
   darkMatter: number;
   darkMatterSpent: number;
+  /** Stellar Echo levels: a repeatable Dark Matter upgrade once the tree is complete. */
+  echoes: number;
   collapses: number;
   cometsRun: number;
   cometsAll: number;
@@ -187,6 +189,7 @@ export function newState(now = Date.now()): GameState {
     cosmic: {},
     darkMatter: 0,
     darkMatterSpent: 0,
+    echoes: 0,
     collapses: 0,
     cometsRun: 0,
     cometsAll: 0,

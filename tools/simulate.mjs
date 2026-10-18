@@ -1,7 +1,7 @@
 // Plays the game with a simple greedy bot to check pacing.
 // Usage: node tools/simulate.mjs [hours] [tapsPerSecond]
 import { newState } from '../www/js/core/state.js';
-import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgrades, upgradePrice, tick, tap, buyCosmic, cosmicAvailable } from '../www/js/core/economy.js';
+import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgrades, upgradePrice, tick, tap, buyCosmic, cosmicAvailable, buyEcho } from '../www/js/core/economy.js';
 import { catchComet, cometDue, scheduleNextComet } from '../www/js/core/comets.js';
 import { checkAchievements } from '../www/js/core/achievements.js';
 import { checkAnomaly } from '../www/js/core/anomalies.js';
@@ -99,6 +99,7 @@ while (s.time < end) {
       bought = false;
       const open = COSMIC.filter((c) => cosmicAvailable(s, c.id)).sort((a, b) => a.cost - b.cost);
       for (const c of open) if (buyCosmic(s, c.id)) { bought = true; mark(`  cosmic: ${c.name}`); break; }
+      if (!bought && buyEcho(s)) { bought = true; mark(`  Stellar Echo ${s.echoes}`); }
     }
     d = computeDerived(s);
     runStart = s.time;

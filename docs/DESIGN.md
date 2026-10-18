@@ -102,6 +102,9 @@ A small tree of permanent perks, e.g.: start with 10% offline rate → 50% → 9
 keep a few generator tiers; start each universe with some Stardust; extra Constellation bonus;
 unlock buy-max; unlock auto-tapper drones; unlock the Expeditions screen.
 
+**Stellar Echoes** (after the whole tree is owned): a repeatable Dark Matter upgrade, x1.25 all
+production per level, costing 1,000 Dark Matter and doubling each level. Kept through collapses.
+
 ## Expeditions (later milestone)
 
 Send probes to named systems for a fixed real time (5 min to 8 h). Returns Stardust, a temporary boost or
@@ -675,6 +678,15 @@ sit under the clock and the bottom tabs under the gesture bar. `MainActivity` (w
 `tools/android.sh`) now pads the game's view by the system bars and cutout, paints the space behind
 them in the game's dark background, and keeps the bar icons light so they stay readable. Older
 Android versions are unaffected (their insets arrive already applied).
+
+**Run 55. Stellar Echoes, a late-game Dark Matter sink.** Startup on a 6x slowed CPU is about 1.2 s,
+so nothing to do there. The 24-hour bot run showed a real gap instead: by about collapse 10 (some 14
+hours of active play) every cosmic upgrade is owned, and Dark Matter piles up with nothing to buy,
+while runs start getting longer. Stellar Echoes appear under the tree: each level multiplies all
+production by 1.25, from 1,000 Dark Matter, doubling in price each level, so a player buys about one
+per collapse. In the bot run they arrive from collapse 10 on and allow one extra collapse in 24
+hours, without touching early pacing (first collapse still 3h 54m). Saved as `echoes` (old saves
+start at 0), kept through collapses, translated, with a test.
 
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
