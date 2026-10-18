@@ -640,6 +640,13 @@ real gap: a short landscape window under 860px wide (split screen on a tablet, 6
 whole shop under the sky. Landscape windows from 560px wide now put the shop beside the sky, half
 and half below 860px. Also removed two stray test screenshots from the repo root.
 
+**Run 50. Large system font sizes.** Android's font size setting zooms every bit of text in the
+app's WebView, up to 200% on Android 14 and later. Emulated in Playwright at 360x640: at 130% every
+tab still works (names wrap, nothing hides), but at 200% the header and tap hint fill the sky, the
+Buy chips overflow and the whole generator list is pushed off screen. The Android build now caps the
+WebView's text zoom at the player's setting or 130%, whichever is smaller (`tools/android.sh`
+writes the cap into `MainActivity`), so larger settings still get bigger text without breaking it.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

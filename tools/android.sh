@@ -64,6 +64,33 @@ if ! grep -q 'screenOrientation' "$MANIFEST"; then
   sed -i 's/<activity /<activity android:screenOrientation="portrait" /' "$MANIFEST"
 fi
 
+# Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
+# past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
+ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -1)
+if [ -n "$ACTIVITY" ] && ! grep -q 'setTextZoom' "$ACTIVITY"; then
+  PKG=$(grep -m1 '^package ' "$ACTIVITY")
+  cat > "$ACTIVITY" <<JAVA
+$PKG
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    private static final float MAX_TEXT_SCALE = 1.3f;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            float scale = Math.min(getResources().getConfiguration().fontScale, MAX_TEXT_SCALE);
+            getBridge().getWebView().getSettings().setTextZoom(Math.round(scale * 100));
+        }
+    }
+}
+JAVA
+  echo "Text zoom capped at 130% in $ACTIVITY"
+fi
+
 # Version: name from package.json, code from VERSION_CODE (CI run number) or 1.
 VERSION_NAME=$(node -p "require('./package.json').version")
 VERSION_CODE=${VERSION_CODE:-1}
