@@ -66,6 +66,26 @@ export function onPause(pause: () => void, resume: () => void): void {
   });
 }
 
+/** True when the Android build's Google Play in-app review plugin is present. */
+export function hasInAppReview(): boolean {
+  return typeof plugin('InAppReview')?.requestReview === 'function';
+}
+
+/**
+ * Google Play's in-app review card, shown over the game. Play decides whether it
+ * actually appears (it limits how often), and never says whether the player rated.
+ */
+export async function requestInAppReview(): Promise<boolean> {
+  const r = plugin('InAppReview');
+  if (!r || typeof r.requestReview !== 'function') return false;
+  try {
+    await (r.requestReview as () => Promise<void>)();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function hideSplash(): void {
   const s = plugin('SplashScreen');
   if (s && typeof s.hide === 'function') (s.hide as () => Promise<void>)().catch(() => undefined);

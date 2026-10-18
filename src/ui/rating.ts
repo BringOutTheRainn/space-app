@@ -1,10 +1,11 @@
-// The "Enjoying Stardust Empire?" prompt. It opens the game's Google Play page;
-// it only runs in the Android app, after a happy moment.
+// Asking for a Google Play rating, only in the Android app, after a happy moment.
+// The app shows Play's own in-app review card; builds without it fall back to the
+// "Enjoying Stardust Empire?" prompt, which opens the game's Google Play page.
 
 import { markRatingAsked, markRatingDone, shouldAskRating } from '../core/rating.js';
 import type { Ctx } from './ctx.js';
 import { modalOpen, openModal } from './dom.js';
-import { isNative } from './platform.js';
+import { hasInAppReview, isNative, requestInAppReview } from './platform.js';
 import { t } from '../i18n/index.js';
 
 export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.bringouttherainn.stardustempire';
@@ -31,7 +32,9 @@ export function maybeAskRating(ctx: Ctx, now = Date.now()): void {
   if (!isNative() || !shouldAskRating(ctx.s, now)) return;
   markRatingAsked(ctx.s, now);
   ctx.save();
-  showRatingPrompt(ctx);
+  // Play's rules: no question before its card, so it is shown on its own.
+  if (hasInAppReview()) void requestInAppReview();
+  else showRatingPrompt(ctx);
 }
 
 export function showRatingPrompt(ctx: Ctx): void {

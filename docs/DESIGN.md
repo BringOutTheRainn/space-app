@@ -652,6 +652,14 @@ tablet screenshots: the same eight shots and captions as the phone set, at 1920x
 side-by-side layout, in English, Spanish and Portuguese (`store/tablet/`). Play needs these before
 it shows the game as designed for tablets. `tools/store-shots.mjs` takes a `tablet` option.
 
+**Run 52. Google Play's in-app review.** The top backlog item, done without a new npm package: the
+Android build now adds a small `InAppReview` Capacitor plugin (Java, written by `tools/android.sh`,
+with Play's `com.google.android.play:review` library). After a happy moment (a collapse, a jackpot,
+a Golden Orbit) and the same limits as before (two days and an hour of play first, 30 days apart,
+three times at most), the game shows Play's own rating card over the game instead of our "Enjoying
+Stardust Empire?" window and a trip to the store. Play's rules forbid asking a question first, so
+the card appears on its own. Builds without the plugin keep the old window. The "Rate" button in
+Settings still opens the Play page. Checked with a mocked plugin in Playwright, both paths.
+
 ### Backlog from research (best first)
-1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
-   added and tested.
+(empty: launch readiness first, then new ideas from research are added here)

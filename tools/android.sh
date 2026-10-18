@@ -64,10 +64,12 @@ if ! grep -q 'screenOrientation' "$MANIFEST"; then
   sed -i 's/<activity /<activity android:screenOrientation="portrait" /' "$MANIFEST"
 fi
 
-# Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
-# past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
+# Native extras in MainActivity:
+# - Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
+#   past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
+# - An InAppReview plugin that shows Google Play's in-app review card (ui/rating.ts).
 ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -1)
-if [ -n "$ACTIVITY" ] && ! grep -q 'setTextZoom' "$ACTIVITY"; then
+if [ -n "$ACTIVITY" ] && ! grep -q 'InAppReviewPlugin' "$ACTIVITY"; then
   PKG=$(grep -m1 '^package ' "$ACTIVITY")
   cat > "$ACTIVITY" <<JAVA
 $PKG
@@ -80,6 +82,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(InAppReviewPlugin.class);
         super.onCreate(savedInstanceState);
         if (getBridge() != null && getBridge().getWebView() != null) {
             float scale = Math.min(getResources().getConfiguration().fontScale, MAX_TEXT_SCALE);
@@ -88,7 +91,36 @@ public class MainActivity extends BridgeActivity {
     }
 }
 JAVA
-  echo "Text zoom capped at 130% in $ACTIVITY"
+  cat > "$(dirname "$ACTIVITY")/InAppReviewPlugin.java" <<JAVA
+$PKG
+
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
+
+@CapacitorPlugin(name = "InAppReview")
+public class InAppReviewPlugin extends Plugin {
+    @PluginMethod
+    public void requestReview(PluginCall call) {
+        ReviewManager manager = ReviewManagerFactory.create(getContext());
+        manager.requestReviewFlow().addOnCompleteListener(request -> {
+            if (!request.isSuccessful()) {
+                call.reject("In-app review is not available");
+                return;
+            }
+            ReviewInfo info = request.getResult();
+            manager.launchReviewFlow(getActivity(), info).addOnCompleteListener(done -> call.resolve());
+        });
+    }
+}
+JAVA
+  grep -q 'com.google.android.play:review' android/app/build.gradle \
+    || sed -i '0,/^dependencies {/s##dependencies {\n    implementation "com.google.android.play:review:2.0.1"#' android/app/build.gradle
+  echo "Text zoom cap and in-app review added in $(dirname "$ACTIVITY")"
 fi
 
 # Version: name from package.json, code from VERSION_CODE (CI run number) or 1.
