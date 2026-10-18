@@ -58,6 +58,8 @@ export const PT: Record<string, string> = {
   'Evolution! {from} → {to}': 'Evolução! {from} → {to}',
   'Next form: {name} at {n} Stardust this universe.': 'Próxima forma: {name} com {n} de Poeira Estelar neste universo.',
   'This is the final form.': 'Esta é a forma final.',
+  'Stellar Echoes unlocked': 'Ecos Estelares desbloqueados',
+  'The tree is complete. Spend Dark Matter on Echoes below it.': 'A árvore está completa. Gaste Matéria Escura em Ecos abaixo dela.',
   'Stellar Echoes · level {n}': 'Ecos Estelares · nível {n}',
   'Stellar Echoes': 'Ecos Estelares',
   'Each echo multiplies all production by x{mult}, forever. The price doubles each time.': 'Cada eco multiplica toda a produção por x{mult}, para sempre. O preço dobra a cada vez.',

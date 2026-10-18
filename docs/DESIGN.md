@@ -688,5 +688,11 @@ per collapse. In the bot run they arrive from collapse 10 on and allow one extra
 hours, without touching early pacing (first collapse still 3h 54m). Saved as `echoes` (old saves
 start at 0), kept through collapses, translated, with a test.
 
+**Run 56. Late-game check after Stellar Echoes.** Two more random-tap sessions (fresh and late game)
+were clean. A late-game save with every achievement, upgrade and cosmic node is about 8 KB, so save
+size is no concern. The contrast check now also covers the Cosmos tab with the tree complete and
+Echoes buyable (passes). Buying the last cosmic upgrade now also shows "Stellar Echoes unlocked" so
+players know where their Dark Matter goes next.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

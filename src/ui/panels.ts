@@ -437,6 +437,9 @@ export class CosmosPanel implements Panel {
               ctx.dirty();
               ctx.save();
               toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(t(c.name))}</b><br>${esc(t(c.desc))}</div>`, 'good');
+              if (echoesUnlocked(ctx.s)) {
+                toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('Stellar Echoes unlocked')}</b><br>${t('The tree is complete. Spend Dark Matter on Echoes below it.')}</div>`, 'comet', 6000);
+              }
             } else {
               sfxDenied();
               return false;

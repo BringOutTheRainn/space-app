@@ -52,4 +52,9 @@ for (const fn of ['openStats','openSettings','openHyperdrive','openCrystals','op
 await p.evaluate(async () => { const m = await import('./js/ui/menus.js'); m.showOffline(window.__game.ctx, 12 * 3600, 5e9); }); await p.waitForTimeout(600);
 pr(await scan('showOffline'));
 await close();
+// Late game: the whole cosmic tree owned, so Stellar Echoes can be bought.
+await p.evaluate(async () => { const { COSMIC } = await import('./js/data/cosmic.js'); const { ctx } = window.__game; for (const c of COSMIC) ctx.s.cosmic[c.id] = true; ctx.s.darkMatter = 5000; ctx.s.echoes = 1; ctx.recalc(); });
+await p.click('[data-tab="cosmos"]'); await p.waitForTimeout(400);
+await p.evaluate(() => { const b = document.querySelector('.tab-body:not([hidden])'); if (b) b.scrollTop = 99999; }); await p.waitForTimeout(200);
+pr(await scan('stellar echoes'));
 await b.close();
