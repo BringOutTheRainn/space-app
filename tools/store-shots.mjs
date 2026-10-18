@@ -1,5 +1,6 @@
 // Google Play phone screenshots: 1080 x 1920 PNGs, each a game screen with a
-// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt]
+// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt] [tablet]
+// With "tablet", makes 1920 x 1080 landscape shots of the side-by-side tablet layout instead.
 // The game picks its language from the phone's, so es and pt shots are taken with that locale.
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
@@ -29,6 +30,7 @@ const url = `http://127.0.0.1:${server.address().port}/index.html`;
 
 const out = process.argv[2] ?? 'store';
 const lang = process.argv[3] ?? 'en';
+const tablet = process.argv[4] === 'tablet';
 const LOCALES = { en: 'en-US', es: 'es-419', pt: 'pt-BR' };
 // Captions: [title with <em>, subtitle] per shot, in order.
 const CAPTIONS = {
@@ -68,8 +70,12 @@ if (!cap) throw new Error(`Unknown language ${lang}`);
 mkdirSync(out, { recursive: true });
 const browser = await playwright.chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
 // 360 x 640 at 3x is 1080 x 1920; the game is framed slightly smaller under the caption.
-const page = await browser.newPage({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true, locale: LOCALES[lang] });
-const frame = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+// Tablet: 1280 x 720 at 1.5x is 1920 x 1080, framed under the caption the same way.
+const page = tablet
+  ? await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5, hasTouch: true, locale: LOCALES[lang] })
+  : await browser.newPage({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true, locale: LOCALES[lang] });
+const [W, H] = tablet ? [1920, 1080] : [1080, 1920];
+const frame = await browser.newPage({ viewport: { width: W, height: H } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 
@@ -95,13 +101,14 @@ async function shot(name, title, sub, toasts = false) {
   await page.waitForTimeout(700);
   const png = (await page.screenshot()).toString('base64');
   await frame.setContent(`<!doctype html><html lang="${lang}"><head><style>
-    html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+    html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}
     body{background:radial-gradient(ellipse at 50% 0%,#3a2a8a 0%,#1a1250 40%,#07051a 100%);font-family:'Inter Display','Inter',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
     .stars{position:absolute;inset:0;background-image:radial-gradient(2px 2px at 120px 90px,#fff8,transparent),radial-gradient(2px 2px at 900px 160px,#fff9,transparent),radial-gradient(3px 3px at 980px 60px,#9ff,transparent),radial-gradient(2px 2px at 60px 300px,#fff6,transparent),radial-gradient(2px 2px at 520px 40px,#fff7,transparent)}
     h1{position:relative;margin:96px 60px 0;font-size:82px;line-height:1.05;font-weight:800;text-align:center;letter-spacing:-1px;text-wrap:balance}
     h1 em{font-style:normal;color:#7ef0ff}
     p{position:relative;margin:22px 80px 0;font-size:38px;line-height:1.3;color:#c9c3f2;text-align:center;font-weight:500}
     img{position:relative;margin-top:56px;width:792px;height:1408px;border-radius:44px;box-shadow:0 0 0 10px #2b2266,0 30px 90px #000c,0 0 120px #6a5cff55}
+    ${tablet ? 'h1{margin-top:44px;font-size:60px}p{margin-top:12px;font-size:28px}img{margin-top:30px;width:1504px;height:846px;border-radius:30px}' : ''}
   </style></head><body><div class="stars"></div><h1>${title}</h1><p>${sub}</p><img src="data:image/png;base64,${png}"></body></html>`);
   await frame.waitForTimeout(150);
   await frame.screenshot({ path: join(out, name + '.png') });

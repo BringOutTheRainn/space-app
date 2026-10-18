@@ -647,6 +647,11 @@ Buy chips overflow and the whole generator list is pushed off screen. The Androi
 WebView's text zoom at the player's setting or 130%, whichever is smaller (`tools/android.sh`
 writes the cap into `MainActivity`), so larger settings still get bigger text without breaking it.
 
+**Run 51. Tablet screenshots.** Following run 49's large-screen check, the Play listing now has
+tablet screenshots: the same eight shots and captions as the phone set, at 1920x1080, showing the
+side-by-side layout, in English, Spanish and Portuguese (`store/tablet/`). Play needs these before
+it shows the game as designed for tablets. `tools/store-shots.mjs` takes a `tablet` option.
+
 ### Backlog from research (best first)
 1. Native In-App Review (a Capacitor plugin) in place of the store-page link, once a plugin can be
    added and tested.

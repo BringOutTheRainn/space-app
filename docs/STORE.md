@@ -57,10 +57,15 @@ Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in 
 | App icon, 512 x 512 | `www/icon-512.png` |
 | Feature graphic, 1024 x 500 | `resources/feature-graphic.png` |
 | Phone screenshots, 1080 x 1920 (upload all 8, in order) | `store/01_tap.png` … `store/08_missions.png` |
+| 7-inch and 10-inch tablet screenshots, 1920 x 1080 (the same 8 for both slots) | `store/tablet/01_tap.png` … `store/tablet/08_missions.png` |
 
 Screenshot captions, in order: Tap a rock, build an empire. Catch comets for huge bonuses. Hundreds of
 upgrades. From asteroid to black hole. Collapse the universe. Trade at the Warp Exchange. Spin Lucky
 Orbit every day. Always a next goal.
+
+Tablet shots show the side-by-side layout tablets get, and Play only lists an app as designed for
+tablets when they are uploaded. Spanish and Portuguese versions are in `store/tablet/es-419/` and
+`store/tablet/pt-BR/`. Remake them with `node tools/store-shots.mjs <dir> en|es|pt tablet`.
 
 ## Categorisation and contact
 
