@@ -68,6 +68,9 @@ fi
 # - Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
 #   past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
 # - An InAppReview plugin that shows Google Play's in-app review card (ui/rating.ts).
+# - Apps targeting Android 15+ are drawn edge to edge, under the status and navigation
+#   bars. Pad the game's view by the bars (and any camera cutout) so the header and the
+#   bottom tabs stay clear of them, with light bar icons on the dark background.
 ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -1)
 if [ -n "$ACTIVITY" ] && ! grep -q 'InAppReviewPlugin' "$ACTIVITY"; then
   PKG=$(grep -m1 '^package ' "$ACTIVITY")
@@ -75,6 +78,11 @@ if [ -n "$ACTIVITY" ] && ! grep -q 'InAppReviewPlugin' "$ACTIVITY"; then
 $PKG
 
 import android.os.Bundle;
+import android.view.View;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -87,7 +95,21 @@ public class MainActivity extends BridgeActivity {
         if (getBridge() != null && getBridge().getWebView() != null) {
             float scale = Math.min(getResources().getConfiguration().fontScale, MAX_TEXT_SCALE);
             getBridge().getWebView().getSettings().setTextZoom(Math.round(scale * 100));
+            fitSystemBars((View) getBridge().getWebView().getParent());
         }
+    }
+
+    private void fitSystemBars(View root) {
+        root.setBackgroundColor(0xFF05060F);
+        WindowInsetsControllerCompat bars = new WindowInsetsControllerCompat(getWindow(), root);
+        bars.setAppearanceLightStatusBars(false);
+        bars.setAppearanceLightNavigationBars(false);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets i = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(i.left, i.top, i.right, i.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+        ViewCompat.requestApplyInsets(root);
     }
 }
 JAVA
@@ -120,7 +142,7 @@ public class InAppReviewPlugin extends Plugin {
 JAVA
   grep -q 'com.google.android.play:review' android/app/build.gradle \
     || sed -i '0,/^dependencies {/s##dependencies {\n    implementation "com.google.android.play:review:2.0.1"#' android/app/build.gradle
-  echo "Text zoom cap and in-app review added in $(dirname "$ACTIVITY")"
+  echo "Text zoom cap, system bar insets and in-app review added in $(dirname "$ACTIVITY")"
 fi
 
 # Version: name from package.json, code from VERSION_CODE (CI run number) or 1.

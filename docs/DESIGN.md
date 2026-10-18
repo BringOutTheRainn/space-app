@@ -668,5 +668,13 @@ vitals). A tiny classic script in `index.html` now tests for the syntax first an
 hides the splash and says in the phone's language (English, Spanish, Portuguese) to update Android
 System WebView and Chrome from Google Play. Checked by faking an old engine in Playwright.
 
+**Run 54. Edge-to-edge on Android 15+.** Play builds target API 36, and apps targeting Android 15 or
+later are drawn edge to edge: under the status bar, the camera cutout and the gesture bar. The
+WebView's `env(safe-area-inset-*)` values do not reliably cover the system bars, so the header could
+sit under the clock and the bottom tabs under the gesture bar. `MainActivity` (written by
+`tools/android.sh`) now pads the game's view by the system bars and cutout, paints the space behind
+them in the game's dark background, and keeps the bar icons light so they stay readable. Older
+Android versions are unaffected (their insets arrive already applied).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
