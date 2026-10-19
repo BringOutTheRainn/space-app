@@ -65,7 +65,7 @@ Bienvenue dans Stardust Empire !
 • Attrapez des comètes pour des Ruées et des Butins chanceux
 • Effondrez l'univers pour de la Matière noire et des améliorations permanentes
 • Expéditions, Bourse de distorsion, Jardin de la Nébuleuse et événements du week-end
-• Jouable hors ligne, en français, anglais, espagnol et portugais
+• Jouable hors ligne, en français, anglais, espagnol, portugais et allemand
 Merci de jouer ! Donnez-nous votre avis.
 </fr-FR>
 ```

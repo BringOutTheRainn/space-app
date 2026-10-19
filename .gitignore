@@ -7,3 +7,4 @@ www/js/
 *.aab
 .DS_Store
 /store/
+undefined_*.png

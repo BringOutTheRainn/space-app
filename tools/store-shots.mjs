@@ -1,7 +1,7 @@
 // Google Play phone screenshots: 1080 x 1920 PNGs, each a game screen with a
-// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt|fr] [tablet]
+// caption above it. Usage: npm run build && node tools/store-shots.mjs <outDir> [en|es|pt|fr|de] [tablet]
 // With "tablet", makes 1920 x 1080 landscape shots of the side-by-side tablet layout instead.
-// The game picks its language from the phone's, so es, pt and fr shots are taken with that locale.
+// The game picks its language from the phone's, so es, pt, fr and de shots are taken with that locale.
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -31,7 +31,7 @@ const url = `http://127.0.0.1:${server.address().port}/index.html`;
 const out = process.argv[2] ?? 'store';
 const lang = process.argv[3] ?? 'en';
 const tablet = process.argv[4] === 'tablet';
-const LOCALES = { en: 'en-US', es: 'es-419', pt: 'pt-BR', fr: 'fr-FR' };
+const LOCALES = { en: 'en-US', es: 'es-419', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE' };
 // Captions: [title with <em>, subtitle] per shot, in order.
 const CAPTIONS = {
   en: [
@@ -73,6 +73,16 @@ const CAPTIONS = {
     ['Négociez à la <em>Bourse de distorsion</em>', 'Achetez bas, vendez haut, et cultivez un Jardin et une Forge'],
     ["Faites tourner l'<em>Orbite chanceuse</em>", 'Tours gratuits chaque jour, Hyperpropulsion et ravitaillements'],
     ['Toujours un <em>nouvel objectif</em>', 'Missions, succès et expéditions. Votre empire travaille pendant votre absence'],
+  ],
+  de: [
+    ['Tippe auf einen Stein. <em>Bau ein Imperium.</em>', 'Ernte Sternenstaub und mach deinen Asteroiden zu einem Stern'],
+    ['Fang <em>Kometen</em> für riesige Boni', 'Sternenstaub-Rausch, Glücksfunde und Supernova-Tipps x777'],
+    ['Hunderte <em>Verbesserungen</em>', 'Synergien lassen deine Generatoren gemeinsam wachsen'],
+    ['Vom Asteroiden zum <em>Schwarzen Loch</em>', '14 Generatoren, von Bergbaudrohnen bis zu Warp-Toren und weiter'],
+    ['<em>Kollabiere</em> das Universum', 'Verdiene Dunkle Materie und schalte dauerhafte kosmische Kraft frei'],
+    ['Handle an der <em>Warp-Börse</em>', 'Günstig kaufen, teuer verkaufen, dazu ein Garten und eine Schmiede'],
+    ['Dreh den <em>Glücksorbit</em>', 'Jeden Tag Gratis-Drehs, Hyperantrieb und Lieferungen'],
+    ['Immer ein <em>neues Ziel</em>', 'Missionen, Erfolge und Expeditionen. Dein Imperium arbeitet, während du weg bist'],
   ],
 };
 const cap = CAPTIONS[lang];

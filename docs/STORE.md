@@ -48,7 +48,7 @@ asteroid grows into a moon, a planet, a star and finally a black hole.
 
 Contains ads and optional in-app purchases.
 
-Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in `docs/STORE-es-pt.md`, and French (France) is in `docs/STORE-fr.md`.
+Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in `docs/STORE-es-pt.md`, French (France) is in `docs/STORE-fr.md`, and German is in `docs/STORE-de.md`.
 
 ## Graphics
 
@@ -117,18 +117,18 @@ Welcome to Stardust Empire!
 • Catch comets for Stardust Rushes and Lucky Hauls
 • Collapse the universe for Dark Matter and permanent upgrades
 • Expeditions, the Warp Exchange, the Nebula Garden and weekend events
-• Plays offline, in English, Spanish, Portuguese and French
+• Plays offline, in English, Spanish, Portuguese, French and German
 Thanks for playing! Tell us what you think in a review.
 </en-US>
 <es-419>
 ¡Bienvenido a Stardust Empire!
 • Toca tu asteroide y conviértelo en un agujero negro
 • 14 generadores, más de 150 mejoras y más de 150 logros
-• Atrapa cometas para conseguir Ráfagas de Polvo Estelar y Botines de la suerte
-• Colapsa el universo para ganar Materia Oscura y mejoras permanentes
+• Atrapa cometas para ganar Ráfagas de Polvo Estelar y Botines de la suerte
+• Colapsa el universo por Materia Oscura y mejoras permanentes
 • Expediciones, el Intercambio Warp, el Jardín de la Nebulosa y eventos de fin de semana
-• Funciona sin conexión, en español, inglés y portugués
-¡Gracias por jugar! Cuéntanos qué te parece en una reseña.
+• Funciona sin conexión, en español, inglés, portugués, francés y alemán
+¡Gracias por jugar! Cuéntanos qué opinas en una reseña.
 </es-419>
 <pt-BR>
 Bem-vindo ao Stardust Empire!
@@ -137,7 +137,7 @@ Bem-vindo ao Stardust Empire!
 • Pegue cometas para ganhar Rajadas de Poeira Estelar e Saques da sorte
 • Colapse o universo para ganhar Matéria Escura e melhorias permanentes
 • Expedições, a Bolsa de Dobra, o Jardim da Nebulosa e eventos de fim de semana
-• Funciona offline, em português, inglês e espanhol
+• Funciona offline, em português, inglês, espanhol, francês e alemão
 Obrigado por jogar! Conte o que achou em uma avaliação.
 </pt-BR>
 ```

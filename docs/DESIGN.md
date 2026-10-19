@@ -781,5 +781,17 @@ English and no clipped labels, and two random-tap sessions with the phone in Ger
 new test checks that French and German cover exactly the same text as Spanish with the same
 placeholders. Still to do: the German Play listing and screenshots.
 
+**Run 68. German store listing, and squeezed text on phones.** The German Play listing, release
+notes and screenshot captions are in `docs/STORE-de.md` and `tools/store-shots.mjs`; the 8 German
+screenshots are in `store/de-DE/` in the project files. The release notes in every language now list
+German (all under Play's 500-character limit). The German screenshots showed a real layout bug: in
+the Boosts window the "Watch ad" button sat beside the description, and in French and German its
+longer label squeezed the text into a one-word column (72 pixels wide) and pushed the button out of
+view. On phones the button now sits under the text. A new scan for squeezed text in every window and
+language found the same problem in the Shop (the vault line and the Golden Halo note in French);
+those rows now wrap instead. French also gets a no-break space before %, so "+10 %" no longer splits
+across lines. Housekeeping: stray scan screenshots that slipped into two earlier commits are removed
+and ignored.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
