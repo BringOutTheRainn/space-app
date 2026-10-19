@@ -150,7 +150,13 @@ await game(() => {
   s.upgrades = { drone_0: true, drone_1: true, drone_2: true, harvester_0: true, harvester_1: true, lunar_0: true };
   ctx.recalc(); ctx.dirty();
 });
-for (let i = 0; i < 18; i++) await page.mouse.click(box.x + box.width / 2 + (i % 5) * 5, box.y + box.height / 2);
+// Taps spread over the rock and spaced in time, so the floating numbers read one by one
+// instead of stacking into a blur.
+for (let i = 0; i < 6; i++) {
+  const a = i * 2.4;
+  await page.mouse.click(box.x + box.width / 2 + Math.cos(a) * box.width * 0.13, box.y + box.height / 2 + Math.sin(a) * box.width * 0.1);
+  await page.waitForTimeout(70);
+}
 await shot('01_tap', ...cap[0]);
 
 await game(() => window.__game.spawnComet(false));

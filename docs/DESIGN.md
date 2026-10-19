@@ -890,5 +890,14 @@ zero taps now goes tap, buy, nothing, upgrade, as a tapping player does. The col
 "Collapse now for +34 Dark Matter" row also wrapped mid-phrase in German and French; the amount now
 moves to its own right-aligned line as a whole when it does not fit.
 
+**Run 83. Release candidate check.** With runs 79 to 82 in, the whole regression set was run
+again on the current build. Random-tap sessions in all five languages finished with no errors,
+finite numbers and a clean reload; the contrast check over every tab and window found no text
+under WCAG AA; the Build tab still renders at a median 50 ms a frame at 6x CPU slowdown; and 40
+damaged saves loaded in the browser with no errors. The 80 store screenshots were remade so they
+show the run 80 to 82 changes. The first shot had 18 taps on one spot, which stacked the
+floating numbers into an unreadable smear; the script now spreads six taps around the rock so each
+"+8" reads on its own. No game code changed.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
