@@ -852,5 +852,13 @@ every `npm test` and CI run (about a second): each one must load or be refused a
 survive offline progress, five ticks and a reload with no balance negative, NaN or Infinity. Undoing
 run 73's fix makes it fail with the exact damaged fields, so it guards the right thing.
 
+**Run 78. A week of short sessions, and play without tapping.** `SESSIONS=10,110` over 168 hours
+(10 minutes every two hours, 3 taps a second) gives a steady first week: collapses on day 1, 2 and 3,
+then each run shrinks (1d 6h, 1d 3h, 14h, 18h, 14h, 12h, 10h, 8h, 6h) while Dark Matter roughly
+doubles each time, Research Echo lands on day 5 and five Stellar Echoes by day 7, with 106
+achievements. Nothing stalls and nothing runs away, so balance is unchanged. The same sessions with
+no tapping at all still reach the first Dark Matter at 12h and the first collapse at 1d 22h, so a
+player who cannot tap quickly (or at all) can play the whole loop on generators and comets.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
