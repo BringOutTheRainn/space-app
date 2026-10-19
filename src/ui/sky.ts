@@ -338,11 +338,20 @@ export class Sky {
     for (const f of this.floaters) {
       g.globalAlpha = Math.min(1, f.life * 1.5);
       g.font = `800 ${f.size}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+      // Long translated banners ("Ruée de Poussière d'étoiles !") must fit on a narrow phone:
+      // shrink the text to the sky's width and keep it clear of both edges.
+      const room = this.w - 16;
+      let width = g.measureText(f.text).width;
+      if (width > room) {
+        g.font = `800 ${Math.floor((f.size * room) / width)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+        width = room;
+      }
+      const x = Math.min(Math.max(f.x, 8 + width / 2), this.w - 8 - width / 2);
       g.lineWidth = 4;
       g.strokeStyle = 'rgba(0,0,0,0.6)';
-      g.strokeText(f.text, f.x, f.y);
+      g.strokeText(f.text, x, f.y);
       g.fillStyle = f.color;
-      g.fillText(f.text, f.x, f.y);
+      g.fillText(f.text, x, f.y);
     }
     g.globalAlpha = 1;
   }

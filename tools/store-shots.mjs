@@ -66,7 +66,7 @@ const CAPTIONS = {
   ],
   fr: [
     ['Touchez un caillou. <em>Bâtissez un empire.</em>', "Récoltez de la Poussière d'étoiles et faites de votre astéroïde une étoile"],
-    ['Attrapez des <em>comètes</em> pour d\'énormes bonus', 'Ruées de poussière, Butins chanceux et Touchers supernova x777'],
+    ['Attrapez des <em>comètes</em> pour d\'énormes bonus', 'Ruées de poussière, Butins chanceux et Appuis supernova x777'],
     ["Des centaines d'<em>améliorations</em>", 'Les synergies font grandir vos générateurs ensemble'],
     ["De l'astéroïde au <em>trou noir</em>", '14 générateurs, des Drones miniers aux Portails de distorsion et au-delà'],
     ["<em>Effondrez</em> l'univers", 'Gagnez de la Matière noire et débloquez une puissance cosmique permanente'],
@@ -111,13 +111,14 @@ const closeModal = async () => {
   }
 };
 
-async function shot(name, title, sub, toasts = false) {
-  // Achievement pop-ups and tutorial hints crowd the marketing shots; only the comet shot keeps them.
-  await page.evaluate((show) => {
+async function shot(name, title, sub) {
+  // Achievement pop-ups and tutorial hints crowd the marketing shots (on the comet
+  // shot they covered the Stardust Rush banner), so every shot hides them.
+  await page.evaluate(() => {
     let st = document.getElementById('store-shot-style');
     if (!st) { st = document.createElement('style'); st.id = 'store-shot-style'; document.head.append(st); }
-    st.textContent = show ? '' : '.toasts,.hint{display:none!important}';
-  }, toasts);
+    st.textContent = '.toasts,.hint{display:none!important}';
+  });
   await page.waitForTimeout(700);
   const png = (await page.screenshot()).toString('base64');
   await frame.setContent(`<!doctype html><html lang="${lang}"><head><style>
@@ -157,7 +158,7 @@ await page.waitForTimeout(2500);
 const pos = await game(() => window.__game.cometPosition());
 if (pos) await page.mouse.click(box.x + pos[0], box.y + pos[1]);
 await page.waitForTimeout(300);
-await shot('02_comet', ...cap[1], true);
+await shot('02_comet', ...cap[1]);
 
 await closeModal();
 await page.click('[data-tab="upgrades"]');

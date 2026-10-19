@@ -829,5 +829,14 @@ and 5h 4m at half a tap per second). Ten minutes every two hours reaches the fir
 daily rewards, the wheel, ad boosts, crystals and the garden, so real players are faster than this.
 That fits the genre (Egg, Inc.'s first prestige usually lands on day 1 or 2), so balance is unchanged.
 
+**Run 75. First minutes in French and German, and long comet banners.** Playing the opening in
+German and French found three things. French used "toucher" as a noun ("1 par toucher"), which reads
+oddly; taps are now "appuis" everywhere ("1 par appui", "Frénésie d'appuis", "Appui supernova !"),
+while instructions keep the verb ("Touchez l'astéroïde"). The comet banner ("Ruée de Poussière
+d'étoiles !") ran off both edges of a 360 px phone; floating text in the sky now shrinks to fit and
+stays clear of the edges. And trophy pop-ups covered that banner in the comet store screenshot, so
+store shots now hide pop-ups on every shot. All 80 store screenshots (5 languages, phone and tablet)
+were remade, and the French listing says "Appuis supernova x777".
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

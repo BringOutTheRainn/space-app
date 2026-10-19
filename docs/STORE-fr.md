@@ -29,7 +29,7 @@ une étoile et, pour finir, un trou noir.
 • Montez vos générateurs de niveau pour débloquer de nouvelles façons de jouer
 
 ★ ATTRAPEZ DES COMÈTES
-• Touchez les comètes pour des Ruées de Poussière d'étoiles, des Butins chanceux et des Touchers supernova x777
+• Touchez les comètes pour des Ruées de Poussière d'étoiles, des Butins chanceux et des Appuis supernova x777
 • Les rares comètes noires apportent des récompenses encore plus grandes
 
 ★ EFFONDREZ L'UNIVERS
