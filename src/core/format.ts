@@ -29,6 +29,11 @@ function mark(text: string): string {
   return comma ? text.replace('.', ',') : text;
 }
 
+/** A rate such as Dark Matter per hour: one decimal below 100 (6.1), short form above (21.95K). */
+export function fmtRateSmall(n: number): string {
+  return n < 100 ? fmtDec(n) : fmt(n);
+}
+
 /** A plain decimal such as 2.5, written the local way. */
 export function fmtDec(n: number, digits = 1): string {
   return mark(n.toFixed(digits));

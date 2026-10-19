@@ -8,8 +8,9 @@ import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, pluralName } from '../data/upgrades.js';
 import { claimDaily, dailyReward, nextStreakDay, rewardMinutes } from '../core/daily.js';
-import { fmt, fmtDec, fmtLong, fmtPercent, fmtRate, fmtTime, setNumberStyle } from '../core/format.js';
+import { fmt, fmtDec, fmtLong, fmtPercent, fmtRate, fmtRateSmall, fmtTime, setNumberStyle } from '../core/format.js';
 import { exportSave, importSave } from '../core/save.js';
+import { darkMatterPerHour } from '../core/prestige.js';
 import { achievementCount, newState, totalGenerators, upgradeCount } from '../core/state.js';
 import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from './audio.js';
 import type { Ctx } from './ctx.js';
@@ -85,11 +86,7 @@ export function openStats(ctx: Ctx): void {
     ];
     const gens = GENERATORS.map((g, i) => s.generators[i]
       ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${fmtRate(d.genSps[i])}/s</td></tr>` : '').join('');
-    const perHour = (r: { dm: number; secs: number }): string => {
-      if (r.secs <= 0) return '-';
-      const rate = (r.dm * 3600) / r.secs;
-      return rate < 100 ? fmtDec(rate) : fmt(rate);
-    };
+    const perHour = (r: { dm: number; secs: number }): string => (r.secs > 0 ? fmtRateSmall(darkMatterPerHour(r.dm, r.secs)) : '-');
     // The last universes, so players can see each collapse coming faster and paying more.
     const runs = s.pastRuns.map((r, i) => `<tr><td>${t('Universe {n}', { n: s.collapses - i })}</td><td>${fmtTime(r.secs)}</td>`
       + `<td>+${fmt(r.dm)}</td><td>${perHour(r)}</td></tr>`).join('');

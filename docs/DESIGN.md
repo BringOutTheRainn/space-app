@@ -874,5 +874,12 @@ it lasted, Dark Matter gained and Dark Matter per hour. Translated in all five l
 phone the German and French headers wrap onto two lines while the numbers stay on one. A unit test
 covers the order, the cap of 10 and the repair of bad entries.
 
+**Run 81. When to collapse.** Following run 80, the Cosmos tab now compares this universe's Dark
+Matter per hour with the last one's, under the collapse bar: "This universe: 6.8 Dark Matter per
+hour. Last one: 1.5." Idle-game guides tell players to reset when that rate peaks; now the game
+shows it instead of leaving it to a spreadsheet. It appears only after the first collapse and once
+Dark Matter is pending. `darkMatterPerHour` and `fmtRateSmall` are shared with the Stats table, and a
+test covers both. Translated in all five languages.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

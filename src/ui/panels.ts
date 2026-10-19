@@ -11,9 +11,9 @@ import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
 import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyEcho, buyUpgrade, cosmicAvailable, ECHO_MULT, echoCost, echoesUnlocked, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
-import { fmt, fmtDec, fmtPercent, fmtTime } from '../core/format.js';
+import { fmt, fmtDec, fmtPercent, fmtRateSmall, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
-import { canCollapse, collapse, collapseGain, darkMatterPct, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
+import { canCollapse, collapse, collapseGain, darkMatterPct, darkMatterPerHour, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
@@ -231,6 +231,7 @@ export class CosmosPanel implements Panel {
         <div class="collapse-gain" id="dm-gain"></div>
         <div class="bar"><div class="bar-fill" id="dm-bar"></div></div>
         <div class="collapse-note" id="dm-next"></div>
+        <div class="collapse-note" id="dm-rate" hidden></div>
         <button class="btn btn-cosmic btn-wide" id="btn-collapse">${t('Collapse the Universe')}</button>
       </div>
       <div id="anomalies"></div>
@@ -277,6 +278,17 @@ export class CosmosPanel implements Panel {
     setText($('#dm-next', this.root), s.earnedAll < DM_SCALE
       ? t('Your first Dark Matter forms at {n} lifetime Stardust ({have} so far).', { n: fmt(DM_SCALE), have: fmt(s.earnedAll) })
       : t('Next Dark Matter at {n} lifetime Stardust.', { n: fmt(nextAt) }));
+    // Compare this universe's Dark Matter per hour with the last one: collapsing near the peak is the efficient play.
+    const rateEl = $('#dm-rate', this.root) as HTMLElement;
+    const last = s.pastRuns[0];
+    const pendingNow = pendingDarkMatter(s);
+    rateEl.hidden = !last || pendingNow < 1;
+    if (last && pendingNow >= 1) {
+      setText(rateEl, t('This universe: {now} Dark Matter per hour. Last one: {last}.', {
+        now: fmtRateSmall(darkMatterPerHour(pendingNow, s.time - s.runStartClock)),
+        last: fmtRateSmall(darkMatterPerHour(last.dm, last.secs)),
+      }));
+    }
     const btn = $('#btn-collapse', this.root) as HTMLButtonElement;
     btn.disabled = !canCollapse(s);
 

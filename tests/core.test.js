@@ -1516,3 +1516,13 @@ test('collapses are remembered, newest first, up to ten', () => {
   raw.pastRuns = [{ dm: 5, secs: 60 }, { dm: 'x' }, null, { dm: -1, secs: 5 }];
   assert.deepEqual(deserialize(JSON.stringify(raw), 0).pastRuns, [{ dm: 5, secs: 60 }]);
 });
+
+test('Dark Matter per hour for the collapse comparison', async () => {
+  const { darkMatterPerHour } = await import('../www/js/core/prestige.js');
+  const { fmtRateSmall } = await import('../www/js/core/format.js');
+  assert.equal(darkMatterPerHour(10, 1800), 20);
+  assert.equal(darkMatterPerHour(10, 0), 0);
+  setNumberLocale('en-US');
+  assert.equal(fmtRateSmall(6.14), '6.1');
+  assert.equal(fmtRateSmall(21950), '21.95K');
+});

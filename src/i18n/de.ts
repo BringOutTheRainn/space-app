@@ -628,4 +628,5 @@ export const DE: Record<string, string> = {
   "Universe {n}": "Universum {n}",
   "Lasted": "Dauer",
   "Per hour": "Pro Stunde",
+  "This universe: {now} Dark Matter per hour. Last one: {last}.": "Dieses Universum: {now} Dunkle Materie pro Stunde. Das letzte: {last}.",
 };

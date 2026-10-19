@@ -38,6 +38,11 @@ export function starterGenerators(s: GameState): number[] {
 }
 
 /** Collapse the universe. Returns the Dark Matter gained. */
+/** Dark Matter per hour for a universe that gave `dm` over `secs` seconds; 0 when no time passed. */
+export function darkMatterPerHour(dm: number, secs: number): number {
+  return secs > 0 ? (dm * 3600) / secs : 0;
+}
+
 /** How many finished universes Stats lists. */
 export const PAST_RUNS_KEPT = 10;
 
