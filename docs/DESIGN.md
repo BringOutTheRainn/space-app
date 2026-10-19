@@ -799,5 +799,12 @@ are the same symbols everywhere. Covered by the format test. Performance with a 
 CPU slowed 6x is unchanged after the French and German work and the layout fixes (Build about 20 fps
 and Upgrades 60 fps in headless software rendering, as in run 61).
 
+**Run 70. Store screenshots refreshed.** The layout fixes in run 68 changed the Boosts screenshot,
+so all phone screenshots (English, Spanish, Portuguese, French, German) and all tablet screenshots
+were remade; French and German tablet sets are new (`store/tablet/fr-FR/`, `de-DE/`). The store
+folder in the project files now has a copy of every listing (`listing.md`, `listing-es-pt.md`,
+`listing-fr.md`, `listing-de.md`) and `release-notes.txt` holds all five languages. The release-notes
+test now also checks the French and German notes against Play's 500-character limit.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

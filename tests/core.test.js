@@ -1365,6 +1365,11 @@ test('Play release notes fit the 500 character limit in every language', async (
   const notes = [...doc.matchAll(/<([\w-]+)>\n([\s\S]*?)\n<\/\1>/g)];
   assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'pt-BR']);
   for (const m of notes) assert.ok(m[2].length <= 500, `${m[1]}: ${m[2].length}`);
+  for (const [file, tag] of [['docs/STORE-fr.md', 'fr-FR'], ['docs/STORE-de.md', 'de-DE']]) {
+    const m = readFileSync(file, 'utf8').match(new RegExp(`<${tag}>\\n([\\s\\S]*?)\\n</${tag}>`));
+    assert.ok(m, `${file} has ${tag} notes`);
+    assert.ok(m[1].length <= 500, `${tag}: ${m[1].length}`);
+  }
 });
 
 test('Portuguese writes decimals with a comma and thousands with a dot; English and Spanish keep the point', async () => {

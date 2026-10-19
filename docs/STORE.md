@@ -64,8 +64,9 @@ upgrades. From asteroid to black hole. Collapse the universe. Trade at the Warp 
 Orbit every day. Always a next goal.
 
 Tablet shots show the side-by-side layout tablets get, and Play only lists an app as designed for
-tablets when they are uploaded. Spanish and Portuguese versions are in `store/tablet/es-419/` and
-`store/tablet/pt-BR/`. Remake them with `node tools/store-shots.mjs <dir> en|es|pt tablet`.
+tablets when they are uploaded. Spanish, Portuguese, French and German versions are in
+`store/tablet/es-419/`, `pt-BR/`, `fr-FR/` and `de-DE/`. Remake them with
+`node tools/store-shots.mjs <dir> en|es|pt|fr|de tablet`.
 
 ## Categorisation and contact
 
