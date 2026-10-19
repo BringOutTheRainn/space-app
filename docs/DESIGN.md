@@ -899,5 +899,15 @@ show the run 80 to 82 changes. The first shot had 18 taps on one spot, which sta
 floating numbers into an unreadable smear; the script now spreads six taps around the rock so each
 "+8" reads on its own. No game code changed.
 
+**Run 84. Big numbers for screen readers.** An accessibility-tree sweep of every tab and of 46
+windows reached from them, with everything unlocked, found no unlabelled buttons, so the run 26
+work still holds for everything added since. It did show that TalkBack reads short-form numbers
+letter by letter: "47.01Qa" comes out as "47.01 Q a". The Stardust counter, the per-second line and
+generator prices now carry a hidden copy in words for screen readers: "47.01 quadrillion" in
+English (the game's own names, up to vigintillion), and the phone's own words elsewhere up to
+10^18 ("47.010 Billionen", "14,41 trilhões"), then scientific. Players who chose scientific
+notation hear it as shown. The words are worked out only when the visible text changes, and the
+Build tab frame time is unchanged.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

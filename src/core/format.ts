@@ -21,6 +21,7 @@ let dayUnit = 'd';
 
 export function setNumberLocale(tag: string): void {
   locale = tag;
+  spokenFmt = sciFmt = null;
   comma = tag.startsWith('pt') || tag.startsWith('fr') || tag.startsWith('de');
   dayUnit = tag.startsWith('fr') ? 'j' : tag.startsWith('de') ? 'T' : 'd';
 }
@@ -68,6 +69,30 @@ function fmtRaw(n: number, decimalsUnder1000: number): string {
   if (parseFloat(text) >= 1000) return fmtRaw(Math.pow(1000, tier + 1), decimalsUnder1000);
   text = trimFixed(scaled, digits);
   return text + SHORT[tier];
+}
+
+/**
+ * The same number for screen readers, which read "14.41Qa" letter by letter: "14.41 quadrillion" in
+ * English, and the local word ("14,41 Billionen") elsewhere up to 10^18, then scientific.
+ */
+let spokenFmt: Intl.NumberFormat | null = null;
+let sciFmt: Intl.NumberFormat | null = null;
+export function fmtSpoken(n: number): string {
+  if (!isFinite(n) || n < 1000 || style === 'scientific') return fmt(n);
+  if (locale.startsWith('en')) {
+    const tier = Math.floor(Math.log10(n) / 3);
+    return tier < LONG.length ? trimFixed(n / Math.pow(1000, tier), 2) + ' ' + LONG[tier] : fmt(n);
+  }
+  try {
+    if (n < 1e18) {
+      spokenFmt ??= new Intl.NumberFormat(locale, { notation: 'compact', compactDisplay: 'long', maximumFractionDigits: 2 });
+      return spokenFmt.format(n);
+    }
+    sciFmt ??= new Intl.NumberFormat(locale, { notation: 'scientific', maximumFractionDigits: 2 });
+    return sciFmt.format(n);
+  } catch {
+    return fmt(n);
+  }
 }
 
 /** Long form for descriptions: "1.23 million". */

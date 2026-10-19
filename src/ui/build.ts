@@ -3,7 +3,7 @@
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADE_BY_ID, tierBand, toNextTier } from '../data/upgrades.js';
 import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorRevealed, generatorVisible, maxAffordable, upgradePrice } from '../core/economy.js';
-import { fmt, fmtPercent, fmtRate } from '../core/format.js';
+import { fmt, fmtPercent, fmtRate, fmtSpoken } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
 import type { BuyAmount, Ctx, Panel } from './ctx.js';
 import { $, esc, setAttr, setHidden, setText, toast, toggleClass } from './dom.js';
@@ -22,6 +22,7 @@ interface Row {
   tierKey: string;
   name: HTMLElement;
   price: HTMLElement;
+  priceSr: HTMLElement;
   sub: HTMLElement;
   owned: HTMLElement;
   qty: HTMLElement;
@@ -57,13 +58,13 @@ export class BuildPanel implements Panel {
         <div class="gen-ico">${icon(g.id)}</div>
         <div class="gen-main">
           <div class="gen-name"></div>
-          <div class="gen-price"><span class="sd-dot"></span><span class="p"></span><span class="q"></span></div>
+          <div class="gen-price"><span class="sd-dot"></span><span class="p" aria-hidden="true"></span><span class="sr-only ps"></span><span class="q"></span></div>
           <div class="gen-sub"></div>
           <div class="gen-tier" aria-hidden="true" hidden><i></i></div>
         </div>
         <div class="gen-owned"></div>`;
       list.appendChild(el);
-      this.rows.push({ el, tier: $('.gen-tier', el), tierKey: '', name: $('.gen-name', el), price: $('.p', el), qty: $('.q', el), sub: $('.gen-sub', el), owned: $('.gen-owned', el) });
+      this.rows.push({ el, tier: $('.gen-tier', el), tierKey: '', name: $('.gen-name', el), price: $('.p', el), priceSr: $('.ps', el), qty: $('.q', el), sub: $('.gen-sub', el), owned: $('.gen-owned', el) });
     });
 
     root.querySelector('.mini-row')!.addEventListener('click', (e) => {
@@ -233,7 +234,11 @@ export class BuildPanel implements Panel {
       const amount = ctx.buyAmount === 'max' ? Math.max(1, maxAffordable(s, d, i))
         : ctx.buyAmount === 'next' ? toNextTier(i, s.generators[i]) : ctx.buyAmount;
       const price = generatorPrice(s, d, i, amount);
-      setText(row.price, fmt(price));
+      const priceText = fmt(price);
+      if (row.price.textContent !== priceText) {
+        row.price.textContent = priceText;
+        setText(row.priceSr, fmtSpoken(price));
+      }
       setText(row.qty, amount > 1 ? ` x${amount}` : '');
       toggleClass(row.el, 'afford', visible && !locked && price <= s.stardust);
       const owned = s.generators[i];

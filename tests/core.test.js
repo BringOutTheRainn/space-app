@@ -1526,3 +1526,18 @@ test('Dark Matter per hour for the collapse comparison', async () => {
   assert.equal(fmtRateSmall(6.14), '6.1');
   assert.equal(fmtRateSmall(21950), '21.95K');
 });
+
+test('screen readers get big numbers in words', async () => {
+  const { fmtSpoken } = await import('../www/js/core/format.js');
+  setNumberLocale('en-US');
+  assert.equal(fmtSpoken(999), '999');
+  assert.equal(fmtSpoken(4.701e7), '47.01 million');
+  assert.equal(fmtSpoken(1.441e16), '14.41 quadrillion');
+  setNumberLocale('de-DE');
+  assert.equal(fmtSpoken(1.441e13), '14,41 Billionen');
+  assert.match(fmtSpoken(3.2e21), /^3,2E21$/);
+  setNumberStyle('scientific');
+  assert.equal(fmtSpoken(1.441e16), fmt(1.441e16));
+  setNumberStyle('short');
+  setNumberLocale('en-US');
+});

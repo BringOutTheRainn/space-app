@@ -9,7 +9,7 @@ import { catchComet, cometDue, cometStaySeconds, rollBlack, scheduleNextComet, t
 import { dailyReady } from './core/daily.js';
 import { freeSpinReady } from './core/wheel.js';
 import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
-import { fmt, fmtRate, fmtTime } from './core/format.js';
+import { fmt, fmtRate, fmtSpoken, fmtTime } from './core/format.js';
 import { canCollapse } from './core/prestige.js';
 import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
 import { achievementCount, newState, type GameState } from './core/state.js';
@@ -52,8 +52,8 @@ function layout(): void {
   $('#app').innerHTML = `
     <header class="top">
       <div class="bank">
-        <div class="amount-row"><span class="sd-dot big"></span><span class="sr-only">${t('Stardust')}: </span><span class="amount" id="amount">0</span></div>
-        <div class="rate" id="rate">${t('{n} per second', { n: 0 })}</div>
+        <div class="amount-row"><span class="sd-dot big"></span><span class="sr-only">${t('Stardust')}: <span id="amount-sr">0</span></span><span class="amount" id="amount" aria-hidden="true">0</span></div>
+        <div class="rate" id="rate" aria-hidden="true">${t('{n} per second', { n: 0 })}</div><span class="sr-only" id="rate-sr"></span>
       </div>
       <button class="icon-btn shop-btn" id="btn-shop" aria-label="${t('Shop')}">${icon('cart')}</button>
       <button class="icon-btn" id="btn-stats" aria-label="${t('Stats')}">${icon('chart')}</button>
@@ -278,7 +278,9 @@ function start(): void {
   // ---------------------------------------------------------------- slow UI
 
   const amountEl = $('#amount');
+  const amountSr = $('#amount-sr');
   const rateEl = $('#rate');
+  const rateSr = $('#rate-sr');
   const buffsEl = $('#buffs');
   const stageEl = $('#stage-label');
   const tapInfo = $('#tap-info');
@@ -550,8 +552,17 @@ function start(): void {
       // Number counters ease towards the real value.
       shownAmount += (s.stardust - shownAmount) * Math.min(1, dt * 12);
       if (Math.abs(s.stardust - shownAmount) < 1 || s.stardust < shownAmount) shownAmount = s.stardust;
-      setText(amountEl, fmt(shownAmount));
-      setText(rateEl, t('{n} per second', { n: fmtRate(ctx.d.sps) }));
+      const shownText = fmt(shownAmount);
+      // Screen readers get the number in words; only worked out when the visible text changes.
+      if (amountEl.textContent !== shownText) {
+        amountEl.textContent = shownText;
+        setText(amountSr, fmtSpoken(shownAmount));
+      }
+      const rateText = t('{n} per second', { n: fmtRate(ctx.d.sps) });
+      if (rateEl.textContent !== rateText) {
+        rateEl.textContent = rateText;
+        setText(rateSr, t('{n} per second', { n: ctx.d.sps < 1000 ? fmtRate(ctx.d.sps) : fmtSpoken(ctx.d.sps) }));
+      }
       toggleClass(rateEl, 'boosted', ctx.d.prodBuff > 1);
       toggleClass(rateEl, 'nerfed', ctx.d.prodBuff < 1);
 
