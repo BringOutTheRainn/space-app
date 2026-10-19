@@ -77,7 +77,7 @@ function layout(): void {
         ${TABS.map((tab) => `<div class="tab-body" id="tab-${tab.id}" role="tabpanel" aria-label="${t(tab.label)}" hidden></div>`).join('')}
       </div>
       <nav class="tabs" role="tablist">
-        ${TABS.map((tab) => `<button class="tab" role="tab" aria-selected="false" aria-controls="tab-${tab.id}" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden></i></button>`).join('')}
+        ${TABS.map((tab) => `<button class="tab" role="tab" aria-selected="false" aria-controls="tab-${tab.id}" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden><span class="sr-only">(${t('something new')})</span></i></button>`).join('')}
       </nav>
     </section>
     <div id="modals"></div>`;
@@ -391,7 +391,10 @@ function start(): void {
     if (d.hyper && hyperLeft <= 0) ctx.recalc();
     setHidden(hyperBtn, !AD_CONFIG.enabled || (s.generators[1] === 0 && s.collapses === 0));
     toggleClass(hyperBtn, 'on', hyperLeft > 0);
-    toggleClass(hyperBtn, 'spin-ready', freeSpinReady(s));
+    const spinReady = freeSpinReady(s);
+    toggleClass(hyperBtn, 'spin-ready', spinReady);
+    // The dot is only drawn, so screen readers hear it in the label.
+    setAttr(hyperBtn, 'aria-label', spinReady ? `${t('Hyperdrive')}, ${t('Spin free')}` : t('Hyperdrive'));
     setText(hyperText, hyperLeft > 0 ? fmtTime(hyperLeft / 1000) : 'x2');
 
     // Tabs: Cosmos shows a lock until unlocked, Probes only once bought.

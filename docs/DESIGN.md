@@ -963,6 +963,13 @@ instead of its own copy of the rule, so the month-long check tests the shipped c
 came out identical to run 88: 30 collapses, universes under a day in week 1, one to two and a
 half days in weeks 2 and 3, four and a half days at day 25.
 
+**Run 91. Red dots for screen readers.** The red dots on the tab bar (an upgrade to buy, a new
+trophy, and since run 89 "a good time to collapse") and the dot on the Hyperdrive button (a free
+Lucky Orbit spin) were drawn only, so TalkBack users never heard them. Each tab dot now carries a
+hidden "(something new)" that is read with the tab's name only while the dot shows ("Cosmos
+(something new)"), and the Hyperdrive button's label becomes "Hyperdrive, Spin free" while its
+dot shows. Translated into all four languages.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
