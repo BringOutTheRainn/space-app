@@ -881,5 +881,14 @@ shows it instead of leaving it to a spreadsheet. It appears only after the first
 Dark Matter is pending. `darkMatterPerHour` and `fmtRateSmall` are shared with the Stats table, and a
 test covers both. Translated in all five languages.
 
+**Run 82. Hints for players who never tap, and a tidier collapse card.** Run 78 showed the game can
+be played without tapping, but the first hint ("Tap the asteroid to harvest Stardust") stayed up
+until five taps, and because the hints run in order it blocked every later one (buy a drone, catch
+a comet, buy an upgrade, open Cosmos), even after the asteroid had become a star. It now shows only
+in a brand-new game while the player has under 15 Stardust and no drone; a Playwright check with
+zero taps now goes tap, buy, nothing, upgrade, as a tapping player does. The collapse card's
+"Collapse now for +34 Dark Matter" row also wrapped mid-phrase in German and French; the amount now
+moves to its own right-aligned line as a whole when it does not fit.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

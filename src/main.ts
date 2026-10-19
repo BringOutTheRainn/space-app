@@ -427,7 +427,9 @@ function start(): void {
     const { s } = ctx;
     const seen = s.seenHints;
     toggleClass(document.querySelector('.gen[data-gen="0"]')!, 'pulse', s.generators[0] === 0 && s.stardust >= 15);
-    if (s.tapsAll < 5) return showHint('tap', t('Tap the asteroid to harvest Stardust'));
+    // Only until the first drone can be bought: a player who builds without tapping (comets, offline)
+    // must still get the later hints, and the body is no longer an asteroid after the early game.
+    if (s.tapsAll < 5 && s.generators[0] === 0 && s.collapses === 0 && s.stardust < 15) return showHint('tap', t('Tap the asteroid to harvest Stardust'));
     if (s.generators[0] === 0 && s.stardust >= 15 && !seen.buy) return showHint('buy', t('Buy a Mining Drone below. It mines for you.'));
     if (s.generators[0] > 0) seen.buy = true;
     if (sky.hasComet && !seen.comet) return showHint('comet', t('A comet! Tap it quickly for a boost'));
