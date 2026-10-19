@@ -524,7 +524,7 @@ function contractCard(ctx: Ctx): string {
   const ready = contractClaimable(s) > 0;
   const marks = def.goals.map((g, i) => `<i class="tier-mark ${state.claimed > i ? 'got' : p >= g ? 'ready' : ''}" style="left:${(g / top) * 100}%"></i>`).join('');
   const tiers = def.goals.map((g, i) => `<div class="tier ${state.claimed > i ? 'got' : ''}">
-      <b>${numHtml(g)}</b><span><span class="sd-dot"></span>${numHtml(tierReward(d, i))}${i === 2 ? ` + ${t('Medal')}` : ''}</span></div>`).join('');
+      <b>${numHtml(g)}</b><span><span class="sd-dot"></span>${spokenHtml(fmt(tierReward(d, i)) + (i === 2 ? ` + ${t('Medal')}` : ''), fmtSpoken(tierReward(d, i)) + (i === 2 ? ` + ${t('Medal')}` : ''))}</span></div>`).join('');
   const days = contractTimeLeft() / 86400000;
   const left = t('{time} left', { time: days >= 1 ? `${Math.floor(days)}d ${Math.floor((days % 1) * 24)}h` : fmtTime(contractTimeLeft() / 1000) });
   return `<div class="contract">

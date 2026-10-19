@@ -16,7 +16,7 @@ import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
-import { $, closeModal, esc, modalOpen, setAttr, setHidden, setSpoken, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
+import { $, closeModal, esc, modalOpen, setAttr, setHidden, setSpoken, setText, speakNumbersIn, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
 import { VERSION, applySettings, showWhatsNew, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
@@ -277,6 +277,9 @@ function start(): void {
 
   // ---------------------------------------------------------------- slow UI
 
+  // Toasts and windows read short-form numbers ("+4.95B") in words for screen readers.
+  speakNumbersIn($('#toasts'));
+  speakNumbersIn($('#modals'));
   const amountEl = $('#amount');
   const amountSr = $('#amount-sr');
   const rateEl = $('#rate');

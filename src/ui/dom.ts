@@ -1,6 +1,6 @@
 // Tiny DOM helpers: element lookup, toasts and modals.
 
-import { fmt, fmtPercent, fmtPercentSpoken, fmtSpoken } from '../core/format.js';
+import { fmt, fmtPercent, fmtPercentSpoken, fmtSpoken, spokenShortText } from '../core/format.js';
 import { t } from '../i18n/index.js';
 
 export function $(sel: string, root: ParentNode = document): HTMLElement {
@@ -35,7 +35,7 @@ export function setSpoken(el: HTMLElement, shown: string, spoken: () => string):
 
 /** The same pair as setSpoken, as markup for templates. */
 export function spokenHtml(shown: string, spoken: string): string {
-  return shown === spoken ? esc(shown) : `<span aria-hidden="true">${esc(shown)}</span><span class="sr-only">${esc(spoken)}</span>`;
+  return shown === spoken ? esc(shown) : `<span><span aria-hidden="true">${esc(shown)}</span><span class="sr-only">${esc(spoken)}</span></span>`;
 }
 
 /** A number for HTML templates, in words for screen readers. */
@@ -45,6 +45,44 @@ export function numHtml(n: number): string {
 
 export function pctHtml(fraction: number): string {
   return spokenHtml(fmtPercent(fraction), fmtPercentSpoken(fraction));
+}
+
+/**
+ * Gives every short-form number under root a hidden copy in words for screen readers. Text that
+ * already has one (aria-hidden or sr-only) and buttons with their own label are skipped.
+ */
+export function speakNumbers(root: Node): void {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const hits: Array<[Text, string]> = [];
+  for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null) {
+    const parent = n.parentElement;
+    if (!parent || parent.closest('[aria-hidden="true"], .sr-only, button[aria-label], [role="button"][aria-label]')) continue;
+    const spoken = spokenShortText(n.data);
+    if (spoken !== null) hits.push([n, spoken]);
+  }
+  for (const [n, spoken] of hits) {
+    const shown = document.createElement('span');
+    shown.setAttribute('aria-hidden', 'true');
+    shown.textContent = n.data;
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = spoken;
+    // One wrapper, so a flex parent still sees a single item.
+    const pair = document.createElement('span');
+    pair.append(shown, sr);
+    n.replaceWith(pair);
+  }
+}
+
+/** Keeps speakNumbers applied to everything that appears under root (toasts, windows). */
+export function speakNumbersIn(root: HTMLElement): void {
+  speakNumbers(root);
+  new MutationObserver((records) => {
+    for (const r of records) {
+      if (r.type === 'characterData') speakNumbers(r.target.parentNode ?? r.target);
+      else r.addedNodes.forEach((n) => speakNumbers(n));
+    }
+  }).observe(root, { childList: true, subtree: true, characterData: true });
 }
 
 /** Shows or hides an element, touching the DOM only when that changes. */

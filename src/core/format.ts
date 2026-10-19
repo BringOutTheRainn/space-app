@@ -95,6 +95,22 @@ export function fmtSpoken(n: number): string {
   }
 }
 
+// Short-form numbers inside finished text: "+4.95B Stardust", "12,4K". A suffix followed by a digit
+// is left alone, since German writes days as "2T 04h".
+const SHORT_IN_TEXT = new RegExp(`(\\d+(?:[.,]\\d+)?)(${[...SHORT].filter(Boolean).sort((a, b) => b.length - a.length).join('|')})(?![A-Za-z])(?!\\s*\\d)`, 'g');
+
+/** Text with every short-form number in words, or null when there is none. */
+export function spokenShortText(text: string): string | null {
+  let found = false;
+  const out = text.replace(SHORT_IN_TEXT, (m, num: string, suffix: string) => {
+    const n = parseFloat(num.replace(',', '.')) * Math.pow(1000, SHORT.indexOf(suffix));
+    if (!isFinite(n)) return m;
+    found = true;
+    return fmtSpoken(n);
+  });
+  return found ? out : null;
+}
+
 /** Long form for descriptions: "1.23 million". */
 export function fmtLong(n: number): string {
   if (n < 1e6 || style === 'scientific') return n < 1e6 ? Math.floor(n).toLocaleString(locale) : fmt(n);

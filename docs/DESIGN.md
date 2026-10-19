@@ -919,5 +919,13 @@ shown text, hidden from screen readers, with an sr-only copy in words. The sweep
 outside buttons that already carry a spoken label. Screens are pixel-identical to the previous
 build and frame times are unchanged.
 
+**Run 86. Numbers in words in toasts and windows.** About 45 more places build short-form numbers
+into text (rewards, mission goals, expedition yields, Market lines, the daily gift, button labels in
+windows). Rather than touch each one, the toast area and the window layer now watch for new text:
+any "4.95B"-style number gets a hidden copy in words beside it, and the pair sits in one span so
+flex layouts see a single item. A suffix followed by a digit is left alone, because German writes
+days as "2T 04h". The contract reward with "+ Medal" is built as one pair so it wraps as before.
+German store screenshots differ from the build before run 85 only in animation and random missions.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

@@ -1541,3 +1541,17 @@ test('screen readers get big numbers in words', async () => {
   setNumberStyle('short');
   setNumberLocale('en-US');
 });
+
+test('short numbers inside text are read in words', async () => {
+  const { spokenShortText } = await import('../www/js/core/format.js');
+  setNumberLocale('en-US');
+  assert.equal(spokenShortText('+4.95B Stardust'), '+4.95 billion Stardust');
+  assert.equal(spokenShortText('Bonus +200K% → +40M%'), 'Bonus +200 thousand% → +40 million%');
+  assert.equal(spokenShortText('5.4Qi and 10UDc'), '5.4 quintillion and 10 undecillion');
+  assert.equal(spokenShortText('Day 3 claimed'), null);
+  assert.equal(spokenShortText('No thanks'), null);
+  setNumberLocale('de-DE');
+  assert.equal(spokenShortText('2T 04h'), null);
+  assert.equal(spokenShortText('+12,4T Sternenstaub'), '+12,4 Billionen Sternenstaub');
+  setNumberLocale('en-US');
+});
