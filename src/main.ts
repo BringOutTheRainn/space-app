@@ -16,7 +16,7 @@ import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
 import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
-import { $, closeModal, esc, modalOpen, setAttr, setHidden, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
+import { $, closeModal, esc, modalOpen, setAttr, setHidden, setSpoken, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
 import { VERSION, applySettings, showWhatsNew, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
@@ -337,7 +337,8 @@ function start(): void {
     sky.setOwned(s.generators);
     setText(stageEl, s.anomaly ? `${t(STAGES[stage].name)} · ${t(ANOMALY_BY_ID[s.anomaly]?.name ?? '')}` : t(STAGES[stage].name));
     toggleClass(stageEl, 'anomaly', !!s.anomaly);
-    setText(tapInfo, d.noTaps ? t('Tapping is disabled') : t('{n} per tap', { n: fmt(d.tap, 1) }));
+    if (d.noTaps) setText(tapInfo, t('Tapping is disabled'));
+    else setSpoken(tapInfo, t('{n} per tap', { n: fmt(d.tap, 1) }), () => t('{n} per tap', { n: d.tap < 1000 ? fmt(d.tap, 1) : fmtSpoken(d.tap) }));
 
     // Buff chips.
     const buffHtml = s.buffs.map((b) => {

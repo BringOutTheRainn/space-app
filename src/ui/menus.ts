@@ -8,13 +8,13 @@ import { ACHIEVEMENTS } from '../data/achievements.js';
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, pluralName } from '../data/upgrades.js';
 import { claimDaily, dailyReward, nextStreakDay, rewardMinutes } from '../core/daily.js';
-import { fmt, fmtDec, fmtLong, fmtPercent, fmtRate, fmtRateSmall, fmtTime, setNumberStyle } from '../core/format.js';
+import { fmt, fmtDec, fmtLong, fmtPercent, fmtRate, fmtRateSmall, fmtRateSpoken, fmtSpoken, fmtTime, setNumberStyle } from '../core/format.js';
 import { exportSave, importSave } from '../core/save.js';
 import { darkMatterPerHour } from '../core/prestige.js';
 import { achievementCount, newState, totalGenerators, upgradeCount } from '../core/state.js';
 import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from './audio.js';
 import type { Ctx } from './ctx.js';
-import { closeModal, confirmModal, esc, openModal, toast } from './dom.js';
+import { closeModal, confirmModal, esc, numHtml, openModal, spokenHtml, toast } from './dom.js';
 import { icon } from './icons.js';
 import { copyText, haptic, isNative, setVibration, shareText } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
@@ -50,7 +50,10 @@ function nextForm(earned: number): string {
 }
 
 export function openStats(ctx: Ctx): void {
-  const long = (n: number): string => (currentLang() === 'en' ? fmtLong(n) : fmt(n));
+  const long = (n: number): string => (currentLang() === 'en' ? fmtLong(n) : spokenHtml(fmt(n), fmtSpoken(n)));
+  type Num = (n: number) => string;
+  // A value as shown and, for screen readers, with numbers in words.
+  const say = (line: (rate: Num, count: Num) => string): string => spokenHtml(line(fmtRate, fmt), line(fmtRateSpoken, fmtSpoken));
   const render = (): string => {
     const { s, d } = ctx;
     const rows: Array<[string, string]> = [
@@ -59,25 +62,25 @@ export function openStats(ctx: Ctx): void {
       [t('Earned this universe'), long(s.earnedRun)],
       [t('Next form'), nextForm(s.earnedRun)],
       [t('Earned all time'), long(s.earnedAll)],
-      [t('Production'), t('{n} per second', { n: fmtRate(d.sps) })],
-      [t('Best production'), t('{n} per second', { n: fmtRate(s.highestSps) })],
-      [t('Production multiplier'), `x${fmt(d.globalMult, 2)}`],
-      [t('Stardust per tap'), fmtRate(d.tap)],
-      [t('Taps (this universe / all)'), `${fmt(s.tapsRun)} / ${fmt(s.tapsAll)}`],
+      [t('Production'), say((r) => t('{n} per second', { n: r(d.sps) }))],
+      [t('Best production'), say((r) => t('{n} per second', { n: r(s.highestSps) }))],
+      [t('Production multiplier'), d.globalMult < 1000 ? `x${fmt(d.globalMult, 2)}` : say((_, c) => `x${c(d.globalMult)}`)],
+      [t('Stardust per tap'), say((r) => r(d.tap))],
+      [t('Taps (this universe / all)'), say((_, c) => `${c(s.tapsRun)} / ${c(s.tapsAll)}`)],
       [t('Earned by tapping (all time)'), long(s.tapEarnedAll)],
-      [t('Generators owned'), fmt(totalGenerators(s))],
+      [t('Generators owned'), say((_, c) => c(totalGenerators(s)))],
       [t('Upgrades bought'), t('{n} of {total}', { n: upgradeCount(s), total: UPGRADES.length })],
       [t('Achievements'), t('{n} of {total}', { n: achievementCount(s), total: ACHIEVEMENTS.length })],
       [t('Comets caught (this universe / all)'), `${s.cometsRun} / ${s.cometsAll}`],
       [t('Universes collapsed'), String(s.collapses)],
-      [t('Dark Matter'), fmt(s.darkMatter)],
+      [t('Dark Matter'), say((_, c) => c(s.darkMatter))],
       [t('Earned while away'), long(s.offlineEarnedAll)],
       [t('Expeditions completed'), String(s.expeditionsDone)],
-      [t('Missions completed'), fmt(s.missionsDone)],
+      [t('Missions completed'), say((_, c) => c(s.missionsDone))],
       [t('Event Gold badges'), String(s.eventGolds)],
       [t('Stardust Vaults opened'), String(s.vaultsOpened)],
       [t('Lucky Orbit spins'), String(s.wheelSpins)],
-      [t('Warp Exchange profit'), t('{n} credits', { n: fmt(s.marketProfit) })],
+      [t('Warp Exchange profit'), say((_, c) => t('{n} credits', { n: c(s.marketProfit) }))],
       [t('Contract Medals'), `${s.contractMedals} (+${fmtPercent(s.contractMedals * MEDAL_PCT)})`],
       [t('Ads watched'), String(s.adsWatched)],
       [t('Login streak'), s.dailyStreak === 1 ? t('1 day') : t('{n} days', { n: s.dailyStreak })],
@@ -85,11 +88,14 @@ export function openStats(ctx: Ctx): void {
       [t('This universe started'), t('{time} ago', { time: fmtTime((Date.now() - s.runStartedAt) / 1000) })],
     ];
     const gens = GENERATORS.map((g, i) => s.generators[i]
-      ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${fmtRate(d.genSps[i])}/s</td></tr>` : '').join('');
-    const perHour = (r: { dm: number; secs: number }): string => (r.secs > 0 ? fmtRateSmall(darkMatterPerHour(r.dm, r.secs)) : '-');
+      ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${say((r) => `${r(d.genSps[i])}/s`)}</td></tr>` : '').join('');
+    const perHour = (r: { dm: number; secs: number }): string => {
+      const v = darkMatterPerHour(r.dm, r.secs);
+      return r.secs > 0 ? spokenHtml(fmtRateSmall(v), v < 100 ? fmtRateSmall(v) : fmtSpoken(v)) : '-';
+    };
     // The last universes, so players can see each collapse coming faster and paying more.
     const runs = s.pastRuns.map((r, i) => `<tr><td>${t('Universe {n}', { n: s.collapses - i })}</td><td>${fmtTime(r.secs)}</td>`
-      + `<td>+${fmt(r.dm)}</td><td>${perHour(r)}</td></tr>`).join('');
+      + `<td>${say((_, c) => `+${c(r.dm)}`)}</td><td>${perHour(r)}</td></tr>`).join('');
     return `<table class="stats">${rows.map(([k, v]) => `<tr><td>${k}</td><td colspan="2">${v}</td></tr>`).join('')}</table>
       ${gens ? `<h3 class="section-title">${t('Generators')}</h3><table class="stats">${gens}</table>` : ''}
       ${runs ? `<h3 class="section-title">${t('Recent universes')}</h3><table class="stats past-runs"><tr><th></th><th>${t('Lasted')}</th><th>${t('Dark Matter')}</th><th>${t('Per hour')}</th></tr>${runs}</table>` : ''}`;
@@ -518,7 +524,7 @@ function contractCard(ctx: Ctx): string {
   const ready = contractClaimable(s) > 0;
   const marks = def.goals.map((g, i) => `<i class="tier-mark ${state.claimed > i ? 'got' : p >= g ? 'ready' : ''}" style="left:${(g / top) * 100}%"></i>`).join('');
   const tiers = def.goals.map((g, i) => `<div class="tier ${state.claimed > i ? 'got' : ''}">
-      <b>${fmt(g)}</b><span><span class="sd-dot"></span>${fmt(tierReward(d, i))}${i === 2 ? ` + ${t('Medal')}` : ''}</span></div>`).join('');
+      <b>${numHtml(g)}</b><span><span class="sd-dot"></span>${numHtml(tierReward(d, i))}${i === 2 ? ` + ${t('Medal')}` : ''}</span></div>`).join('');
   const days = contractTimeLeft() / 86400000;
   const left = t('{time} left', { time: days >= 1 ? `${Math.floor(days)}d ${Math.floor((days % 1) * 24)}h` : fmtTime(contractTimeLeft() / 1000) });
   return `<div class="contract">
@@ -1049,12 +1055,12 @@ export function openMissions(ctx: Ctx, onChange: () => void): void {
       const done = missionDone(s, m);
       const prog = missionProgress(s, m);
       const pct = Math.min(100, (prog / m.target) * 100);
-      const progText = `${fmt(prog)} / ${fmt(m.target)}`;
+      const progText = `${numHtml(prog)} / ${numHtml(m.target)}`;
       return `<div class="mission ${done ? 'done' : ''}">
         <div class="mission-main">
           <div class="mission-name">${esc(missionText(m))}</div>
           <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
-          <div class="mission-meta"><span>${progText}</span><span class="mission-reward"><span class="sd-dot"></span>${fmt(missionReward(d, m))}</span></div>
+          <div class="mission-meta"><span>${progText}</span><span class="mission-reward"><span class="sd-dot"></span>${numHtml(missionReward(d, m))}</span></div>
         </div>
         ${done ? `<button class="btn btn-primary" data-claim="${i}">${t('Claim')}</button>`
           : rewardedAvailable() ? `<button class="btn btn-plain mission-swap" data-swap="${i}" aria-label="${t('Watch an ad to swap this mission')}">${t('Swap')}<small>${t('ad')}</small></button>` : ''}

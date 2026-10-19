@@ -909,5 +909,15 @@ English (the game's own names, up to vigintillion), and the phone's own words el
 notation hear it as shown. The words are worked out only when the visible text changes, and the
 Build tab frame time is unchanged.
 
+**Run 85. Big numbers in words, everywhere.** A sweep of the accessibility tree for short-form
+numbers ("44.21M/s", "+9.95M Dark Matter") found 68 more places after run 84: tap value, each
+generator's rate, the Cosmos card (Dark Matter, bonus, next Dark Matter, per hour), anomaly goals,
+the collapse and anomaly windows, Stats, the Stardust Vault, Missions and contracts, and the
+labels of upgrade and Echo buttons. Two helpers do it: setSpoken for live lines (it only works out
+the words when the shown text changes) and numHtml / pctHtml for templates, both pairing the
+shown text, hidden from screen readers, with an sr-only copy in words. The sweep now finds none
+outside buttons that already carry a spoken label. Screens are pixel-identical to the previous
+build and frame times are unchanged.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

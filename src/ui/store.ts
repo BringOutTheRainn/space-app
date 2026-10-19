@@ -15,7 +15,7 @@ import {
 } from '../core/shop.js';
 import { sfxAchievement } from './audio.js';
 import type { Ctx } from './ctx.js';
-import { esc, openModal, toast } from './dom.js';
+import { esc, numHtml, openModal, toast } from './dom.js';
 import { t } from '../i18n/index.js';
 import { icon } from './icons.js';
 import { haptic, isNative } from './platform.js';
@@ -224,7 +224,7 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
     parts.push(`<div class="shop-card">
       <div class="shop-row">${icon('darkMatter')}<div class="shop-main"><b>${t('Stardust Vault')}</b><span>${t('Saves {n} minutes of production every hour, even while you are away, up to {cap} hours.', { n: VAULT_RATE * 60, cap: VAULT_CAP_HOURS })}${crystalsUnlocked(s) ? ` ${t('Plus a crystal for every {n} hours saved.', { n: VAULT_HOURS_PER_CRYSTAL })}` : ''}</span></div></div>
       <div class="bar"><div class="bar-fill vault-fill" style="width:${(s.vaultHours / VAULT_CAP_HOURS) * 100}%"></div></div>
-      <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: fmtDec(s.vaultHours), cap: VAULT_CAP_HOURS, sd: fmt(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
+      <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: fmtDec(s.vaultHours), cap: VAULT_CAP_HOURS, sd: numHtml(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
       ${buyButton(ctx, 'vault_open', s.vaultHours >= 1 ? t('Open {price}', { price: productPrice('vault_open') }) : t('Filling'))}</div></div>`);
 
     const pass = currentPass(s, now);

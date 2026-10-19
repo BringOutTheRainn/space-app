@@ -108,6 +108,11 @@ export function fmtRate(n: number): string {
   return fmt(n, 1);
 }
 
+/** A rate for screen readers: as shown below 1000, in words above. */
+export function fmtRateSpoken(n: number): string {
+  return n < 1000 ? fmtRate(n) : fmtSpoken(n);
+}
+
 /** 3h 12m, 4m 05s, 12s. */
 export function fmtTime(seconds: number): string {
   seconds = Math.max(0, Math.floor(seconds));
@@ -119,6 +124,11 @@ export function fmtTime(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`;
   if (m > 0) return `${m}m ${s.toString().padStart(2, '0')}s`;
   return `${s}s`;
+}
+
+/** A percentage for screen readers: "+200 thousand%" where the screen shows "+200K%". */
+export function fmtPercentSpoken(fraction: number): string {
+  return fraction * 100 >= 1000 ? fmtSpoken(fraction * 100) + '%' : fmtPercent(fraction);
 }
 
 export function fmtPercent(fraction: number): string {

@@ -1,5 +1,6 @@
 // Tiny DOM helpers: element lookup, toasts and modals.
 
+import { fmt, fmtPercent, fmtPercentSpoken, fmtSpoken } from '../core/format.js';
 import { t } from '../i18n/index.js';
 
 export function $(sel: string, root: ParentNode = document): HTMLElement {
@@ -15,6 +16,35 @@ export function esc(text: string): string {
 /** Sets text only when it changed, to keep layout work down. */
 export function setText(el: HTMLElement, text: string): void {
   if (el.textContent !== text) el.textContent = text;
+}
+
+/**
+ * Like setText, but screen readers hear a second version with numbers in words ("47.01Qa" is read
+ * "47.01 Q a" otherwise). The spoken text is only worked out when the shown text changes.
+ */
+export function setSpoken(el: HTMLElement, shown: string, spoken: () => string): void {
+  let vis = el.firstElementChild as HTMLElement | null;
+  if (!vis || !vis.classList.contains('sv')) {
+    el.innerHTML = '<span class="sv" aria-hidden="true"></span><span class="sr-only"></span>';
+    vis = el.firstElementChild as HTMLElement;
+  }
+  if (vis.textContent === shown) return;
+  vis.textContent = shown;
+  (vis.nextElementSibling as HTMLElement).textContent = spoken();
+}
+
+/** The same pair as setSpoken, as markup for templates. */
+export function spokenHtml(shown: string, spoken: string): string {
+  return shown === spoken ? esc(shown) : `<span aria-hidden="true">${esc(shown)}</span><span class="sr-only">${esc(spoken)}</span>`;
+}
+
+/** A number for HTML templates, in words for screen readers. */
+export function numHtml(n: number): string {
+  return spokenHtml(fmt(n), fmtSpoken(n));
+}
+
+export function pctHtml(fraction: number): string {
+  return spokenHtml(fmtPercent(fraction), fmtPercentSpoken(fraction));
 }
 
 /** Shows or hides an element, touching the DOM only when that changes. */

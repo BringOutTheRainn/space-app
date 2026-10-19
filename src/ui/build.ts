@@ -3,10 +3,10 @@
 import { GENERATORS } from '../data/generators.js';
 import { UPGRADE_BY_ID, tierBand, toNextTier } from '../data/upgrades.js';
 import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorRevealed, generatorVisible, maxAffordable, upgradePrice } from '../core/economy.js';
-import { fmt, fmtPercent, fmtRate, fmtSpoken } from '../core/format.js';
+import { fmt, fmtPercent, fmtRate, fmtRateSpoken, fmtSpoken } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
 import type { BuyAmount, Ctx, Panel } from './ctx.js';
-import { $, esc, setAttr, setHidden, setText, toast, toggleClass } from './dom.js';
+import { $, esc, setAttr, setHidden, setSpoken, setText, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { crystalsUnlocked } from '../core/crystals.js';
@@ -261,7 +261,8 @@ export class BuildPanel implements Panel {
       } else if (owned) {
         const each = d.genSps[i] / owned;
         const share = d.baseSps > 0 ? d.genSps[i] / d.baseSps : 0;
-        setText(row.sub, t('{each}/s each · {share} of total', { each: fmtRate(each), share: fmtPercent(share) }));
+        const subLine = (rate: (n: number) => string): string => t('{each}/s each · {share} of total', { each: rate(each), share: fmtPercent(share) });
+        setSpoken(row.sub, subLine(fmtRate), () => subLine(fmtRateSpoken));
       } else {
         setText(row.sub, t(g.flavor));
       }

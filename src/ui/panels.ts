@@ -11,13 +11,13 @@ import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
 import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyEcho, buyUpgrade, cosmicAvailable, ECHO_MULT, echoCost, echoesUnlocked, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
-import { fmt, fmtDec, fmtPercent, fmtRateSmall, fmtTime } from '../core/format.js';
+import { fmt, fmtDec, fmtPercent, fmtPercentSpoken, fmtRateSmall, fmtSpoken, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
 import { canCollapse, collapse, collapseGain, darkMatterPct, darkMatterPerHour, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
-import { $, confirmModal, esc, openModal, setHidden, setText, toast, toggleClass } from './dom.js';
+import { $, confirmModal, esc, openModal, numHtml, pctHtml, setHidden, setSpoken, setText, spokenHtml, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { showInterstitial } from './ads.js';
@@ -94,7 +94,7 @@ export class UpgradesPanel implements Panel {
           <div class="upg-card" data-id="${u.id}">
             <div class="upg-ico">${icon(u.icon)}</div>
             <div class="upg-text"><div class="upg-name">${esc(tName(u))}</div><div class="upg-desc">${esc(tDesc(u))}</div></div>
-            <button class="btn btn-buy" data-buy="${u.id}" aria-label="${esc(t('Buy {name} for {price} Stardust', { name: tName(u), price: fmt(upgradePrice(d, u)) }))}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
+            <button class="btn btn-buy" data-buy="${u.id}" aria-label="${esc(t('Buy {name} for {price} Stardust', { name: tName(u), price: fmtSpoken(upgradePrice(d, u)) }))}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
           </div>`).join('')
         : `<p class="empty">${d.noUpgrades ? t('Upgrades cannot be bought in this anomaly.') : t('No upgrades right now. Buy more generators to unlock new ones.')}</p>`;
       const bought = UPGRADES.filter((u) => s.upgrades[u.id]);
@@ -259,35 +259,40 @@ export class CosmosPanel implements Panel {
     }
     if (!this.built) this.build();
     const pending = pendingDarkMatter(s);
-    setText($('#dm-amount', this.root), t('{n} Dark Matter', { n: fmt(s.darkMatter) }));
+    // Each line twice: as shown, and with numbers in words for screen readers.
+    setSpoken($('#dm-amount', this.root), t('{n} Dark Matter', { n: fmt(s.darkMatter) }), () => t('{n} Dark Matter', { n: fmtSpoken(s.darkMatter) }));
     const dmPct = darkMatterPct(s);
-    setText($('#dm-sub', this.root), t('{n} to spend · +{pct} production', { n: fmt(darkMatterAvailable(s)), pct: fmtPercent(dmPct * s.darkMatter) }));
-    setText($('#dm-pending', this.root), t('+{n} Dark Matter', { n: fmt(pending) }));
+    const subLine = (num: (n: number) => string, pct: (f: number) => string): string => t('{n} to spend · +{pct} production', { n: num(darkMatterAvailable(s)), pct: pct(dmPct * s.darkMatter) });
+    setSpoken($('#dm-sub', this.root), subLine(fmt, fmtPercent), () => subLine(fmtSpoken, fmtPercentSpoken));
+    setSpoken($('#dm-pending', this.root), t('+{n} Dark Matter', { n: fmt(pending) }), () => t('+{n} Dark Matter', { n: fmtSpoken(pending) }));
     // What the collapse is worth: the production bonus before and after, and the multiplier.
     const gain = collapseGain(s);
     const gainEl = $('#dm-gain', this.root);
     setHidden(gainEl, pending <= 0);
     if (pending > 0) {
-      setText(gainEl, t('Bonus +{from} → +{to} (x{mult})', { from: fmtPercent(dmPct * s.darkMatter), to: fmtPercent(dmPct * (s.darkMatter + pending)), mult: fmtDec(gain, 2) }));
+      const gainLine = (pct: (f: number) => string): string => t('Bonus +{from} → +{to} (x{mult})', { from: pct(dmPct * s.darkMatter), to: pct(dmPct * (s.darkMatter + pending)), mult: fmtDec(gain, 2) });
+      setSpoken(gainEl, gainLine(fmtPercent), () => gainLine(fmtPercentSpoken));
       toggleClass(gainEl, 'good', gain >= 2);
     }
     const nextAt = earningsForNextDarkMatter(s);
     const prevTotal = Math.pow(Math.cbrt(nextAt / DM_SCALE) - 1, 3) * DM_SCALE;
     const frac = Math.max(0, Math.min(1, (s.earnedAll - prevTotal) / (nextAt - prevTotal)));
     ($('#dm-bar', this.root) as HTMLElement).style.width = `${(frac * 100).toFixed(1)}%`;
-    setText($('#dm-next', this.root), s.earnedAll < DM_SCALE
-      ? t('Your first Dark Matter forms at {n} lifetime Stardust ({have} so far).', { n: fmt(DM_SCALE), have: fmt(s.earnedAll) })
-      : t('Next Dark Matter at {n} lifetime Stardust.', { n: fmt(nextAt) }));
+    const nextLine = (num: (n: number) => string): string => s.earnedAll < DM_SCALE
+      ? t('Your first Dark Matter forms at {n} lifetime Stardust ({have} so far).', { n: num(DM_SCALE), have: num(s.earnedAll) })
+      : t('Next Dark Matter at {n} lifetime Stardust.', { n: num(nextAt) });
+    setSpoken($('#dm-next', this.root), nextLine(fmt), () => nextLine(fmtSpoken));
     // Compare this universe's Dark Matter per hour with the last one: collapsing near the peak is the efficient play.
     const rateEl = $('#dm-rate', this.root) as HTMLElement;
     const last = s.pastRuns[0];
     const pendingNow = pendingDarkMatter(s);
     rateEl.hidden = !last || pendingNow < 1;
     if (last && pendingNow >= 1) {
-      setText(rateEl, t('This universe: {now} Dark Matter per hour. Last one: {last}.', {
-        now: fmtRateSmall(darkMatterPerHour(pendingNow, s.time - s.runStartClock)),
-        last: fmtRateSmall(darkMatterPerHour(last.dm, last.secs)),
-      }));
+      const rateLine = (num: (n: number) => string): string => t('This universe: {now} Dark Matter per hour. Last one: {last}.', {
+        now: num(darkMatterPerHour(pendingNow, s.time - s.runStartClock)),
+        last: num(darkMatterPerHour(last.dm, last.secs)),
+      });
+      setSpoken(rateEl, rateLine(fmtRateSmall), () => rateLine((n) => (n < 100 ? fmtRateSmall(n) : fmtSpoken(n))));
     }
     const btn = $('#btn-collapse', this.root) as HTMLButtonElement;
     btn.disabled = !canCollapse(s);
@@ -321,7 +326,7 @@ export class CosmosPanel implements Panel {
         const isDone = !!s.anomaliesDone[a.id];
         const active = s.anomaly === a.id;
         return `<div class="anomaly ${isDone ? 'done' : ''} ${active ? 'active' : ''}">
-          <div class="anomaly-top"><b>${esc(t(a.name))}</b><span class="anomaly-goal">${isDone ? t('Complete') : t('Goal {n}', { n: fmt(a.goal) })}</span></div>
+          <div class="anomaly-top"><b>${esc(t(a.name))}</b><span class="anomaly-goal">${isDone ? t('Complete') : spokenHtml(t('Goal {n}', { n: fmt(a.goal) }), t('Goal {n}', { n: fmtSpoken(a.goal) }))}</span></div>
           <div class="dim">${esc(t(a.rule))}</div>
           <div class="anomaly-reward">${esc(t(a.rewardText))}</div>
           ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">${t('Leave')}</button></div>`
@@ -335,7 +340,7 @@ export class CosmosPanel implements Panel {
     const a = ANOMALY_BY_ID[id];
     const pending = pendingDarkMatter(ctx.s);
     confirmModal(t('Enter {name}?', { name: t(a.name) }),
-      `${t('<b>Rule:</b> {rule}<br><b>Goal:</b> earn {goal} Stardust in this universe.<br><b>Reward:</b> {reward}', { rule: esc(t(a.rule)), goal: fmt(a.goal), reward: esc(t(a.rewardText)) })}<br><br>${pending >= 1 ? t('Your current universe collapses and you collect <b class="dm">+{n} Dark Matter</b>.', { n: fmt(pending) }) : t('Your current universe collapses.')} ${t('You can leave the anomaly at any time.')}`,
+      `${t('<b>Rule:</b> {rule}<br><b>Goal:</b> earn {goal} Stardust in this universe.<br><b>Reward:</b> {reward}', { rule: esc(t(a.rule)), goal: numHtml(a.goal), reward: esc(t(a.rewardText)) })}<br><br>${pending >= 1 ? t('Your current universe collapses and you collect <b class="dm">+{n} Dark Matter</b>.', { n: numHtml(pending) }) : t('Your current universe collapses.')} ${t('You can leave the anomaly at any time.')}`,
       t('Enter'), () => {
         enterAnomaly(ctx.s, ctx.d, id);
         this.afterReset();
@@ -406,7 +411,7 @@ export class CosmosPanel implements Panel {
         <div class="dim">${t('Each echo multiplies all production by x{mult}, forever. The price doubles each time.', { mult: fmtDec(ECHO_MULT, 2) })}</div>
         ${s.echoes ? `<div class="anomaly-reward">${t('Now x{mult} production', { mult: echoMultText(s.echoes) })}</div>` : ''}
         ${unlocked
-          ? `<button class="btn btn-cosmic" id="btn-echo" ${darkMatterAvailable(s) >= cost ? '' : 'disabled'}>${t('Echo for {n} Dark Matter', { n: fmt(cost) })}</button>`
+          ? `<button class="btn btn-cosmic" id="btn-echo" aria-label="${esc(t('Echo for {n} Dark Matter', { n: fmtSpoken(cost) }))}" ${darkMatterAvailable(s) >= cost ? '' : 'disabled'}>${t('Echo for {n} Dark Matter', { n: fmt(cost) })}</button>`
           : `<div class="dim small">${t('Unlocks when every cosmic upgrade is owned ({n} of {total}).', { n: owned, total: COSMIC.length })}</div>`}
       </div>`;
   }
@@ -470,7 +475,7 @@ export class CosmosPanel implements Panel {
     const goods = heldValue(ctx.s);
     confirmModal(
       t('Collapse the Universe?'),
-      `${t('Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.')}${goods > 0 ? ' ' + t('Your Warp Exchange goods are sold first, for about {n} Stardust; any profit adds to your Dark Matter.', { n: fmt(goods * creditValue(ctx.d)) }) : ''}<br><br>${t('You will gain <b class="dm">+{n} Dark Matter</b>, for <b>+{pct}</b> production or more, forever.', { n: fmt(pending), pct: fmtPercent(pending * 0.02) })}`,
+      `${t('Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.')}${goods > 0 ? ' ' + t('Your Warp Exchange goods are sold first, for about {n} Stardust; any profit adds to your Dark Matter.', { n: numHtml(goods * creditValue(ctx.d)) }) : ''}<br><br>${t('You will gain <b class="dm">+{n} Dark Matter</b>, for <b>+{pct}</b> production or more, forever.', { n: numHtml(pending), pct: pctHtml(pending * 0.02) })}`,
       t('Collapse'),
       () => {
         const gained = collapse(ctx.s, ctx.d);
@@ -485,7 +490,7 @@ export class CosmosPanel implements Panel {
         ctx.showTab('build');
         breakAd(ctx);
         noteHappyMoment(12000);
-        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('A new universe begins')}</b><br>${t('+{n} Dark Matter', { n: fmt(gained) })}</div>`, 'good', 5000);
+        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('A new universe begins')}</b><br>${t('+{n} Dark Matter', { n: numHtml(gained) })}</div>`, 'good', 5000);
       },
     );
   }
