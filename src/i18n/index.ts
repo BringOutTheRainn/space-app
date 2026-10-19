@@ -29,7 +29,8 @@ export function deviceLang(): Lang {
 }
 
 export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): Lang {
-  if (setting !== 'auto') return setting;
+  // A save from a newer version (or an edited one) may name a language this build lacks.
+  if (setting !== 'auto' && setting in DICTS) return setting;
   return AUTO_LANGS.includes(device) ? device : 'en';
 }
 

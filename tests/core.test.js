@@ -1062,6 +1062,9 @@ test('language setting falls back to English and fills placeholders', async () =
   assert.equal(i18n.resolveLang('es', 'en'), 'es');
   assert.equal(i18n.resolveLang('auto', 'it'), 'en');
   assert.equal(i18n.resolveLang('auto', 'de'), 'de');
+  assert.equal(i18n.resolveLang('it', 'fr'), 'fr', 'unknown setting falls back to the device');
+  assert.equal(i18n.resolveLang('xx', 'it'), 'en');
+  assert.equal(i18n.setLanguage('xx'), i18n.resolveLang('auto'));
   assert.equal(i18n.resolveLang('auto', 'es'), 'es');
   assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');
   assert.equal(i18n.resolveLang('auto', 'fr'), 'fr');

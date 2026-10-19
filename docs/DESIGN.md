@@ -806,5 +806,12 @@ folder in the project files now has a copy of every listing (`listing.md`, `list
 `listing-fr.md`, `listing-de.md`) and `release-notes.txt` holds all five languages. The release-notes
 test now also checks the French and German notes against Play's 500-character limit.
 
+**Run 71. Save safety: unknown language.** A save check found a real start-up crash: the language
+setting was used as-is, so a save naming a language this build lacks (a save code from a later
+version with Italian, say, or an edited one) stopped the game from starting. An unknown setting now
+falls back to the phone's language, then English. A test covers it, and a Playwright check loaded
+saves with an unknown language, a bad number style, missing or empty settings and a wrong-typed sound
+switch: the game starts in every case (the unknown language crashed before the fix).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
