@@ -55,7 +55,7 @@ Spanish (Latin America) and Portuguese (Brazil) versions of this listing are in 
 | Asset | File |
 | --- | --- |
 | App icon, 512 x 512 | `www/icon-512.png` |
-| Feature graphic, 1024 x 500 | `resources/feature-graphic.png` |
+| Feature graphic, 1024 x 500 (each translation gets its own, with the tagline translated) | `resources/feature-graphic.png`; `store/feature-graphic-es-419.png`, `-pt-BR`, `-fr-FR`, `-de-DE` (remake with `node tools/feature-graphics.mjs <dir>`) |
 | Phone screenshots, 1080 x 1920 (upload all 8, in order) | `store/01_tap.png` … `store/08_missions.png` |
 | 7-inch and 10-inch tablet screenshots, 1920 x 1080 (the same 8 for both slots) | `store/tablet/01_tap.png` … `store/tablet/08_missions.png` |
 

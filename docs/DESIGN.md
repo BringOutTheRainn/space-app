@@ -838,5 +838,13 @@ stays clear of the edges. And trophy pop-ups covered that banner in the comet st
 store shots now hide pop-ups on every shot. All 80 store screenshots (5 languages, phone and tablet)
 were remade, and the French listing says "Appuis supernova x777".
 
+**Run 76. Translated feature graphics, and checks after run 75.** The feature graphic is the
+banner at the top of the Play listing, and it was English for every language. Play takes one per
+translation, so `tools/feature-graphics.mjs` now renders it with the tagline in Spanish ("Toca.
+Construye. Colapsa el universo."), Portuguese, French and German, shrinking the tagline when it would
+pass the right edge (German 24 px instead of 26). The English one is byte-identical to the old file.
+The first minutes in Spanish and Portuguese were clean, and performance with run 75's banner fitting
+is unchanged (Build about 20 fps with the CPU slowed 6x in headless software rendering).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
