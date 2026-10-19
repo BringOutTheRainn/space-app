@@ -927,5 +927,12 @@ flex layouts see a single item. A suffix followed by a digit is left alone, beca
 days as "2T 04h". The contract reward with "+ Medal" is built as one pair so it wraps as before.
 German store screenshots differ from the build before run 85 only in animation and random missions.
 
+**Run 87. Soak test after runs 84 to 86.** Runs 85 and 86 added a watcher on the toast and window
+layers, so this run looked for leaks: Stats (which redraws every second) and Missions were each left
+open for 30 seconds and 300 numbered toasts were fired in a row. DOM nodes went back to 6,449 from
+6,315 at the start, every toast was removed, the JS heap stayed near 3 MB and there were no
+errors. Random-tap sessions in all five languages and 30 damaged saves in the browser were clean.
+The check is saved as tools/soak.mjs. No game code changed.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
