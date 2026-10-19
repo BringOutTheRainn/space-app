@@ -934,5 +934,17 @@ open for 30 seconds and 300 numbered toasts were fired in a row. DOM nodes went 
 errors. Random-tap sessions in all five languages and 30 damaged saves in the browser were clean.
 The check is saved as tools/soak.mjs. No game code changed.
 
+**Run 88. A month of play.** The simulator played 30 days of 10-minute sessions every two hours.
+With its old rule (collapse only when Dark Matter would double) universes stretched from hours to
+9 days apart by week 3, a wall. That rule is not how the game teaches collapsing, so the simulator
+gained PEAK=1: collapse once this universe's Dark Matter per hour has passed its peak, as the
+Cosmos card has shown since run 81. Played that way, universes last under a day in week 1, one to
+two and a half days in weeks 2 and 3 and four and a half days at day 25, with 30 collapses, 11
+Stellar Echoes and twice the Stardust of the old rule. Two gentler Echo settings (cost x1.5 per
+level instead of x2; x1.6 production instead of x1.25) only pushed the old rule's wall back by
+about two days, so balance is unchanged. A new layer past Stellar Echoes is the post-launch item
+for players in their second month (added to the backlog).
+
 ### Backlog from research (best first)
-(empty: launch readiness first, then new ideas from research are added here)
+1. After launch: a layer past Stellar Echoes for players in their second month, when universes
+   start lasting four days or more (run 88).
