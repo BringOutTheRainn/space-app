@@ -846,5 +846,11 @@ pass the right edge (German 24 px instead of 26). The English one is byte-identi
 The first minutes in Spanish and Portuguese were clean, and performance with run 75's banner fitting
 is unchanged (Build about 20 fps with the CPU slowed 6x in headless software rendering).
 
+**Run 77. Save fuzz test in CI.** Run 73's fuzz check lived outside the repo, so a later change could
+quietly bring back a broken load. `tests/save-fuzz.test.js` now runs 2,000 damaged late-game saves on
+every `npm test` and CI run (about a second): each one must load or be refused as "not a save", then
+survive offline progress, five ticks and a reload with no balance negative, NaN or Infinity. Undoing
+run 73's fix makes it fail with the exact damaged fields, so it guards the right thing.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
