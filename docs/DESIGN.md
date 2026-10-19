@@ -819,5 +819,7 @@ switch saved as text falls back to on), and the number style must be one the gam
 empty settings give the defaults. A test covers it; the bad-save checks and a late-game random-tap
 session were clean.
 
+**Run 73: save fuzz test.** Fed 10,000 damaged late-game saves (1 to 3 fields set to junk) through load, offline progress, five ticks and a reload. Two real gaps: negative balances such as dark matter or crystals stayed negative on load, and an edited save with a huge echo count made production Infinity. Load now resets any top-level number below its default, and the production and tap totals are capped at the largest double. The fuzz run now ends with 0 failures, and a unit test covers both cases.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

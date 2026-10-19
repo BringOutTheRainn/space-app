@@ -25,7 +25,8 @@ type Migration = (raw: Record<string, unknown>) => void;
 const MIGRATIONS: Record<number, Migration> = {};
 
 /**
- * Puts back any top-level number that is not finite (NaN, Infinity or null)
+ * Puts back any top-level number that is not finite (NaN, Infinity or null),
+ * or is negative where it never can be,
  * with its starting value, so one bad value cannot break every later save.
  * Returns the names of the fields it fixed.
  */
@@ -34,7 +35,8 @@ export function repairNumbers(s: GameState, now = Date.now()): string[] {
   const st = s as unknown as Record<string, unknown>;
   const fixed: string[] = [];
   for (const k of Object.keys(base)) {
-    if (typeof base[k] === 'number' && !(typeof st[k] === 'number' && Number.isFinite(st[k]))) {
+    // No saved count, balance or clock is ever below its default (0, or -1 for "never").
+    if (typeof base[k] === 'number' && !(typeof st[k] === 'number' && Number.isFinite(st[k]) && st[k] >= Math.min(0, base[k] as number))) {
       st[k] = base[k];
       fixed.push(k);
     }

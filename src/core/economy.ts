@@ -68,6 +68,8 @@ export function relicLevel(s: GameState, id: string): number {
   return s.relics[id] ?? 0;
 }
 
+const cap = (x: number): number => (Number.isFinite(x) ? x : Number.MAX_VALUE);
+
 export function computeDerived(s: GameState, now = Date.now()): Derived {
   const n = GENERATORS.length;
   const genMult = new Array<number>(n).fill(1);
@@ -212,10 +214,13 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
   }
   const hyper = s.hyperEndsAt > now;
   if (hyper) prodBuff *= HYPER_MULT;
-  const sps = baseSps * prodBuff;
+  // A hand-edited save can push the multipliers past what a double holds;
+  // cap the totals so stardust stays a real number instead of Infinity.
+  baseSps = cap(baseSps);
+  const sps = cap(baseSps * prodBuff);
   // Taps get the flat drone bonus and a share of production, but not the
   // global multiplier directly (it reaches them through the SPS share).
-  const tap = noTaps ? 0 : ((1 * tapMult + flat) * relicTap + sps * tapSps) * tapBuff;
+  const tap = noTaps ? 0 : cap(((1 * tapMult + flat) * relicTap + sps * tapSps) * tapBuff);
 
   return {
     genSps, baseSps, sps, tap, globalMult, prodBuff, tapBuff, cometFreq, cometStay, cometEffect, offlineRate: Math.min(offlineRate, 1.5),

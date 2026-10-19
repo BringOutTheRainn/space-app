@@ -1488,3 +1488,16 @@ test("What's new lists only versions after the one a save last ran, and every li
   }
   assert.equal(deserialize(JSON.stringify({ ...newState(), versionSeen: 7 })).versionSeen, '');
 });
+
+test('damaged saves load without negative balances or infinite production', () => {
+  const s = newState(1000);
+  s.generators[0] = 10;
+  const raw = JSON.parse(serialize(s));
+  Object.assign(raw, { darkMatter: -5, crystals: -5, dailyLastDay: -1, echoes: 1e308 });
+  const t = deserialize(JSON.stringify(raw), 1000);
+  assert.equal(t.darkMatter, 0);
+  assert.equal(t.crystals, 0);
+  assert.equal(t.dailyLastDay, -1);
+  const d = computeDerived(t, 1000);
+  assert.ok(Number.isFinite(d.sps) && Number.isFinite(d.tap));
+});
