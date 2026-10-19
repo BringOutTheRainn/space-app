@@ -1,5 +1,7 @@
 // Plays the game with a simple greedy bot to check pacing.
 // Usage: node tools/simulate.mjs [hours] [tapsPerSecond]
+// SESSIONS=10,120 plays in sessions instead: 10 minutes on, then 120 minutes
+// away earning offline progress, and so on until [hours] of real time pass.
 import { newState } from '../www/js/core/state.js';
 import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgrades, upgradePrice, tick, tap, buyCosmic, cosmicAvailable, buyEcho } from '../www/js/core/economy.js';
 import { catchComet, cometDue, scheduleNextComet } from '../www/js/core/comets.js';
@@ -9,6 +11,7 @@ import { pendingDarkMatter, collapse } from '../www/js/core/prestige.js';
 import { GENERATORS } from '../www/js/data/generators.js';
 import { COSMIC } from '../www/js/data/cosmic.js';
 import { fmt, fmtTime } from '../www/js/core/format.js';
+import { applyOffline } from '../www/js/core/save.js';
 
 const hours = Number(process.argv[2] ?? 6);
 const tps = Number(process.argv[3] ?? 3);
@@ -61,10 +64,17 @@ function bestBuy() {
   return best;
 }
 
+const [playMin, awayMin] = (process.env.SESSIONS ?? '').split(',').map(Number);
+let sessionEnds = playMin * 60;
 let runStart = 0;
 const end = hours * 3600;
 const comets = { seen: 0, caught: 0 };
 while (s.time < end) {
+  if (playMin > 0 && s.time >= sessionEnds) {
+    s.lastSeen = 0;
+    applyOffline(s, d, awayMin * 60_000);
+    sessionEnds = s.time + playMin * 60;
+  }
   for (let i = 0; i < tps; i++) tap(s, d);
   if (tick(s, d, 1)) d = computeDerived(s);
   if (cometDue(s)) {
@@ -106,5 +116,6 @@ while (s.time < end) {
   }
 }
 console.log(marks.join('\n'));
-console.log(`\nAfter ${hours}h at ${tps} taps/s: ${fmt(s.earnedAll)} earned, ${fmt(d.baseSps)}/s, DM ${s.darkMatter}, ${Object.keys(s.upgrades).length} upgrades, ${Object.keys(s.achievements).length} achievements, comets ${comets.caught}/${comets.seen}`);
+const mode = playMin > 0 ? ` (${playMin} min sessions every ${playMin + awayMin} min)` : '';
+console.log(`\nAfter ${hours}h at ${tps} taps/s${mode}: ${fmt(s.earnedAll)} earned, ${fmt(d.baseSps)}/s, DM ${s.darkMatter}, ${Object.keys(s.upgrades).length} upgrades, ${Object.keys(s.achievements).length} achievements, comets ${comets.caught}/${comets.seen}`);
 console.log('Generators:', s.generators.join(' '));

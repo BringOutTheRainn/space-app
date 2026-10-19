@@ -819,7 +819,15 @@ switch saved as text falls back to on), and the number style must be one the gam
 empty settings give the defaults. A test covers it; the bad-save checks and a late-game random-tap
 session were clean.
 
-**Run 73: save fuzz test.** Fed 10,000 damaged late-game saves (1 to 3 fields set to junk) through load, offline progress, five ticks and a reload. Two real gaps: negative balances such as dark matter or crystals stayed negative on load, and an edited save with a huge echo count made production Infinity. Load now resets any top-level number below its default, and the production and tap totals are capped at the largest double. The fuzz run now ends with 0 failures, and a unit test covers both cases.
+**Run 73. Save fuzz test.** Fed 10,000 damaged late-game saves (1 to 3 fields set to junk) through load, offline progress, five ticks and a reload. Two real gaps: negative balances such as dark matter or crystals stayed negative on load, and an edited save with a huge echo count made production Infinity. Load now resets any top-level number below its default, and the production and tap totals are capped at the largest double. The fuzz run now ends with 0 failures, and a unit test covers both cases.
+
+**Run 74. Pacing for players who come and go.** `tools/simulate.mjs` only modelled non-stop play,
+which no real player does. `SESSIONS=10,110` now plays 10 minutes, then earns offline progress for
+the rest of the gap. Non-stop play is unchanged by run 73's production cap (first collapse 3h 54m,
+and 5h 4m at half a tap per second). Ten minutes every two hours reaches the first Dark Matter at
+10h and the first collapse at 1d 6h; ten minutes every four hours gets there on day 2. The bot skips
+daily rewards, the wheel, ad boosts, crystals and the garden, so real players are faster than this.
+That fits the genre (Egg, Inc.'s first prestige usually lands on day 1 or 2), so balance is unchanged.
 
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
