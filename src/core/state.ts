@@ -15,6 +15,14 @@ export const SAVE_VERSION = 1;
 
 export type BuffKind = 'rush' | 'supernova' | 'well' | 'horizon' | 'frenzy';
 
+/** One finished universe, newest first in GameState.pastRuns. */
+export interface PastRun {
+  /** Dark Matter the collapse gave. */
+  dm: number;
+  /** Seconds the universe lasted on the game clock (offline time included). */
+  secs: number;
+}
+
 export interface Buff {
   kind: BuffKind;
   /** Game-clock second the buff ends. */
@@ -74,6 +82,8 @@ export interface GameState {
   /** App version this save last ran on, for the one-time "What's new" window; '' before any. */
   versionSeen: string;
   collapses: number;
+  /** The last universes collapsed, newest first (up to PAST_RUNS_KEPT). */
+  pastRuns: PastRun[];
   cometsRun: number;
   cometsAll: number;
   buffs: Buff[];
@@ -197,6 +207,7 @@ export function newState(now = Date.now()): GameState {
     comebackAt: 0,
     versionSeen: '',
     collapses: 0,
+    pastRuns: [],
     cometsRun: 0,
     cometsAll: 0,
     buffs: [],

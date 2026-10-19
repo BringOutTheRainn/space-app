@@ -67,6 +67,7 @@ function repairShapes(s: GameState, base: GameState): void {
   s.buffs = s.buffs.filter((x) => isRecord(x) && typeof x.kind === 'string' && Number.isFinite(x.endsAt));
   s.expeditions = s.expeditions.filter((x) => isRecord(x) && typeof x.id === 'string' && Number.isFinite(x.returnsAt));
   s.missions = s.missions.filter((x) => isRecord(x));
+  s.pastRuns = s.pastRuns.filter((x) => isRecord(x) && Number.isFinite(x.dm) && x.dm >= 0 && Number.isFinite(x.secs) && x.secs >= 0).slice(0, 10);
 }
 
 /** The first readable save among the main copy and the backup, or null. */

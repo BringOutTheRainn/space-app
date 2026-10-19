@@ -865,5 +865,14 @@ screens. `tools/ui-save-fuzz.mjs` writes a damaged late-game save (1 to 3 fields
 the browser's storage, starts the game, then opens every tab, Stats, Settings and the Shop. 180 saves
 over two seeds gave no page errors and every game started with a valid Stardust balance.
 
+**Run 80. Recent universes.** Antimatter Dimensions' "past runs" list is one of its best-loved
+screens: it shows each reset coming faster and paying more, which is the whole point of prestige.
+Collapses now record the Dark Matter gained and how long the universe lasted on the game clock
+(offline time included), newest first, up to 10 (`pastRuns`; old saves start empty, and damaged
+entries are dropped on load). Stats ends with a "Recent universes" table: universe number, how long
+it lasted, Dark Matter gained and Dark Matter per hour. Translated in all five languages; on a 360 px
+phone the German and French headers wrap onto two lines while the numbers stay on one. A unit test
+covers the order, the cap of 10 and the repair of bad entries.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

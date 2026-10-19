@@ -85,8 +85,17 @@ export function openStats(ctx: Ctx): void {
     ];
     const gens = GENERATORS.map((g, i) => s.generators[i]
       ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${fmtRate(d.genSps[i])}/s</td></tr>` : '').join('');
+    const perHour = (r: { dm: number; secs: number }): string => {
+      if (r.secs <= 0) return '-';
+      const rate = (r.dm * 3600) / r.secs;
+      return rate < 100 ? fmtDec(rate) : fmt(rate);
+    };
+    // The last universes, so players can see each collapse coming faster and paying more.
+    const runs = s.pastRuns.map((r, i) => `<tr><td>${t('Universe {n}', { n: s.collapses - i })}</td><td>${fmtTime(r.secs)}</td>`
+      + `<td>+${fmt(r.dm)}</td><td>${perHour(r)}</td></tr>`).join('');
     return `<table class="stats">${rows.map(([k, v]) => `<tr><td>${k}</td><td colspan="2">${v}</td></tr>`).join('')}</table>
-      ${gens ? `<h3 class="section-title">${t('Generators')}</h3><table class="stats">${gens}</table>` : ''}`;
+      ${gens ? `<h3 class="section-title">${t('Generators')}</h3><table class="stats">${gens}</table>` : ''}
+      ${runs ? `<h3 class="section-title">${t('Recent universes')}</h3><table class="stats past-runs"><tr><th></th><th>${t('Lasted')}</th><th>${t('Dark Matter')}</th><th>${t('Per hour')}</th></tr>${runs}</table>` : ''}`;
   };
   const el = openModal({
     title: t('Stats'), body: render(), wide: true, onClose: () => clearInterval(timer),

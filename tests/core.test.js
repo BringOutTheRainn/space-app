@@ -1501,3 +1501,18 @@ test('damaged saves load without negative balances or infinite production', () =
   const d = computeDerived(t, 1000);
   assert.ok(Number.isFinite(d.sps) && Number.isFinite(d.tap));
 });
+
+test('collapses are remembered, newest first, up to ten', () => {
+  const s = newState(0);
+  for (let i = 0; i < 12; i++) {
+    s.earnedRun = 1e15 * (i + 1); s.earnedAll += s.earnedRun; s.time += 3600 * (i + 1);
+    collapse(s, computeDerived(s, 0), 0);
+  }
+  assert.equal(s.pastRuns.length, 10);
+  assert.equal(s.pastRuns[9].secs, 3600 * 3);
+  assert.ok(s.pastRuns.every((r) => r.dm >= 1));
+  assert.equal(s.pastRuns[0].secs, 3600 * 12);
+  const raw = JSON.parse(serialize(s));
+  raw.pastRuns = [{ dm: 5, secs: 60 }, { dm: 'x' }, null, { dm: -1, secs: 5 }];
+  assert.deepEqual(deserialize(JSON.stringify(raw), 0).pastRuns, [{ dm: 5, secs: 60 }]);
+});

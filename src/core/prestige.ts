@@ -38,6 +38,9 @@ export function starterGenerators(s: GameState): number[] {
 }
 
 /** Collapse the universe. Returns the Dark Matter gained. */
+/** How many finished universes Stats lists. */
+export const PAST_RUNS_KEPT = 10;
+
 export function collapse(s: GameState, d: Derived, now = Date.now()): number {
   if (pendingDarkMatter(s) < 1) return 0;
   // Goods are priced from production, so sell them while it is high. Profit counts toward Dark Matter.
@@ -45,6 +48,7 @@ export function collapse(s: GameState, d: Derived, now = Date.now()): number {
   const gained = pendingDarkMatter(s);
   s.darkMatter += gained;
   s.collapses++;
+  s.pastRuns = [{ dm: gained, secs: Math.max(0, s.time - s.runStartClock) }, ...s.pastRuns].slice(0, PAST_RUNS_KEPT);
   resetRun(s, d, now);
   s.anomaly = null;
   return gained;

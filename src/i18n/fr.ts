@@ -624,4 +624,8 @@ export const FR: Record<string, string> = {
   "A rating on Google Play helps other players find the game. It only takes a moment.": "Une note sur Google Play aide d'autres joueurs à trouver le jeu. Cela ne prend qu'un instant.",
   "Not now": "Pas maintenant",
   "Don't ask again": "Ne plus demander",
+  "Recent universes": "Univers récents",
+  "Universe {n}": "Univers {n}",
+  "Lasted": "Durée",
+  "Per hour": "Par heure",
 };
