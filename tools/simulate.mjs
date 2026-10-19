@@ -7,7 +7,7 @@ import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgr
 import { catchComet, cometDue, scheduleNextComet } from '../www/js/core/comets.js';
 import { checkAchievements } from '../www/js/core/achievements.js';
 import { checkAnomaly } from '../www/js/core/anomalies.js';
-import { pendingDarkMatter, collapse } from '../www/js/core/prestige.js';
+import { pendingDarkMatter, collapse, pastPeak, sampleRunPeak } from '../www/js/core/prestige.js';
 import { GENERATORS } from '../www/js/data/generators.js';
 import { COSMIC } from '../www/js/data/cosmic.js';
 import { fmt, fmtTime } from '../www/js/core/format.js';
@@ -66,7 +66,7 @@ function bestBuy() {
 
 const [playMin, awayMin] = (process.env.SESSIONS ?? '').split(',').map(Number);
 let sessionEnds = playMin * 60;
-let peakRate = 0;
+let lastSample = 0;
 let runStart = 0;
 const end = hours * 3600;
 const comets = { seen: 0, caught: 0 };
@@ -101,17 +101,15 @@ while (s.time < end) {
   const pending = pendingDarkMatter(s);
   once('dm1', pending >= 1, 'first Dark Matter available');
   // Collapse when it would at least double Dark Matter (and at least 10 on the first one).
-  // PEAK=1 instead collapses once Dark Matter per hour this run has passed its peak, as the
-  // Cosmos card's per-hour line teaches.
+  // PEAK=1 instead collapses when the game's own nudge says so (Dark Matter per hour past its
+  // peak, see pastPeak in prestige.ts), sampled once a second as the game does.
   const want = Math.max(10, s.darkMatter);
   let go = pending >= want;
-  if (process.env.PEAK && pending >= 10 && s.collapses > 0) {
-    const rate = pending / Math.max(1, s.time - runStart);
-    peakRate = Math.max(peakRate, rate);
-    go = rate < peakRate * 0.95 && pending >= s.darkMatter * 0.25;
+  if (process.env.PEAK && s.collapses > 0) {
+    if (s.time - lastSample >= 1) { sampleRunPeak(s); lastSample = s.time; }
+    go = pastPeak(s);
   }
   if (go) {
-    peakRate = 0;
     mark(`collapse #${s.collapses + 1}: +${pending} Dark Matter (run took ${fmtTime(s.time - runStart)}, ${Object.keys(s.achievements).length} achievements)`);
     collapse(s, d, 0);
     let bought = true;

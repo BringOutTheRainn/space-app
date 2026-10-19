@@ -957,6 +957,12 @@ anomaly, which has its own goal. Translated into all four languages. Adding the 
 save fuzz test's random paths and exposed a bug in the test itself: shared junk objects could be
 nested inside themselves. Each junk value is now cloned.
 
+**Run 90. The simulator uses the game's own nudge.** PEAK=1 in tools/simulate.mjs now calls
+sampleRunPeak and pastPeak from prestige.ts (sampled once a second during play, as the game does)
+instead of its own copy of the rule, so the month-long check tests the shipped code. The month
+came out identical to run 88: 30 collapses, universes under a day in week 1, one to two and a
+half days in weeks 2 and 3, four and a half days at day 25.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
