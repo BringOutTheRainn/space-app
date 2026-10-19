@@ -15,10 +15,14 @@ export function setNumberStyle(s: NumberStyle): void {
 // Brazil, France and Germany write 2,5 for two and a half.
 let locale = 'en-US';
 let comma = false;
+// Hours, minutes and seconds are the same symbols everywhere; the day is "j" (jour) in French and
+// "T" (Tag) in German.
+let dayUnit = 'd';
 
 export function setNumberLocale(tag: string): void {
   locale = tag;
   comma = tag.startsWith('pt') || tag.startsWith('fr') || tag.startsWith('de');
+  dayUnit = tag.startsWith('fr') ? 'j' : tag.startsWith('de') ? 'T' : 'd';
 }
 
 function mark(text: string): string {
@@ -81,7 +85,7 @@ export function fmtTime(seconds: number): string {
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (d > 0) return `${d}d ${h}h`;
+  if (d > 0) return `${d}${dayUnit} ${h}h`;
   if (h > 0) return `${h}h ${m}m`;
   if (m > 0) return `${m}m ${s.toString().padStart(2, '0')}s`;
   return `${s}s`;

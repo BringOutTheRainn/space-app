@@ -1,7 +1,7 @@
 // Game rule tests. Run with `npm test` (compiles first) or `node --test tests/`.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, fmtTime, fmtPercent, setNumberStyle } from '../www/js/core/format.js';
+import { fmt, fmtTime, fmtPercent, setNumberStyle, setNumberLocale } from '../www/js/core/format.js';
 import { newState } from '../www/js/core/state.js';
 import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic, buyAllUpgrades, affordableUpgradeCount, upgradePrice } from '../www/js/core/economy.js';
 import { catchComet, scheduleNextComet, cometDue } from '../www/js/core/comets.js';
@@ -37,6 +37,9 @@ test('formats numbers', () => {
   assert.equal(fmtTime(125), '2m 05s');
   assert.equal(fmtTime(3 * 3600 + 120), '3h 2m');
   assert.equal(fmtTime(90000), '1d 1h');
+  setNumberLocale('fr-FR'); assert.equal(fmtTime(90000), '1j 1h');
+  setNumberLocale('de-DE'); assert.equal(fmtTime(90000), '1T 1h'); assert.equal(fmtTime(125), '2m 05s');
+  setNumberLocale('en-US'); assert.equal(fmtTime(90000), '1d 1h');
   assert.equal(fmtPercent(0.0001), '<0.1%');
   assert.equal(fmtPercent(0.25), '25%');
 });

@@ -793,5 +793,11 @@ those rows now wrap instead. French also gets a no-break space before %, so "+10
 across lines. Housekeeping: stray scan screenshots that slipped into two earlier commits are removed
 and ignored.
 
+**Run 69. Day unit, and a performance re-check.** Countdowns such as "2d 23h" now use the
+local day letter: "2j 23h" in French (jour) and "2T 23h" in German (Tag); hours, minutes and seconds
+are the same symbols everywhere. Covered by the format test. Performance with a late-game save and the
+CPU slowed 6x is unchanged after the French and German work and the layout fixes (Build about 20 fps
+and Upgrades 60 fps in headless software rendering, as in run 61).
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
