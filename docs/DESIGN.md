@@ -860,5 +860,10 @@ achievements. Nothing stalls and nothing runs away, so balance is unchanged. The
 no tapping at all still reach the first Dark Matter at 12h and the first collapse at 1d 22h, so a
 player who cannot tap quickly (or at all) can play the whole loop on generators and comets.
 
+**Run 79. Damaged saves in the real game.** Run 77's test covers the game rules; this checks the
+screens. `tools/ui-save-fuzz.mjs` writes a damaged late-game save (1 to 3 fields set to junk) into
+the browser's storage, starts the game, then opens every tab, Stats, Settings and the Shop. 180 saves
+over two seeds gave no page errors and every game started with a valid Stardust balance.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)
