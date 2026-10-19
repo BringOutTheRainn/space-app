@@ -629,4 +629,5 @@ export const FR: Record<string, string> = {
   "Lasted": "Durée",
   "Per hour": "Par heure",
   "This universe: {now} Dark Matter per hour. Last one: {last}.": "Cet univers : {now} de Matière noire par heure. Le précédent : {last}.",
+  "Past its best rate: a good time to collapse.": "Son meilleur rythme est passé : bon moment pour l'effondrer.",
 };

@@ -27,7 +27,7 @@ test('damaged saves load and play without broken numbers', () => {
       let t = o;
       for (const k of p.slice(0, -1)) { if (!t || typeof t !== 'object') break; t = t[k]; }
       if (!t || typeof t !== 'object') continue;
-      const junk = JUNK[Math.floor(rnd() * JUNK.length)];
+      const junk = structuredClone(JUNK[Math.floor(rnd() * JUNK.length)]);
       t[p[p.length - 1]] = junk;
       hits.push(p.join('.') + '=' + JSON.stringify(junk));
     }

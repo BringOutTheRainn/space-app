@@ -945,6 +945,18 @@ level instead of x2; x1.6 production instead of x1.25) only pushed the old rule'
 about two days, so balance is unchanged. A new layer past Stellar Echoes is the post-launch item
 for players in their second month (added to the backlog).
 
+**Run 89. "A good time to collapse."** Run 88 showed that collapsing once Dark Matter per hour
+has passed its peak keeps universes short all month, while waiting to double Dark Matter hits a
+wall by week 3. The game now tells players when that moment comes. Each universe remembers its best
+Dark Matter per hour (sampled every second, saved, reset on collapse). Once the current rate falls
+under 95% of that best and the collapse is worth at least a quarter of the Dark Matter already
+owned, the Cosmos card shows a gold "Past its best rate: a good time to collapse." line, the
+Collapse button gets a gold ring and the Cosmos tab gets its dot. This is the same rule as the
+simulator's PEAK=1. It is not shown before the first collapse, which has its own hint, or during an
+anomaly, which has its own goal. Translated into all four languages. Adding the field shifted the
+save fuzz test's random paths and exposed a bug in the test itself: shared junk objects could be
+nested inside themselves. Each junk value is now cloned.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

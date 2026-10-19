@@ -1555,3 +1555,25 @@ test('short numbers inside text are read in words', async () => {
   assert.equal(spokenShortText('+12,4T Sternenstaub'), '+12,4 Billionen Sternenstaub');
   setNumberLocale('en-US');
 });
+
+test('the collapse nudge waits for Dark Matter per hour to pass its peak', async () => {
+  const { pastPeak, sampleRunPeak, pendingDarkMatter, collapse } = await import('../www/js/core/prestige.js');
+  const s = newState(0);
+  s.collapses = 2; s.darkMatter = 40; s.time = 3600; s.runStartClock = 0;
+  s.earnedRun = 1e15; s.earnedAll = 1e18;
+  const p = pendingDarkMatter(s);
+  assert.ok(p >= 10, `pending ${p}`);
+  sampleRunPeak(s);
+  assert.equal(pastPeak(s), false, 'at the peak itself');
+  s.time = 3 * 3600; // same Dark Matter, three times as long: the rate fell
+  sampleRunPeak(s);
+  assert.equal(pastPeak(s), true);
+  s.anomaly = 'drought';
+  assert.equal(pastPeak(s), false, 'not during an anomaly');
+  s.anomaly = null;
+  s.collapses = 0;
+  assert.equal(pastPeak(s), false, 'not before the first collapse');
+  s.collapses = 2;
+  collapse(s, computeDerived(s), 0);
+  assert.equal(s.runPeakRate, 0, 'reset by a collapse');
+});

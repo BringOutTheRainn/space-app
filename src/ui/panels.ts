@@ -13,7 +13,7 @@ import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgr
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
 import { fmt, fmtDec, fmtPercent, fmtPercentSpoken, fmtRateSmall, fmtSpoken, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
-import { canCollapse, collapse, collapseGain, darkMatterPct, darkMatterPerHour, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
+import { canCollapse, collapse, collapseGain, darkMatterPct, darkMatterPerHour, DM_SCALE, earningsForNextDarkMatter, pastPeak, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
@@ -232,6 +232,7 @@ export class CosmosPanel implements Panel {
         <div class="bar"><div class="bar-fill" id="dm-bar"></div></div>
         <div class="collapse-note" id="dm-next"></div>
         <div class="collapse-note" id="dm-rate" hidden></div>
+        <div class="collapse-note peak" id="dm-peak" hidden>${t('Past its best rate: a good time to collapse.')}</div>
         <button class="btn btn-cosmic btn-wide" id="btn-collapse">${t('Collapse the Universe')}</button>
       </div>
       <div id="anomalies"></div>
@@ -294,8 +295,11 @@ export class CosmosPanel implements Panel {
       });
       setSpoken(rateEl, rateLine(fmtRateSmall), () => rateLine((n) => (n < 100 ? fmtRateSmall(n) : fmtSpoken(n))));
     }
+    const peak = pastPeak(s);
+    setHidden($('#dm-peak', this.root), !peak);
     const btn = $('#btn-collapse', this.root) as HTMLButtonElement;
     btn.disabled = !canCollapse(s);
+    toggleClass(btn, 'ready', peak);
 
     const key = Object.keys(s.cosmic).join(',') + '|' + darkMatterAvailable(s) + '|' + s.anomaly + Object.keys(s.anomaliesDone).join(',');
     if (key !== this.treeKey) {

@@ -10,7 +10,7 @@ import { dailyReady } from './core/daily.js';
 import { freeSpinReady } from './core/wheel.js';
 import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
 import { fmt, fmtRate, fmtSpoken, fmtTime } from './core/format.js';
-import { canCollapse } from './core/prestige.js';
+import { canCollapse, pastPeak, sampleRunPeak } from './core/prestige.js';
 import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
 import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
@@ -399,7 +399,8 @@ function start(): void {
     setHidden(probeTab, !d.expeditions);
     toggleClass(document.querySelector('[data-tab="cosmos"]')!, 'locked', !cosmosUnlocked(ctx));
     badge('upgrades', !d.noUpgrades && availableUpgrades(s).some((u) => upgradePrice(d, u) <= s.stardust));
-    badge('cosmos', canCollapse(s) && s.collapses === 0);
+    sampleRunPeak(s);
+    badge('cosmos', canCollapse(s) && (s.collapses === 0 || pastPeak(s)));
     if (activeTab === 'trophies') s.trophiesSeen = achievementCount(s);
     badge('trophies', achievementCount(s) > s.trophiesSeen);
     badge('probes', s.expeditions.some((e) => e.returnsAt <= Date.now()) || (d.expeditions && s.expeditions.length < d.expeditionSlots));

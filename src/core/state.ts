@@ -96,6 +96,8 @@ export interface GameState {
   runStartedAt: number;
   /** Game-clock second this universe began. */
   runStartClock: number;
+  /** Best Dark Matter per hour seen this universe, for the "good time to collapse" nudge. */
+  runPeakRate: number;
   lastSeen: number;
   highestSps: number;
   offlineEarnedAll: number;
@@ -217,6 +219,7 @@ export function newState(now = Date.now()): GameState {
     startedAt: now,
     runStartedAt: now,
     runStartClock: 0,
+    runPeakRate: 0,
     lastSeen: now,
     highestSps: 0,
     offlineEarnedAll: 0,
