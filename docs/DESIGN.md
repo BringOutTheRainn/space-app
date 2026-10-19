@@ -813,5 +813,11 @@ falls back to the phone's language, then English. A test covers it, and a Playwr
 saves with an unknown language, a bad number style, missing or empty settings and a wrong-typed sound
 switch: the game starts in every case (the unknown language crashed before the fix).
 
+**Run 72. Settings cleaned on load.** Following run 71, every saved setting is now checked when a
+save loads: only known settings are kept, each must have the same type as its default (a sound
+switch saved as text falls back to on), and the number style must be one the game knows. Missing or
+empty settings give the defaults. A test covers it; the bad-save checks and a late-game random-tap
+session were clean.
+
 ### Backlog from research (best first)
 (empty: launch readiness first, then new ideas from research are added here)

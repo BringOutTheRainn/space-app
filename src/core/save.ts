@@ -6,6 +6,9 @@ import { EVENT_GENS } from './event.js';
 import { seedById, type Plot } from './garden.js';
 import { GOODS, HISTORY } from './market.js';
 import { newState, SAVE_VERSION, type GameState } from './state.js';
+import type { NumberStyle } from './format.js';
+
+const NUMBER_STYLES: NumberStyle[] = ['short', 'scientific'];
 
 export const SAVE_KEY = 'stardust-empire-save';
 /** A second copy, refreshed every few minutes, used if the main save is unreadable. */
@@ -92,7 +95,12 @@ export function deserialize(text: string, now = Date.now()): GameState {
   const base = newState(now);
   const s = { ...base, ...raw, version: SAVE_VERSION } as GameState;
   repairShapes(s, base);
-  s.settings = { ...base.settings, ...(raw.settings as object) };
+  // Settings keep only known keys, each with the type of its default; a wrong value falls back to it.
+  const rawSettings = (raw.settings && typeof raw.settings === 'object' ? raw.settings : {}) as Record<string, unknown>;
+  const settings = { ...base.settings } as Record<string, unknown>;
+  for (const [k, def] of Object.entries(base.settings)) if (typeof rawSettings[k] === typeof def) settings[k] = rawSettings[k];
+  if (!NUMBER_STYLES.includes(settings.numberStyle as NumberStyle)) settings.numberStyle = base.settings.numberStyle;
+  s.settings = settings as unknown as GameState['settings'];
   s.echoes = Math.max(0, Math.floor(Number(s.echoes) || 0));
   s.comebackAt = Math.max(0, Number(s.comebackAt) || 0);
   s.versionSeen = typeof s.versionSeen === 'string' ? s.versionSeen : '';

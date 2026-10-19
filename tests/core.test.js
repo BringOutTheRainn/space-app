@@ -252,6 +252,22 @@ test('save round trip and migration of missing fields', () => {
   assert.throws(() => importSave('not base64!!'));
 });
 
+test('saved settings keep their types and fall back on bad values', () => {
+  const s = newState(1000);
+  const raw = JSON.parse(serialize(s));
+  raw.settings = { sound: 'yes', music: false, numberStyle: 'weird', lang: 'de', extra: 1 };
+  const back = deserialize(JSON.stringify(raw));
+  assert.equal(back.settings.sound, true, 'wrong type falls back to the default');
+  assert.equal(back.settings.music, false);
+  assert.equal(back.settings.numberStyle, 'short');
+  assert.equal(back.settings.lang, 'de');
+  assert.ok(!('extra' in back.settings));
+  for (const bad of [null, 'x', 5]) {
+    raw.settings = bad;
+    assert.deepEqual(deserialize(JSON.stringify(raw)).settings, s.settings);
+  }
+});
+
 test('offline earnings are capped and reduced', () => {
   const s = newState(0);
   s.generators[1] = 10;
