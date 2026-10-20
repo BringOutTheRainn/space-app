@@ -970,6 +970,14 @@ hidden "(something new)" that is read with the tab's name only while the dot sho
 (something new)"), and the Hyperdrive button's label becomes "Hyperdrive, Spin free" while its
 dot shows. Translated into all four languages.
 
+**Run 92. Release check after runs 84 to 91.** The regression set again, with everything since
+run 83 in: 77 unit tests, five random-tap sessions of 400 taps (one per language, two from a late
+game) with no errors and saves that reload, 60 damaged saves in the browser with no errors, no
+contrast failures, and the soak test back to 6,474 DOM nodes with no toasts left and a 3.2 MB heap.
+Frame times on a 6x slowed CPU match a build of run 83 measured side by side on the same machine,
+so the screen reader work added no cost. The collapse nudge shows in English, Spanish, French and
+German with the Cosmos dot lit. No game code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
