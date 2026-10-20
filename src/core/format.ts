@@ -144,11 +144,13 @@ export function fmtTime(seconds: number): string {
 
 /** A percentage for screen readers: "+200 thousand%" where the screen shows "+200K%". */
 export function fmtPercentSpoken(fraction: number): string {
-  return fraction * 100 >= 1000 ? fmtSpoken(fraction * 100) + '%' : fmtPercent(fraction);
+  return fraction * 100 >= 1e6 ? fmtSpoken(fraction * 100) + '%' : fmtPercent(fraction);
 }
 
 export function fmtPercent(fraction: number): string {
   const pct = fraction * 100;
   if (pct > 0 && pct < 0.1) return mark('<0.1%');
+  // Bonuses past 1,000% read as whole numbers ("+1,930%"), not "+1.93K%".
+  if (pct >= 1000 && pct < 1e6) return Math.floor(pct).toLocaleString(locale) + '%';
   return (pct >= 100 ? fmt(pct) : mark(trimFixed(pct, 1))) + '%';
 }

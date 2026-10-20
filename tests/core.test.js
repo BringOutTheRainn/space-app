@@ -42,6 +42,9 @@ test('formats numbers', () => {
   setNumberLocale('en-US'); assert.equal(fmtTime(90000), '1d 1h');
   assert.equal(fmtPercent(0.0001), '<0.1%');
   assert.equal(fmtPercent(0.25), '25%');
+  assert.equal(fmtPercent(19.3), '1,930%');
+  assert.equal(fmtPercent(1.2), '120%');
+  assert.equal(fmtPercent(25000), '2.5M%');
 });
 
 test('every id is unique', () => {
@@ -1399,6 +1402,7 @@ test('Portuguese writes decimals with a comma and thousands with a dot; English 
     assert.equal(fmt(2500), '2,5K');
     assert.equal(fmt(1.23e9), '1,23B');
     assert.equal(fmtPercent(0.025), '2,5%');
+    assert.equal(fmtPercent(19.3), '1.930%');
     assert.equal(fmtDec(3.25, 2), '3,25');
     assert.equal(fmtLong(12345), '12.345');
     setLanguage('es');

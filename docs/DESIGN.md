@@ -978,6 +978,12 @@ Frame times on a 6x slowed CPU match a build of run 83 measured side by side on 
 so the screen reader work added no cost. The collapse nudge shows in English, Spanish, French and
 German with the Cosmos dot lit. No game code changed.
 
+**Run 93. Big bonuses as whole numbers.** The collapse card showed late-game bonuses as
+"+1.93K%", a short form meant for Stardust that reads oddly on a percentage. Percentages from
+1,000% up to a million now show as whole numbers in the phone's own format ("+1,930%" in English,
+"+1 930%" in French, "+1.930%" in German and Portuguese), and only past a million fall back to the
+short form. Screen readers hear them as plain numbers too.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
