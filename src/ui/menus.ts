@@ -300,6 +300,8 @@ function awayRows(r: AwayReport): string {
   }
   if (r.flux >= 1) rows.push(['rift', t('+{n} event Flux', { n: fmt(r.flux) })]);
   if (r.vaultHours >= 1) rows.push(['darkMatter', t('Stardust Vault: {n} hours saved', { n: fmtDec(r.vaultHours) })]);
+  // Last, as the one line that suggests a next step rather than reporting loot.
+  if (r.collapseHint) rows.push(['cosmos', t('Past its best rate: a good time to collapse.')]);
   if (!rows.length) return '';
   return `<ul class="away-list">${rows.map(([ico, text]) => `<li>${icon(ico)}<span>${esc(text)}</span></li>`).join('')}</ul>`;
 }

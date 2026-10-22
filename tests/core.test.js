@@ -1179,7 +1179,7 @@ test('the welcome-back report lists what each system did while away', async () =
   const t0 = Date.UTC(2026, 9, 13, 12);
   const s = newState(t0);
   const quiet = awayReport(s, t0);
-  assert.deepEqual([quiet.crystals, quiet.probes, quiet.plants, quiet.forgeFull, quiet.flux, quiet.marketPL], [0, 0, 0, false, 0, null]);
+  assert.deepEqual([quiet.crystals, quiet.probes, quiet.plants, quiet.forgeFull, quiet.flux, quiet.marketPL, quiet.collapseHint], [0, 0, 0, false, 0, null, false]);
 
   s.earnedAll = 2e9;
   s.crystalNextAt = t0 + 1000;

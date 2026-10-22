@@ -1083,6 +1083,11 @@ dez elevado a"), both in templates and in text the number watcher finds. Unit te
 German and Portuguese; in Playwright, Stats with scientific numbers reads that way in English and
 German, and a late-game random-tap session was clean.
 
+### Run 106: Collapse hint when you come back
+
+- The welcome-back window now adds "Past its best rate: a good time to collapse." when the universe peaked while the player was away (`AwayReport.collapseHint`, from `pastPeak`). It reuses the existing translated line, so all five languages have it.
+- Checked in Playwright with a 3-hour absence: the line shows with a peaked run and stays away without one. No page errors; a 400-step random-tap session was clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

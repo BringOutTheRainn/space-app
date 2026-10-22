@@ -6,6 +6,7 @@ import { currentEvent } from './event.js';
 import { forgeUnlocked, maxHeat, syncHeat } from './forge.js';
 import { readyPlots } from './garden.js';
 import { syncMarket } from './market.js';
+import { pastPeak } from './prestige.js';
 import { fillVault } from './shop.js';
 import { AD_CONFIG } from '../data/ads.js';
 
@@ -26,6 +27,8 @@ export interface AwayReport {
   marketPL: number | null;
   /** Minutes of free Hyperdrive given as a comeback gift; 0 when none. */
   giftMinutes: number;
+  /** This universe's Dark Matter per hour peaked while the player was away (the Cosmos tab's nudge). */
+  collapseHint: boolean;
 }
 
 /** A player gone this long gets a comeback gift. */
@@ -77,6 +80,7 @@ export function awayReport(s: GameState, now = Date.now(), awaySeconds = 0): Awa
     flux: Math.max(0, flux),
     vaultHours: s.vaultHours > vaultBefore ? s.vaultHours : 0,
     giftMinutes,
+    collapseHint: pastPeak(s),
     marketPL: held.length ? held.reduce((sum, g) => sum + (g.price - g.avg) * g.held, 0) : null,
   };
 }
