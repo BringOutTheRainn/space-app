@@ -1544,7 +1544,17 @@ test('screen readers get big numbers in words', async () => {
   assert.equal(fmtSpoken(1.441e16), '14.41 quadrillion');
   setNumberLocale('de-DE');
   assert.equal(fmtSpoken(1.441e13), '14,41 Billionen');
-  assert.match(fmtSpoken(3.2e21), /^3,2E21$/);
+  assert.equal(fmtSpoken(3.2e21), '3,2 Trilliarden');
+  assert.equal(fmtSpoken(3e17), '300 Billiarden');
+  assert.equal(fmtSpoken(1e18), '1 Trillion');
+  setNumberLocale('fr-FR');
+  assert.equal(fmtSpoken(2.5e24), '2,5 quadrillions');
+  setNumberLocale('es-419');
+  assert.equal(fmtSpoken(1e18), '1 trillón');
+  assert.equal(fmtSpoken(4e21), '4 mil trillones');
+  setNumberLocale('pt-BR');
+  assert.equal(fmtSpoken(9e18), '9 quintilhões');
+  assert.equal(fmtSpoken(1e63), '1 vigintilhão');
   setNumberStyle('scientific');
   assert.equal(fmtSpoken(1.441e16), fmt(1.441e16));
   setNumberStyle('short');

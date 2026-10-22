@@ -71,9 +71,29 @@ function fmtRaw(n: number, decimalsUnder1000: number): string {
   return text + SHORT[tier];
 }
 
+// Number words from 10^15 up, where Intl's compact form runs out ("300.000 Billionen") and its
+// scientific form is read as "3 E 21". Index is the power of 1000. German, French and Spanish count
+// in the long scale (Billion = 10^12); Brazilian Portuguese in the short scale (bilhão = 10^9).
+// Each entry is [one, many]; Spanish says 10^(6n+3) as "mil" plus the plural of the step below.
+const LONG_SCALE: Record<string, Array<[string, string]>> = {
+  de: ['Billiarde', 'Trillion', 'Trilliarde', 'Quadrillion', 'Quadrilliarde', 'Quintillion', 'Quintilliarde', 'Sextillion', 'Sextilliarde', 'Septillion', 'Septilliarde', 'Oktillion', 'Oktilliarde', 'Nonillion', 'Nonilliarde', 'Dezillion', 'Dezilliarde']
+    .map((w) => [w, w.endsWith('e') ? w + 'n' : w + 'en']),
+  fr: ['billiard', 'trillion', 'trilliard', 'quadrillion', 'quadrilliard', 'quintillion', 'quintilliard', 'sextillion', 'sextilliard', 'septillion', 'septilliard', 'octillion', 'octilliard', 'nonillion', 'nonilliard', 'décillion', 'décilliard']
+    .map((w) => [w, w + 's']),
+  es: [
+    ['mil billones', 'mil billones'], ['trillón', 'trillones'], ['mil trillones', 'mil trillones'], ['cuatrillón', 'cuatrillones'],
+    ['mil cuatrillones', 'mil cuatrillones'], ['quintillón', 'quintillones'], ['mil quintillones', 'mil quintillones'],
+    ['sextillón', 'sextillones'], ['mil sextillones', 'mil sextillones'], ['septillón', 'septillones'],
+    ['mil septillones', 'mil septillones'], ['octillón', 'octillones'], ['mil octillones', 'mil octillones'],
+    ['nonillón', 'nonillones'], ['mil nonillones', 'mil nonillones'], ['decillón', 'decillones'], ['mil decillones', 'mil decillones'],
+  ],
+  pt: ['quatrilhão', 'quintilhão', 'sextilhão', 'septilhão', 'octilhão', 'nonilhão', 'decilhão', 'undecilhão', 'duodecilhão', 'tredecilhão', 'quatuordecilhão', 'quindecilhão', 'sexdecilhão', 'septendecilhão', 'octodecilhão', 'novendecilhão', 'vigintilhão']
+    .map((w) => [w, w.replace(/ão$/, 'ões')]),
+};
+
 /**
  * The same number for screen readers, which read "14.41Qa" letter by letter: "14.41 quadrillion" in
- * English, and the local word ("14,41 Billionen") elsewhere up to 10^18, then scientific.
+ * English, and the local word elsewhere ("14,41 Billionen", "3,2 Trilliarden").
  */
 let spokenFmt: Intl.NumberFormat | null = null;
 let sciFmt: Intl.NumberFormat | null = null;
@@ -84,9 +104,15 @@ export function fmtSpoken(n: number): string {
     return tier < LONG.length ? trimFixed(n / Math.pow(1000, tier), 2) + ' ' + LONG[tier] : fmt(n);
   }
   try {
-    if (n < 1e18) {
+    const tier = Math.floor(Math.log10(n) / 3);
+    const words = LONG_SCALE[locale.slice(0, 2)];
+    if (tier < 5 || !words) {
       spokenFmt ??= new Intl.NumberFormat(locale, { notation: 'compact', compactDisplay: 'long', maximumFractionDigits: 2 });
-      return spokenFmt.format(n);
+      if (tier < 5) return spokenFmt.format(n);
+    } else if (tier - 5 < words.length) {
+      const scaled = Number((n / Math.pow(1000, tier)).toFixed(2));
+      const [one, many] = words[tier - 5];
+      return scaled.toLocaleString(locale, { maximumFractionDigits: 2 }) + ' ' + (scaled === 1 ? one : many);
     }
     sciFmt ??= new Intl.NumberFormat(locale, { notation: 'scientific', maximumFractionDigits: 2 });
     return sciFmt.format(n);

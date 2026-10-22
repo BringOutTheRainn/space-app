@@ -1066,6 +1066,15 @@ the parent, so in Playwright German Stats reads "300.000 Billionen" and English 
 "370.8 million per second" after the values have ticked. Unit tests and a late-game Spanish
 random-tap session are clean.
 
+**Run 104. Number words past 10^18 in every language.** Since run 84, screen readers in German,
+French, Spanish and Portuguese heard numbers from 10^18 up in scientific form ("9 E 18"), and
+10^15 to 10^18 as "300.000 Billionen", because Intl's compact words stop at 10^12. Every number
+from 10^15 to 10^63 (the game's whole range) now has its own word: the long scale for German,
+French and Spanish ("9 Trillionen", "3,2 trilliards", "4 mil trillones") and the short scale for
+Brazilian Portuguese ("9 quintilhões"), singular for exactly one ("1 Trillion"). Unit tests cover
+each language; in Playwright, German Stats reads "300 Billiarden" and "9 Trillionen", and a
+late-game German random-tap session was clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
