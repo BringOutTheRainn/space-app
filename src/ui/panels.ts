@@ -287,7 +287,7 @@ export class CosmosPanel implements Panel {
     const rateEl = $('#dm-rate', this.root) as HTMLElement;
     const last = s.pastRuns[0];
     const pendingNow = pendingDarkMatter(s);
-    rateEl.hidden = !last || pendingNow < 1;
+    setHidden(rateEl, !last || pendingNow < 1);
     if (last && pendingNow >= 1) {
       const rateLine = (num: (n: number) => string): string => t('This universe: {now} Dark Matter per hour. Last one: {last}.', {
         now: num(darkMatterPerHour(pendingNow, s.time - s.runStartClock)),

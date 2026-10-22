@@ -1018,6 +1018,14 @@ falls back to x1, and older saves start on x1), and restored when a save code is
 covers the load checks; in Playwright, choosing Max and reloading kept Max selected with no page
 errors, and the browser save fuzz still passes.
 
+**Run 99. Performance re-check after runs 84 to 98.** Same late-game save, CPU slowed 6x, compared
+with a build from before run 93 on the same machine: the Build tab median is 50 ms a frame and
+Upgrades 16.7 ms for both, so nothing since has slowed the game. Watching the page for changes did
+turn up one waste: the Cosmos tab rewrote the hidden flag on its "Dark Matter per hour" line on every
+frame even when nothing changed (8 page changes in 2 s with the tab just sitting there). It now uses
+the same only-if-changed helper as every other line, and the Cosmos tab makes no page changes while
+idle. Unit tests pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
