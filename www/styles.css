@@ -241,7 +241,9 @@ body.has-banner #app { padding-bottom: 60px; }
   max-width: 88%;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(94, 240, 255, .14);
+  /* Nearly opaque: the bubble sits over the asteroid, and tap sparks drawn on the canvas below
+     showed through the old see-through fill and hid words. */
+  background: linear-gradient(rgba(94, 240, 255, .16), rgba(94, 240, 255, .16)), rgba(8, 12, 30, .9);
   border: 1px solid rgba(94, 240, 255, .55);
   color: #dffcff;
   font-size: 13px; font-weight: 600; text-align: center;

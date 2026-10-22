@@ -1096,6 +1096,13 @@ language) and two late-game ones in French and German, all with no errors and sa
 (50 scans) with every control named and no page errors; and the soak test back to 6,473 DOM nodes
 with no toasts left and a 3.2 MB heap. No game code changed.
 
+**Run 108. Tutorial bubble stays readable while tapping.** On a small phone (320 x 568, German) the
+first-minutes hints sit over the asteroid, right where the player taps. Their fill was 14% opaque,
+so the "+1" numbers and sparks drawn on the canvas below showed through and covered words of "Buy a
+Mining Drone below". The bubble is now nearly opaque with the same cyan tint and border; the
+contrast check still passes. Side by side before and after in Playwright, mid-tap. Noted, not
+changed: the first two achievement toasts cover the bubble for a few seconds at that size.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
