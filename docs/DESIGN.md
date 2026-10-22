@@ -1083,10 +1083,18 @@ dez elevado a"), both in templates and in text the number watcher finds. Unit te
 German and Portuguese; in Playwright, Stats with scientific numbers reads that way in English and
 German, and a late-game random-tap session was clean.
 
-### Run 106: Collapse hint when you come back
+**Run 106. Collapse hint when you come back.** If the universe went past its best rate while the
+player was away, the welcome-back window now adds "Past its best rate: a good time to collapse."
+(`AwayReport.collapseHint`, from `pastPeak`). It reuses the line already translated for the Cosmos
+tab, so all five languages have it. In Playwright, after a 3-hour absence the line shows with a
+peaked run and stays away without one; a random-tap session was clean.
 
-- The welcome-back window now adds "Past its best rate: a good time to collapse." when the universe peaked while the player was away (`AwayReport.collapseHint`, from `pastPeak`). It reuses the existing translated line, so all five languages have it.
-- Checked in Playwright with a 3-hour absence: the line shows with a peaked run and stays away without one. No page errors; a 400-step random-tap session was clean.
+**Run 107. Release check after runs 98 to 106.** Runs 100 to 103 changed how every window redraws,
+so the regression set ran again: 77 unit tests, five random-tap sessions of 400 taps (one per
+language) and two late-game ones in French and German, all with no errors and saves that reload;
+60 damaged saves in the browser with no errors; no contrast failures; the accessibility-tree sweep
+(50 scans) with every control named and no page errors; and the soak test back to 6,473 DOM nodes
+with no toasts left and a 3.2 MB heap. No game code changed.
 
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
