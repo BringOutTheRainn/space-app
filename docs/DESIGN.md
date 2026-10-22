@@ -1118,6 +1118,14 @@ where the four-line upgrade hint was again covered by two pop-ups. The cut-off i
 the hint. Also checked this run: cold start is 0.36 s, or 1.36 s on a 6x slowed CPU (1.2 s in
 run 55), and the pacing simulator's first six hours are unchanged (first collapse at 3h 54m).
 
+**Run 111. Two generators fit on short phones.** On a 360 x 640 screen the Build tab showed one
+generator and part of a second above the tab bar (0 full ones at 320 x 568). Portrait screens up to
+700 px tall now get a smaller sky (36% instead of 41%, at least 200 px) and tighter generator rows
+(60 px minimum, 44 px icons) and upgrade chips (48 px, still a full touch target). Two full
+generators now fit at 360 x 640 and one at 320 x 568; taller phones are unchanged. The short sky
+also turns on run 109's one-line pop-ups. Store screenshots are taken at 360 x 640, so the English
+phone set was retaken (more of the Build list shows); the other four languages follow next run.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

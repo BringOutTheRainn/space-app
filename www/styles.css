@@ -956,3 +956,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 /* Progress toward the generator's next tier upgrade. */
 .gen-tier { height: 3px; margin-top: 5px; border-radius: 2px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .gen-tier i { display: block; height: 100%; background: linear-gradient(90deg, #5ef0ff, #ffd36a); border-radius: inherit; transition: width .3s; }
+
+/* Short portrait phones (360 x 640 and smaller, common on low-end Android): a smaller sky and
+   tighter Build rows, so two generators fit above the tab bar instead of one and a half. Tap
+   targets stay at least 48 px. */
+@media (max-height: 700px) and (orientation: portrait) {
+  .sky-wrap { flex-basis: 36%; min-height: 200px; }
+  .gen { min-height: 60px; padding: 6px 10px 6px 6px; gap: 8px; }
+  .gen-ico { width: 44px; height: 44px; }
+  .gen-owned { font-size: 26px; }
+  .upg-chip { width: 48px; height: 48px; padding: 5px; }
+  .upg-strip { padding-bottom: 6px; margin-bottom: 2px; }
+}
