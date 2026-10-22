@@ -1026,6 +1026,17 @@ frame even when nothing changed (8 page changes in 2 s with the tab just sitting
 the same only-if-changed helper as every other line, and the Cosmos tab makes no page changes while
 idle. Unit tests pass.
 
+**Run 100. Windows keep focus.** Following run 99, every tab and window was watched for page
+changes while sitting idle. Nine windows (Stats, Boosts, Crystals, Garden, Event, Forge, Market,
+Star Pass and Missions) rebuilt all their buttons every second to keep countdowns fresh, even when
+nothing had changed. That threw keyboard and screen reader focus back to the page: a player who
+moved to the Market's Max button with TalkBack or a keyboard lost their place a second later. A
+new `setHtml` helper now rebuilds a window only when its markup actually changed, and when it does
+(a countdown ticking), it puts focus back on the same control. In Playwright, a focused button in
+each of six windows kept focus after 2.5 s (before: focus fell to the page every time), the idle
+scan shows no window or tab changing the page while nothing happens, and two random-tap sessions
+were clean. The Lucky Orbit spin, which disables buttons by hand, always rebuilds when it ends.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -85,6 +85,26 @@ export function speakNumbersIn(root: HTMLElement): void {
   }).observe(root, { childList: true, subtree: true, characterData: true });
 }
 
+const lastHtml = new WeakMap<Element, string>();
+
+/**
+ * Replaces an element's content only when the markup changed. Windows redraw on a timer, and
+ * rebuilding identical buttons every second dropped keyboard and screen reader focus. When the
+ * markup does change (or `force` is set, after code changed the DOM by hand), the focused control is found again by its id and data attributes and refocused.
+ */
+export function setHtml(el: Element, html: string, force = false): void {
+  if (!force && lastHtml.get(el) === html) return;
+  lastHtml.set(el, html);
+  const active = document.activeElement;
+  let key = '';
+  if (active && active !== el && el.contains(active)) {
+    key = active.tagName.toLowerCase() + (active.id ? '#' + CSS.escape(active.id) : '')
+      + [...active.attributes].filter((a) => a.name.startsWith('data-')).map((a) => `[${a.name}="${CSS.escape(a.value)}"]`).join('');
+  }
+  el.innerHTML = html;
+  if (key) (el.querySelector(key) as HTMLElement | null)?.focus({ preventScroll: true });
+}
+
 /** Shows or hides an element, touching the DOM only when that changes. */
 export function setHidden(el: HTMLElement, hidden: boolean): void {
   if (el.hidden !== hidden) el.hidden = hidden;
@@ -176,6 +196,8 @@ export function openModal(opts: ModalOptions): HTMLElement {
       if (b.onClick?.(el) !== false) closeModal(el);
     }
   });
+  // Windows that redraw with setHtml skip the first redraw when nothing changed since opening.
+  lastHtml.set(el.querySelector('.modal-body')!, opts.body);
   el.addEventListener('keydown', (e) => trapTab(e, el));
   const returnTo = document.activeElement;
   root.appendChild(el);

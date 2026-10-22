@@ -14,7 +14,7 @@ import { darkMatterPerHour } from '../core/prestige.js';
 import { achievementCount, newState, totalGenerators, upgradeCount } from '../core/state.js';
 import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from './audio.js';
 import type { Ctx } from './ctx.js';
-import { closeModal, confirmModal, esc, numHtml, openModal, spokenHtml, toast } from './dom.js';
+import { closeModal, confirmModal, esc, numHtml, openModal, setHtml, spokenHtml, toast } from './dom.js';
 import { icon } from './icons.js';
 import { copyText, haptic, isNative, setVibration, shareText } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
@@ -106,7 +106,7 @@ export function openStats(ctx: Ctx): void {
   });
   const timer = setInterval(() => {
     const body = el.querySelector('.modal-body');
-    if (body) body.innerHTML = render();
+    if (body) setHtml(body, render());
   }, 1000);
 }
 
@@ -453,7 +453,7 @@ export function openHyperdrive(ctx: Ctx): void {
   const el = openModal({ title: t('Boosts'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const timer = setInterval(() => { if (!busy) body.innerHTML = render(); }, 1000);
+  const timer = setInterval(() => { if (!busy) setHtml(body, render()); }, 1000);
   const doSpin = (viaAd: boolean): void => {
     const r = spin(ctx.s, ctx.d, viaAd);
     if (!r) { busy = false; return; }
@@ -480,7 +480,8 @@ export function openHyperdrive(ctx: Ctx): void {
       }
       ctx.recalc();
       ctx.dirty();
-      if (el.isConnected) body.innerHTML = render();
+      // The spin disabled buttons and turned the disc by hand, so always rebuild.
+      if (el.isConnected) setHtml(body, render(), true);
     }, disc ? 2700 : 0);
   };
   body.addEventListener('click', (e) => {
@@ -511,7 +512,7 @@ export function openHyperdrive(ctx: Ctx): void {
         sfxAchievement();
         haptic('medium');
       }
-      if (el.isConnected) body.innerHTML = render();
+      if (el.isConnected) setHtml(body, render());
     });
   });
 }
@@ -564,7 +565,7 @@ export function openCrystals(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Quasar Crystals'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
     const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-level],[data-speed]');
@@ -635,7 +636,7 @@ export function openGarden(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Nebula Garden'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   const paid = (amount: number, what: string): void => {
     sfxAchievement();
@@ -733,7 +734,7 @@ export function openEvent(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Weekend Event'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (ev) => {
     const el2 = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-etap],[data-egen],[data-ebadge],[data-ead],[data-epass]');
@@ -812,7 +813,7 @@ export function openForge(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Star Forge'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
     const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-spell],[data-stoke]');
@@ -909,7 +910,7 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Warp Exchange'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
     const el2 = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-buy],[data-sell],[data-tip]');
@@ -1006,7 +1007,7 @@ export function openPass(ctx: Ctx, onChange: () => void): void {
   let busy = false;
   const redraw = (): void => {
     const top = body.scrollTop;
-    body.innerHTML = render();
+    setHtml(body, render());
     body.scrollTop = top;
   };
   const timer = setInterval(() => { if (!busy) redraw(); }, 2000);
@@ -1074,7 +1075,7 @@ export function openMissions(ctx: Ctx, onChange: () => void): void {
   const el = openModal({ title: t('Goals'), body: render(), onClose: () => clearInterval(timer) });
   const body = el.querySelector<HTMLElement>('.modal-body')!;
   let busy = false;
-  const redraw = (): void => { body.innerHTML = render(); };
+  const redraw = (): void => { setHtml(body, render()); };
   const timer = setInterval(() => { if (!busy) redraw(); }, 1000);
   body.addEventListener('click', (e) => {
     const el2 = (e.target as HTMLElement).closest<HTMLElement>('[data-claim],[data-swap],[data-contract],[data-pass]');
