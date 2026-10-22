@@ -14,7 +14,7 @@ import { darkMatterPerHour } from '../core/prestige.js';
 import { achievementCount, newState, totalGenerators, upgradeCount } from '../core/state.js';
 import { setMusic, setSound, sfxAchievement, sfxBuy, sfxDenied, sfxTap } from './audio.js';
 import type { Ctx } from './ctx.js';
-import { closeModal, confirmModal, esc, numHtml, openModal, setHtml, spokenHtml, toast } from './dom.js';
+import { closeModal, confirmModal, esc, numHtml, openModal, setHtml, spokenHtml, tickHtml, toast } from './dom.js';
 import { icon } from './icons.js';
 import { copyText, haptic, isNative, setVibration, shareText } from './platform.js';
 import { notificationsSupported, requestNotifications } from './notify.js';
@@ -84,8 +84,8 @@ export function openStats(ctx: Ctx): void {
       [t('Contract Medals'), `${s.contractMedals} (+${fmtPercent(s.contractMedals * MEDAL_PCT)})`],
       [t('Ads watched'), String(s.adsWatched)],
       [t('Login streak'), s.dailyStreak === 1 ? t('1 day') : t('{n} days', { n: s.dailyStreak })],
-      [t('Time played'), fmtTime(s.playSeconds)],
-      [t('This universe started'), t('{time} ago', { time: fmtTime((Date.now() - s.runStartedAt) / 1000) })],
+      [t('Time played'), tickHtml(fmtTime(s.playSeconds))],
+      [t('This universe started'), t('{time} ago', { time: tickHtml(fmtTime((Date.now() - s.runStartedAt) / 1000)) })],
     ];
     const gens = GENERATORS.map((g, i) => s.generators[i]
       ? `<tr><td>${esc(t(g.name))}</td><td>${s.generators[i]}</td><td>${say((r) => `${r(d.genSps[i])}/s`)}</td></tr>` : '').join('');
@@ -555,8 +555,8 @@ export function openCrystals(ctx: Ctx, onChange: () => void): void {
     }).join('');
     return `<div class="crystal-head">
         <div class="crystal-big">${icon('crystal')}<b>${s.crystals}</b></div>
-        <div class="crystal-grow"><div class="dim small">${t('Next crystal in {time}', { time: fmtTime(left / 1000) })}</div>
-          <div class="bar"><div class="bar-fill crystal-fill" style="width:${crystalProgress(s) * 100}%"></div></div>
+        <div class="crystal-grow"><div class="dim small">${t('Next crystal in {time}', { time: tickHtml(fmtTime(left / 1000)) })}</div>
+          <div class="bar"><div class="bar-fill crystal-fill" style="width:${(crystalProgress(s) * 100).toFixed(1)}%"></div></div>
           ${canAd ? `<button class="btn btn-plain btn-small" data-speed="1">${t('Watch ad: {n} hours sooner', { n: AD_SPEEDUP_HOURS })}</button>` : ''}</div>
       </div>
       <p class="dim small">${t('A crystal forms every {n} hours, even while you are away. Each level makes that generator {pct} stronger, forever.', { n: CRYSTAL_HOURS, pct: fmtPercent(LEVEL_PCT) })}</p>
@@ -901,10 +901,10 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
     const canAd = tipReady(m, now) && rewardedAvailable();
     const cool = Math.max(0, m.tipAt - now);
     return `<div class="market-head">${icon('exchange')}<div>
-        <div class="market-tick">${t('Prices move in {time}', { time: fmtTime(nextTickIn(m, now) / 1000) })}</div>
+        <div class="market-tick">${t('Prices move in {time}', { time: tickHtml(fmtTime(nextTickIn(m, now) / 1000)) })}</div>
         <div class="dim small">${t('1 credit = 1 second of production ({n} Stardust)', { n: fmt(unit) })}</div></div></div>
       <div class="goods">${rows}</div>
-      ${canAd ? `<button class="btn btn-plain btn-wide" data-tip="1">${t('Watch ad: get an insider tip')}</button>` : cool > 0 ? `<p class="dim small">${t('Next tip in {time}.', { time: fmtTime(cool / 1000) })}</p>` : ''}
+      ${canAd ? `<button class="btn btn-plain btn-wide" data-tip="1">${t('Watch ad: get an insider tip')}</button>` : cool > 0 ? `<p class="dim small">${t('Next tip in {time}.', { time: tickHtml(fmtTime(cool / 1000)) })}</p>` : ''}
       <p class="dim small">${t('Prices drift every {tick} minutes, even while you are away, and pull back toward their resting price. Warp Gate level {lvl}: holds {hold} of each good (25 more per level). A tip lifts the cheapest good for {tip} minutes, once every {cool} hours. Goods are priced from your production, so sell before you collapse. Profit so far: {n} credits.', { tick: TICK_MINUTES, lvl: s.genLevels[MARKET_GEN] ?? 0, hold, tip: TIP_TICKS * TICK_MINUTES, cool: TIP_COOLDOWN_HOURS, n: fmt(s.marketProfit) })}</p>`;
   };
   const el = openModal({ title: t('Warp Exchange'), body: render(), onClose: () => clearInterval(timer) });
@@ -958,7 +958,7 @@ function passCard(ctx: Ctx): string {
   const into = tier >= PASS_TIERS ? XP_PER_TIER : xp - tier * XP_PER_TIER;
   const ready = passClaimable(s);
   return `<button class="pass-card" data-pass="1">
-    <div class="pass-card-head"><span class="contract-kicker">${t('Star Pass · Season {n}', { n: seasonLabel() })}${p.premium ? ` · ${t('Premium')}` : ''}</span><span class="dim small">${t('{time} left', { time: fmtTime(seasonTimeLeft() / 1000) })}</span></div>
+    <div class="pass-card-head"><span class="contract-kicker">${t('Star Pass · Season {n}', { n: seasonLabel() })}${p.premium ? ` · ${t('Premium')}` : ''}</span><span class="dim small">${t('{time} left', { time: tickHtml(fmtTime(seasonTimeLeft() / 1000)) })}</span></div>
     <div class="pass-card-main"><b>${t('Tier {n} of {total}', { n: tier, total: PASS_TIERS })}</b>${ready ? `<span class="pass-ready">${ready === 1 ? t('1 reward ready') : t('{n} rewards ready', { n: ready })}</span>` : `<span class="dim small">${t('Open')}</span>`}</div>
     <div class="bar"><div class="bar-fill pass-fill" style="width:${(into / XP_PER_TIER) * 100}%"></div></div>
   </button>`;

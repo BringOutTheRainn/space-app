@@ -1037,6 +1037,16 @@ each of six windows kept focus after 2.5 s (before: focus fell to the page every
 scan shows no window or tab changing the page while nothing happens, and two random-tap sessions
 were clean. The Lucky Orbit spin, which disables buttons by hand, always rebuilds when it ends.
 
+**Run 101. Countdowns tick in place.** Run 100 kept keyboard focus, but a window whose countdown
+changed each second (Market, Crystals, Stats, the Star Pass card) still rebuilt every node once a
+second, which moves TalkBack's reading position. Countdowns and clocks in windows are now written
+with `tickHtml`, and when only those changed, `setHtml` updates their text and leaves every other
+node alone. The crystal progress bar is rounded to a tenth of a percent so it no longer changes the
+markup every second. The idle scan now shows only Missions rebuilding, and only while a "Harvest
+Stardust" mission is counting up real progress. In Playwright, the focused button in Market,
+Crystals, Forge, Garden and Boosts stays the very same element after 2.5 s; a late-game French
+random-tap session was clean and unit tests pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

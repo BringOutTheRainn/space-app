@@ -86,6 +86,13 @@ export function speakNumbersIn(root: HTMLElement): void {
 }
 
 const lastHtml = new WeakMap<Element, string>();
+const TICK = /<span data-tick>([^<]*)<\/span>/g;
+const unesc = (s: string): string => s.replace(/&(amp|lt|gt|quot|#39);/g, (_, c: string) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[c]!);
+
+/** A countdown or clock inside a window: when only these change, setHtml updates their text in place. */
+export function tickHtml(text: string): string {
+  return `<span data-tick>${esc(text)}</span>`;
+}
 
 /**
  * Replaces an element's content only when the markup changed. Windows redraw on a timer, and
@@ -93,8 +100,18 @@ const lastHtml = new WeakMap<Element, string>();
  * markup does change (or `force` is set, after code changed the DOM by hand), the focused control is found again by its id and data attributes and refocused.
  */
 export function setHtml(el: Element, html: string, force = false): void {
-  if (!force && lastHtml.get(el) === html) return;
+  const prev = lastHtml.get(el);
+  if (!force && prev === html) return;
   lastHtml.set(el, html);
+  // Only countdowns changed: update their text and keep every node, so a screen reader stays put.
+  if (!force && prev !== undefined && prev.replace(TICK, '') === html.replace(TICK, '')) {
+    const vals = [...html.matchAll(TICK)].map((m) => unesc(m[1]));
+    const spans = el.querySelectorAll('[data-tick]');
+    if (spans.length === vals.length) {
+      spans.forEach((s, i) => { if (s.textContent !== vals[i]) s.textContent = vals[i]; });
+      return;
+    }
+  }
   const active = document.activeElement;
   let key = '';
   if (active && active !== el && el.contains(active)) {
