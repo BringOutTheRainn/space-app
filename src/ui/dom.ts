@@ -80,7 +80,8 @@ export function speakNumbersIn(root: HTMLElement): void {
   new MutationObserver((records) => {
     for (const r of records) {
       if (r.type === 'characterData') speakNumbers(r.target.parentNode ?? r.target);
-      else r.addedNodes.forEach((n) => speakNumbers(n));
+      // A bare text node (a ticking value set with textContent) is walked from its parent, since a walker skips its own root.
+      else r.addedNodes.forEach((n) => speakNumbers(n.nodeType === Node.TEXT_NODE ? n.parentNode ?? n : n));
     }
   }).observe(root, { childList: true, subtree: true, characterData: true });
 }

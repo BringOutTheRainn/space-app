@@ -1055,6 +1055,17 @@ its bar moves in whole percents, so the window keeps its nodes while the number 
 scan now shows no window rebuilding; a fresh-game Portuguese random-tap session was clean and unit
 tests pass.
 
+**Run 103. Soak re-check, and Stats ticks in place.** The soak test (Stats and Missions left open
+30 s each, then 300 toasts) was re-run after the window changes in runs 100 to 102: DOM nodes came
+back to 6,473 from 6,328 at the start, the heap stayed near 3 MB and there were no errors, the same
+as run 87. Stats was the last window rebuilding every second, because the bank, the totals and
+production climb all the time; those four lines now tick in place too. That showed a gap from run
+101: a ticking value written as plain text lost its words-for-screen-readers copy, because the
+number watcher walked from the new text node itself, which a tree walker skips. It now walks from
+the parent, so in Playwright German Stats reads "300.000 Billionen" and English production reads
+"370.8 million per second" after the values have ticked. Unit tests and a late-game Spanish
+random-tap session are clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

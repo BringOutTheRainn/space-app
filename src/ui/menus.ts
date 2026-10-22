@@ -51,6 +51,8 @@ function nextForm(earned: number): string {
 
 export function openStats(ctx: Ctx): void {
   const long = (n: number): string => (currentLang() === 'en' ? fmtLong(n) : spokenHtml(fmt(n), fmtSpoken(n)));
+  // Values that climb every second tick in place (the window's number watcher reads them in words).
+  const live = (n: number): string => tickHtml(currentLang() === 'en' ? fmtLong(n) : fmt(n));
   type Num = (n: number) => string;
   // A value as shown and, for screen readers, with numbers in words.
   const say = (line: (rate: Num, count: Num) => string): string => spokenHtml(line(fmtRate, fmt), line(fmtRateSpoken, fmtSpoken));
@@ -58,11 +60,11 @@ export function openStats(ctx: Ctx): void {
     const { s, d } = ctx;
     const rows: Array<[string, string]> = [
       // English uses full number words; other languages use the short form.
-      [t('Stardust in bank'), long(s.stardust)],
-      [t('Earned this universe'), long(s.earnedRun)],
+      [t('Stardust in bank'), live(s.stardust)],
+      [t('Earned this universe'), live(s.earnedRun)],
       [t('Next form'), nextForm(s.earnedRun)],
-      [t('Earned all time'), long(s.earnedAll)],
-      [t('Production'), say((r) => t('{n} per second', { n: r(d.sps) }))],
+      [t('Earned all time'), live(s.earnedAll)],
+      [t('Production'), tickHtml(t('{n} per second', { n: fmtRate(d.sps) }))],
       [t('Best production'), say((r) => t('{n} per second', { n: r(s.highestSps) }))],
       [t('Production multiplier'), d.globalMult < 1000 ? `x${fmt(d.globalMult, 2)}` : say((_, c) => `x${c(d.globalMult)}`)],
       [t('Stardust per tap'), say((r) => r(d.tap))],
