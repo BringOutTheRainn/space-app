@@ -1005,6 +1005,12 @@ retaken in all five languages. The side panel has room for the whole collapse ca
 and the Collapse button show without scrolling. No page errors, and the store folder now has
 phone and tablet shots that match the current build.
 
+**Run 97. Stability check after runs 93 to 96.** Run 93 changed how percentages are written, so
+five random-tap sessions of 400 taps were run: late game in German, French and Portuguese (the
+locales whose number grouping differs from English), and a fresh game in Spanish and English. All
+five had no page errors, every number stayed finite, and each save reloaded. The browser save fuzz
+(60 damaged saves) and the 77 unit tests also pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
