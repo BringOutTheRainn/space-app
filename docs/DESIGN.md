@@ -1105,10 +1105,18 @@ changed: the first two achievement toasts cover the bubble for a few seconds at 
 
 **Run 109. Pop-ups stay off the tutorial on small phones.** Following run 108, on a 320 x 568 phone
 the first two achievement pop-ups covered "Buy a Mining Drone below" for four seconds, right when a
-new player needs it. When a hint shows and the sky area is under 260 px tall, `main.ts` sets
+new player needs it. When a hint shows and the sky area is under 290 px tall, `main.ts` sets
 `.hinting` on it, and pop-ups then show one at a time with only their title (the full text stays in
 the Trophies tab). In Playwright the hint is fully readable at 320 x 568; at 360 x 740 (sky 303 px)
 nothing changes. A random-tap session was clean.
+
+**Run 110. Short-sky pop-up rule covers common phones.** Measured across sizes (German, mid-game):
+the sky area is 233 px at 320 x 568, 262 at 360 x 640, 283 at 360 x 690, 303 at 360 x 740 and 375 at
+412 x 915. Run 109's 260 px cut-off missed 360 x 640, one of the most common low-end Android sizes,
+where the four-line upgrade hint was again covered by two pop-ups. The cut-off is now 290 px, so
+360 x 640 and 360 x 690 get one-line pop-ups too; at 360 x 740 the two full pop-ups already clear
+the hint. Also checked this run: cold start is 0.36 s, or 1.36 s on a 6x slowed CPU (1.2 s in
+run 55), and the pacing simulator's first six hours are unchanged (first collapse at 3h 54m).
 
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes

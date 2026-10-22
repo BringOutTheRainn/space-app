@@ -434,7 +434,7 @@ function start(): void {
     hintEl.hidden = false;
     hintEl.dataset.hint = id;
     // Short skies only (small phones): there the toasts would cover the hint.
-    hintEl.parentElement!.classList.toggle('hinting', hintEl.parentElement!.clientHeight < 260);
+    hintEl.parentElement!.classList.toggle('hinting', hintEl.parentElement!.clientHeight < 290);
   }
   function hints(): void {
     const { s } = ctx;
