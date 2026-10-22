@@ -1055,8 +1055,9 @@ export function openMissions(ctx: Ctx, onChange: () => void): void {
     const rows = s.missions.map((m, i) => {
       const done = missionDone(s, m);
       const prog = missionProgress(s, m);
-      const pct = Math.min(100, (prog / m.target) * 100);
-      const progText = `${numHtml(prog)} / ${numHtml(m.target)}`;
+      // Whole percents and a ticking progress line, so a mission counting up live doesn't rebuild the window.
+      const pct = Math.floor(Math.min(100, (prog / m.target) * 100));
+      const progText = tickHtml(`${fmt(prog)} / ${fmt(m.target)}`);
       return `<div class="mission ${done ? 'done' : ''}">
         <div class="mission-main">
           <div class="mission-name">${esc(missionText(m))}</div>

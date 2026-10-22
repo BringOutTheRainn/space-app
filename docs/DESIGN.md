@@ -1047,6 +1047,14 @@ Stardust" mission is counting up real progress. In Playwright, the focused butto
 Crystals, Forge, Garden and Boosts stays the very same element after 2.5 s; a late-game French
 random-tap session was clean and unit tests pass.
 
+**Run 102. Accessibility re-check, and live mission progress.** The accessibility-tree sweep (50
+views) and the contrast check were re-run after runs 98 to 101 and found nothing. Following run 101,
+the Missions window was the last one rebuilding while a "Harvest Stardust" mission counted up: its
+progress line is now a ticking line (still read as words, such as "5 billion / 1 quadrillion") and
+its bar moves in whole percents, so the window keeps its nodes while the number climbs. The idle
+scan now shows no window rebuilding; a fresh-game Portuguese random-tap session was clean and unit
+tests pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
