@@ -1556,9 +1556,11 @@ test('screen readers get big numbers in words', async () => {
   assert.equal(fmtSpoken(9e18), '9 quintilhões');
   assert.equal(fmtSpoken(1e63), '1 vigintilhão');
   setNumberStyle('scientific');
-  assert.equal(fmtSpoken(1.441e16), fmt(1.441e16));
-  setNumberStyle('short');
+  assert.equal(fmtSpoken(1.441e16), '1,44 vezes dez elevado a 16');
   setNumberLocale('en-US');
+  assert.equal(fmtSpoken(1.441e16), '1.44 times ten to the 16');
+  setNumberStyle('short');
+  assert.equal(fmtSpoken(2e70), '2 times ten to the 70', 'past the last short suffix');
 });
 
 test('short numbers inside text are read in words', async () => {
@@ -1571,6 +1573,12 @@ test('short numbers inside text are read in words', async () => {
   assert.equal(spokenShortText('No thanks'), null);
   setNumberLocale('de-DE');
   assert.equal(spokenShortText('2T 04h'), null);
+  setNumberStyle('scientific');
+  assert.equal(spokenShortText('+1,44e16 Sternenstaub'), '+1,44 mal zehn hoch 16 Sternenstaub');
+  setNumberLocale('en-US');
+  assert.equal(spokenShortText('+1.44e16 Stardust'), '+1.44 times ten to the 16 Stardust');
+  setNumberStyle('short');
+  setNumberLocale('de-DE');
   assert.equal(spokenShortText('+12,4T Sternenstaub'), '+12,4 Billionen Sternenstaub');
   setNumberLocale('en-US');
 });

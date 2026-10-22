@@ -1075,6 +1075,14 @@ Brazilian Portuguese ("9 quintilhões"), singular for exactly one ("1 Trillion")
 each language; in Playwright, German Stats reads "300 Billiarden" and "9 Trillionen", and a
 late-game German random-tap session was clean.
 
+**Run 105. Scientific numbers read aloud.** With the scientific number setting on (and for any
+number past the last suffix, 10^66), screen readers heard "3.00e17" as "3 point 0 0 e 17", and
+numbers inside finished text such as toasts were not caught at all. Scientific numbers are now read
+as "3 times ten to the 17" ("3 mal zehn hoch 17", "fois dix puissance", "por diez elevado a", "vezes
+dez elevado a"), both in templates and in text the number watcher finds. Unit tests cover English,
+German and Portuguese; in Playwright, Stats with scientific numbers reads that way in English and
+German, and a late-game random-tap session was clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

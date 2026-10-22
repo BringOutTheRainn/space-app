@@ -97,8 +97,16 @@ const LONG_SCALE: Record<string, Array<[string, string]>> = {
  */
 let spokenFmt: Intl.NumberFormat | null = null;
 let sciFmt: Intl.NumberFormat | null = null;
+// Scientific form read aloud ("1.44e16" is otherwise read as "1.44 e 16").
+const TIMES_TEN: Record<string, string> = { en: 'times ten to the', de: 'mal zehn hoch', fr: 'fois dix puissance', es: 'por diez elevado a', pt: 'vezes dez elevado a' };
+
 export function fmtSpoken(n: number): string {
-  if (!isFinite(n) || n < 1000 || style === 'scientific') return fmt(n);
+  if (!isFinite(n) || n < 1000) return fmt(n);
+  if (style === 'scientific' || Math.floor(Math.log10(n) / 3) >= SHORT.length) {
+    const exp = Math.floor(Math.log10(n));
+    const mant = Number((n / Math.pow(10, exp)).toFixed(2));
+    return `${mant.toLocaleString(locale, { maximumFractionDigits: 2 })} ${TIMES_TEN[locale.slice(0, 2)] ?? TIMES_TEN.en} ${exp}`;
+  }
   if (locale.startsWith('en')) {
     const tier = Math.floor(Math.log10(n) / 3);
     return tier < LONG.length ? trimFixed(n / Math.pow(1000, tier), 2) + ' ' + LONG[tier] : fmt(n);
@@ -130,6 +138,12 @@ export function spokenShortText(text: string): string | null {
   let found = false;
   const out = text.replace(SHORT_IN_TEXT, (m, num: string, suffix: string) => {
     const n = parseFloat(num.replace(',', '.')) * Math.pow(1000, SHORT.indexOf(suffix));
+    if (!isFinite(n)) return m;
+    found = true;
+    return fmtSpoken(n);
+  }).replace(/\b(\d+(?:[.,]\d+)?)e(\d+)\b/g, (m, num: string, exp: string) => {
+    // Scientific form ("1.44e16"), from the scientific number setting or past the last suffix.
+    const n = parseFloat(num.replace(',', '.')) * Math.pow(10, Number(exp));
     if (!isFinite(n)) return m;
     found = true;
     return fmtSpoken(n);
