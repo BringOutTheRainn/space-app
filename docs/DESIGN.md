@@ -1132,6 +1132,13 @@ French and German, matching the English set. All 32 rendered with no page errors
 side by side; captions and button labels fit in every language. Tablet shots are unchanged (they
 are landscape, which the new rules do not touch).
 
+**Run 113. One-line rate on 320 px phones.** Every tab was screenshotted late-game in German at
+320 x 568 and 360 x 640, with a check for clipped text. Nothing was clipped, but at 320 px the
+production rate under the Stardust total wrapped to two lines ("440,1T pro / Sekunde"), making the
+header 94 px tall instead of 77. Below 360 px the rate now drops its 30 px indent, and it never
+wraps (an ellipsis if it ever has to). In all five languages at 320 and 360 px the header is 77 px
+and no rate is cut.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
