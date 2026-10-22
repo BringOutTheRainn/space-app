@@ -984,6 +984,15 @@ German with the Cosmos dot lit. No game code changed.
 "+1 930%" in French, "+1.930%" in German and Portuguese), and only past a million fall back to the
 short form. Screen readers hear them as plain numbers too.
 
+**Run 94. Store listing catches up.** The Play description was last written before runs 55 to
+93, so it never mentioned Stellar Echoes, the Cosmos tab's "good time to collapse" hint, the
+accessibility work or the five languages. Each of the five listings (English, Spanish, Portuguese,
+French, German) now has two more lines under Collapse the Universe and two under Plays your way,
+using the game's own names for each feature and setting. The counts in the listing were checked
+against the game data (14 generators, 152 upgrades, 153 achievements, 6 anomalies) and still hold.
+Every description stays well under Play's 4,000-character limit (the longest, French, is about
+2,300). The copies in the project's store folder were refreshed to match.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

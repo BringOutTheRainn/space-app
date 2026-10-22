@@ -35,6 +35,8 @@ dazu, und dein Asteroid wird zum Mond, zum Planeten, zum Stern und am Ende zum S
 • Fang neu an für Dunkle Materie und gib sie in einem Baum dauerhafter kosmischer Verbesserungen aus
 • Sechs Anomalien: verdrehte Universen mit einer seltsamen Regel und einer dauerhaften Belohnung
 • Schicke Sonden auf Expeditionen und finde uralte Relikte
+• Im späten Spiel steckst du übrige Dunkle Materie in Sternenechos, einen Bonus ohne Obergrenze
+• Der Kosmos-Tab sagt dir, wann ein guter Moment zum Kollabieren ist
 
 ★ MINISPIELE
 • Kaufe und verkaufe Kometeneis und Neutronenplasma an der Warp-Börse
@@ -51,6 +53,8 @@ dazu, und dein Asteroid wird zum Mond, zum Planeten, zum Stern und am Ende zum S
 • Funktioniert offline und ohne Konto
 • Freiwillige Werbung bringt Boni; du musst nie welche ansehen
 • Erinnerungen bleiben aus, bis du sie einschaltest
+• Unterstützt Screenreader, große Schrift, Bewegung reduzieren und einen Energiesparmodus
+• Auf Deutsch, Englisch, Spanisch, Portugiesisch und Französisch
 
 Enthält Werbung und optionale In-App-Käufe.
 

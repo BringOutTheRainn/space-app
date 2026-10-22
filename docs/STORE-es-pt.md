@@ -38,6 +38,8 @@ agujero negro.
 • Reinicia a cambio de Materia Oscura y gástala en un árbol de mejoras cósmicas permanentes
 • Seis anomalías: universos retorcidos con una regla extraña y una recompensa permanente
 • Envía sondas en expediciones para encontrar Reliquias antiguas
+• Al final del juego, gasta la Materia Oscura que te sobre en Ecos Estelares, un impulso sin límite
+• La pestaña Cosmos te avisa cuándo es buen momento para colapsar
 
 ★ MINIJUEGOS
 • Compra y vende Hielo de Cometa y Plasma de Neutrones en el Intercambio Warp
@@ -54,6 +56,8 @@ agujero negro.
 • Funciona sin conexión y sin cuenta
 • Los anuncios opcionales dan impulsos; nunca tienes que ver uno
 • Los recordatorios están apagados a menos que los actives
+• Funciona con lectores de pantalla, texto grande, Reducir movimiento y ahorro de batería
+• En español, inglés, portugués, francés y alemán
 
 Contiene anuncios y compras opcionales dentro de la app.
 
@@ -84,6 +88,8 @@ um buraco negro.
 • Recomece em troca de Matéria Escura e gaste em uma árvore de melhorias cósmicas permanentes
 • Seis anomalias: universos distorcidos com uma regra estranha e uma recompensa permanente
 • Envie sondas em expedições para encontrar Relíquias antigas
+• No fim do jogo, gaste a Matéria Escura que sobrar em Ecos Estelares, um bônus sem limite
+• A aba Cosmos avisa quando é uma boa hora para colapsar
 
 ★ MINIJOGOS
 • Negocie Gelo de Cometa e Plasma de Nêutrons na Bolsa de Dobra: compre barato, venda caro
@@ -100,5 +106,7 @@ um buraco negro.
 • Funciona offline e sem conta
 • Anúncios opcionais dão bônus; você nunca é obrigado a assistir
 • Os lembretes ficam desligados, a menos que você os ative
+• Funciona com leitores de tela, texto grande, Reduzir movimento e economia de bateria
+• Em português, inglês, espanhol, francês e alemão
 
 Contém anúncios e compras opcionais no app.

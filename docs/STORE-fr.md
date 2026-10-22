@@ -36,6 +36,8 @@ une étoile et, pour finir, un trou noir.
 • Recommencez en échange de Matière noire et dépensez-la dans un arbre d'améliorations cosmiques permanentes
 • Six anomalies : des univers tordus avec une règle étrange et une récompense permanente
 • Envoyez des sondes en expédition à la recherche de Reliques anciennes
+• En fin de partie, dépensez votre Matière noire en trop dans les Échos stellaires, un bonus sans limite
+• L'onglet Cosmos vous dit quand c'est le bon moment pour effondrer l'univers
 
 ★ MINI-JEUX
 • Achetez et vendez de la Glace de comète et du Plasma de neutrons à la Bourse de distorsion
@@ -52,6 +54,8 @@ une étoile et, pour finir, un trou noir.
 • Fonctionne hors ligne et sans compte
 • Les pubs facultatives donnent des bonus ; vous n'êtes jamais obligé d'en regarder
 • Les rappels sont désactivés tant que vous ne les activez pas
+• Compatible avec les lecteurs d'écran, le grand texte, Réduire les animations et l'économie de batterie
+• En français, anglais, espagnol, portugais et allemand
 
 Contient des publicités et des achats facultatifs dans l'application.
 

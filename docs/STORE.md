@@ -29,6 +29,8 @@ asteroid grows into a moon, a planet, a star and finally a black hole.
 • Reset for Dark Matter and spend it on a tree of permanent cosmic upgrades
 • Six anomalies: twisted universes with one strange rule and a permanent reward
 • Send probes on expeditions to find ancient Relics
+• Late game: spend spare Dark Matter on Stellar Echoes, a boost that never runs out
+• The Cosmos tab tells you when it is a good time to collapse
 
 ★ SIDE GAMES
 • Trade Comet Ice and Neutron Plasma at the Warp Exchange: buy low, sell high
@@ -45,6 +47,8 @@ asteroid grows into a moon, a planet, a star and finally a black hole.
 • Plays fully offline, no account needed
 • Optional ads give boosts; you never have to watch one
 • Reminders are off unless you turn them on
+• Works with screen readers, large system text, Reduce motion and a battery saver
+• In English, Spanish, Portuguese, French and German
 
 Contains ads and optional in-app purchases.
 
