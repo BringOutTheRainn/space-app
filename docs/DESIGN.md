@@ -1139,6 +1139,14 @@ header 94 px tall instead of 77. Below 360 px the rate now drops its 30 px inden
 wraps (an ellipsis if it ever has to). In all five languages at 320 and 360 px the header is 77 px
 and no rate is cut.
 
+**Run 114. Split-screen on phones.** The portrait lock does not stop Android from running the game
+in half a phone screen. In a 412 x 300 or 360 x 330 window the 220 px sky minimum pushed the tab bar
+and the Build list off the bottom, so the game could not be played. Windows under 520 px tall and
+under 560 px wide now get a slimmer top bar (62 px), a sky of 30% (at least 96 px), a shorter tab
+bar and a smaller hint. Measured in Playwright: the Build list is 92 px at 412 x 300 (was 26 px,
+under the tab bar), 182 px at 412 x 420 and 252 px at 412 x 520, with the tab bar on screen in all.
+Unfolded and landscape large screens were already fine (shop beside the sky).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

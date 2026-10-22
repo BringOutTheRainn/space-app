@@ -970,3 +970,14 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .upg-chip { width: 48px; height: 48px; padding: 5px; }
   .upg-strip { padding-bottom: 6px; margin-bottom: 2px; }
 }
+
+/* Very short narrow windows: a phone in split-screen (412 x 300 to 412 x 520). The 220 px sky
+   minimum used to push the tab bar off the screen, so the sky and top bar shrink here. */
+@media (max-height: 520px) and (max-width: 559px) {
+  .top { padding: 6px 12px 5px; }
+  .amount { font-size: 24px; }
+  .icon-btn { width: 40px; height: 40px; padding: 9px; }
+  .sky-wrap { flex: 0 0 30%; min-height: 96px; }
+  .tab { padding: 4px 2px 5px; }
+  .hint { bottom: 30px; padding: 4px 10px; font-size: 11px; }
+}
