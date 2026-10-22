@@ -1000,6 +1000,11 @@ Cosmos shot, so `tools/store-shots.mjs` now scrolls the button into view first. 
 shows the nudge and "+1,930%" in every language, and all 40 phone shots in the store folder were
 replaced. No page errors in any language.
 
+**Run 96. Tablet screenshots refreshed.** Following run 95, the 40 landscape tablet shots were
+retaken in all five languages. The side panel has room for the whole collapse card, so the nudge
+and the Collapse button show without scrolling. No page errors, and the store folder now has
+phone and tablet shots that match the current build.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
