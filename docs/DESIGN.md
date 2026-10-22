@@ -1126,6 +1126,12 @@ generators now fit at 360 x 640 and one at 320 x 568; taller phones are unchange
 also turns on run 109's one-line pop-ups. Store screenshots are taken at 360 x 640, so the English
 phone set was retaken (more of the Build list shows); the other four languages follow next run.
 
+**Run 112. Phone store screenshots retaken in four languages.** Following run 111's tighter Build tab
+at 360 x 640 (the store-shot size), the eight phone shots were retaken in Spanish, Portuguese,
+French and German, matching the English set. All 32 rendered with no page errors and were checked
+side by side; captions and button labels fit in every language. Tablet shots are unchanged (they
+are landscape, which the new rules do not touch).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
