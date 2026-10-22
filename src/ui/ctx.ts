@@ -1,10 +1,14 @@
 // The shared context the screens use to read and change the game.
 
 import type { Derived } from '../core/economy.js';
-import type { GameState } from '../core/state.js';
+import type { BuyAmountSetting, GameState } from '../core/state.js';
 import type { Sky } from './sky.js';
 
 export type BuyAmount = 1 | 10 | 100 | 'next' | 'max';
+
+export function buyAmountFrom(v: BuyAmountSetting): BuyAmount {
+  return (v === 'max' || v === 'next' ? v : Number(v)) as BuyAmount;
+}
 
 export interface Ctx {
   s: GameState;

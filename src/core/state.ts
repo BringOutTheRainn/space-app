@@ -46,7 +46,12 @@ export interface Settings {
   saverAuto: boolean;
   /** 'auto' follows the phone's language where the game is fully translated. */
   lang: LangSetting;
+  /** The Build tab's last buy amount (x1, x10, x100, Next or Max), kept between sessions. */
+  buyAmount: BuyAmountSetting;
 }
+
+export type BuyAmountSetting = '1' | '10' | '100' | 'next' | 'max';
+export const BUY_AMOUNTS: BuyAmountSetting[] = ['1', '10', '100', 'next', 'max'];
 
 export interface Expedition {
   id: string;
@@ -278,7 +283,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, lang: 'auto' },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, lang: 'auto', buyAmount: '1' },
   };
 }
 

@@ -1011,6 +1011,13 @@ locales whose number grouping differs from English), and a fresh game in Spanish
 five had no page errors, every number stayed finite, and each save reloaded. The browser save fuzz
 (60 damaged saves) and the 77 unit tests also pass.
 
+**Run 98. Buy amount remembered.** The Build tab's x1 / x10 / x100 / Next / Max choice reset to x1
+every time the game opened, so a player who always buys with Max had to pick it again each session.
+It is now a setting saved with the game, checked on load like the other settings (an unknown value
+falls back to x1, and older saves start on x1), and restored when a save code is loaded. A unit test
+covers the load checks; in Playwright, choosing Max and reloading kept Max selected with no page
+errors, and the browser save fuzz still passes.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

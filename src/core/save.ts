@@ -5,7 +5,7 @@ import { earn, HYPER_MULT, type Derived } from './economy.js';
 import { EVENT_GENS } from './event.js';
 import { seedById, type Plot } from './garden.js';
 import { GOODS, HISTORY } from './market.js';
-import { newState, SAVE_VERSION, type GameState } from './state.js';
+import { BUY_AMOUNTS, newState, SAVE_VERSION, type BuyAmountSetting, type GameState } from './state.js';
 import type { NumberStyle } from './format.js';
 
 const NUMBER_STYLES: NumberStyle[] = ['short', 'scientific'];
@@ -103,6 +103,7 @@ export function deserialize(text: string, now = Date.now()): GameState {
   const settings = { ...base.settings } as Record<string, unknown>;
   for (const [k, def] of Object.entries(base.settings)) if (typeof rawSettings[k] === typeof def) settings[k] = rawSettings[k];
   if (!NUMBER_STYLES.includes(settings.numberStyle as NumberStyle)) settings.numberStyle = base.settings.numberStyle;
+  if (!BUY_AMOUNTS.includes(settings.buyAmount as BuyAmountSetting)) settings.buyAmount = base.settings.buyAmount;
   s.settings = settings as unknown as GameState['settings'];
   s.echoes = Math.max(0, Math.floor(Number(s.echoes) || 0));
   s.comebackAt = Math.max(0, Number(s.comebackAt) || 0);

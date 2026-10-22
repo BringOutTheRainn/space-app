@@ -265,6 +265,11 @@ test('saved settings keep their types and fall back on bad values', () => {
   assert.equal(back.settings.numberStyle, 'short');
   assert.equal(back.settings.lang, 'de');
   assert.ok(!('extra' in back.settings));
+  assert.equal(back.settings.buyAmount, '1', 'older saves start on x1');
+  raw.settings = { buyAmount: 'max' };
+  assert.equal(deserialize(JSON.stringify(raw)).settings.buyAmount, 'max');
+  raw.settings = { buyAmount: '7' };
+  assert.equal(deserialize(JSON.stringify(raw)).settings.buyAmount, '1', 'unknown amount falls back to x1');
   for (const bad of [null, 'x', 5]) {
     raw.settings = bad;
     assert.deepEqual(deserialize(JSON.stringify(raw)).settings, s.settings);

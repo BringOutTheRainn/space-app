@@ -15,7 +15,7 @@ import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repai
 import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
-import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
+import { buyAmountFrom, type Ctx, type Panel } from './ui/ctx.js';
 import { $, closeModal, esc, modalOpen, setAttr, setHidden, setSpoken, setText, speakNumbersIn, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
 import { VERSION, applySettings, showWhatsNew, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
@@ -148,7 +148,7 @@ function start(): void {
     s: state,
     d: derived,
     sky,
-    buyAmount: 1 as BuyAmount,
+    buyAmount: buyAmountFrom(state.settings.buyAmount),
     recalc() {
       derived = computeDerived(ctx.s);
       ctx.d = derived;
@@ -175,6 +175,7 @@ function start(): void {
     },
     replaceState(s: GameState) {
       ctx.s = s;
+      ctx.buyAmount = buyAmountFrom(s.settings.buyAmount);
       ctx.recalc();
       applySettings(ctx);
       sky.setStage(stageFor(s.earnedRun));

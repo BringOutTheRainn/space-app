@@ -5,7 +5,8 @@ import { UPGRADE_BY_ID, tierBand, toNextTier } from '../data/upgrades.js';
 import { availableUpgrades, buyGenerator, buyUpgrade, generatorPrice, generatorRevealed, generatorVisible, maxAffordable, upgradePrice } from '../core/economy.js';
 import { fmt, fmtPercent, fmtRate, fmtRateSpoken, fmtSpoken } from '../core/format.js';
 import { sfxBuy, sfxDenied, sfxUpgrade } from './audio.js';
-import type { BuyAmount, Ctx, Panel } from './ctx.js';
+import { buyAmountFrom, type Ctx, type Panel } from './ctx.js';
+import type { BuyAmountSetting } from '../core/state.js';
 import { $, esc, setAttr, setHidden, setSpoken, setText, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
@@ -90,7 +91,10 @@ export class BuildPanel implements Panel {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-amt]');
       if (!b) return;
       const v = b.dataset.amt!;
-      ctx.buyAmount = (v === 'max' || v === 'next' ? v : Number(v)) as BuyAmount;
+      ctx.buyAmount = buyAmountFrom(v as BuyAmountSetting);
+      // Remembered so a player who always buys with Max doesn't have to pick it every session.
+      ctx.s.settings.buyAmount = v as BuyAmountSetting;
+      ctx.save();
       this.refresh(ctx);
     });
 
