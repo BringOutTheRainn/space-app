@@ -993,6 +993,13 @@ against the game data (14 generators, 152 upgrades, 153 achievements, 6 anomalie
 Every description stays well under Play's 4,000-character limit (the longest, French, is about
 2,300). The copies in the project's store folder were refreshed to match.
 
+**Run 95. Store screenshots refreshed.** The phone screenshots were last taken in run 83, before
+the collapse nudge (run 89) and whole-number bonuses (run 93). Retaking them in all five languages
+showed the new "good time to collapse" line pushing the Collapse button half under the tab bar on the
+Cosmos shot, so `tools/store-shots.mjs` now scrolls the button into view first. The Cosmos shot now
+shows the nudge and "+1,930%" in every language, and all 40 phone shots in the store folder were
+replaced. No page errors in any language.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -186,6 +186,8 @@ await page.click('[data-tab="build"]');
 await shot('04_late', ...cap[3]);
 
 await page.click('[data-tab="cosmos"]');
+// The "good time to collapse" line pushes the button under the tab bar, so scroll it into view.
+await page.evaluate(() => document.getElementById('btn-collapse')?.scrollIntoView({ block: 'nearest' }));
 await shot('05_cosmos', ...cap[4]);
 
 await page.click('[data-tab="build"]');
