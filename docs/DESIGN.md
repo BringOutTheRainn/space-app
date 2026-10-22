@@ -1103,6 +1103,13 @@ Mining Drone below". The bubble is now nearly opaque with the same cyan tint and
 contrast check still passes. Side by side before and after in Playwright, mid-tap. Noted, not
 changed: the first two achievement toasts cover the bubble for a few seconds at that size.
 
+**Run 109. Pop-ups stay off the tutorial on small phones.** Following run 108, on a 320 x 568 phone
+the first two achievement pop-ups covered "Buy a Mining Drone below" for four seconds, right when a
+new player needs it. When a hint shows and the sky area is under 260 px tall, `main.ts` sets
+`.hinting` on it, and pop-ups then show one at a time with only their title (the full text stays in
+the Trophies tab). In Playwright the hint is fully readable at 320 x 568; at 360 x 740 (sky 303 px)
+nothing changes. A random-tap session was clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

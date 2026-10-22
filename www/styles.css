@@ -569,6 +569,9 @@ body.has-banner #app { padding-bottom: 60px; }
   z-index: 5;
   pointer-events: none;
 }
+/* While a hint shows on a short sky (main.ts sets .hinting), toasts shrink to one line and one at a
+   time so they do not cover it. The achievement text is in the Trophies tab. */
+.hinting .toasts:not(.over-modal) .toast:not(:last-child), .hinting .toasts:not(.over-modal) .t-desc { display: none; }
 .toasts.over-modal { position: fixed; top: calc(var(--safe-top, 0px) + 8px); z-index: 30; }
 .toast {
   display: flex; gap: 9px; align-items: center;

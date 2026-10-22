@@ -309,7 +309,7 @@ function start(): void {
       sfxAchievement();
       for (const id of fresh.slice(0, 3)) {
         const a = ACHIEVEMENT_BY_ID[id];
-        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(tName(a)) })}</b><br>${esc(tDesc(a))}</div>`, 'trophy', 4000);
+        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(tName(a)) })}</b><span class="t-desc"><br>${esc(tDesc(a))}</span></div>`, 'trophy', 4000);
       }
       if (fresh.length > 3) toast(t('and {n} more achievements!', { n: fresh.length - 3 }), 'trophy');
       rebuildAll = true;
@@ -433,6 +433,8 @@ function start(): void {
     hintEl.textContent = text;
     hintEl.hidden = false;
     hintEl.dataset.hint = id;
+    // Short skies only (small phones): there the toasts would cover the hint.
+    hintEl.parentElement!.classList.toggle('hinting', hintEl.parentElement!.clientHeight < 260);
   }
   function hints(): void {
     const { s } = ctx;
@@ -454,6 +456,7 @@ function start(): void {
     if (hintId) {
       hintId = '';
       hintEl.hidden = true;
+      hintEl.parentElement!.classList.remove('hinting');
     }
   }
 
