@@ -1188,6 +1188,13 @@ or overflowing (checked by script and by eye), and there were no page errors. Th
 (`eventAdBoost` uses a rate of at least 1 per second), enough for the first Flux Skimmer. No code
 changed.
 
+**Run 120. Broken save copies no longer pile up.** When the main save cannot be read, the game loads
+the backup and keeps the unreadable text under its own key for support. Each failure added a new
+key and none were removed, so a phone whose save kept breaking would slowly fill browser storage,
+and once it was full every save would fail. Only the newest three copies are now kept. In
+Playwright, six corrupted starts in a row leave three copies (six before), each time loading the
+backup's 12,345 Stardust with no page errors; a random-tap session was clean.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

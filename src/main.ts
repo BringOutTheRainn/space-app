@@ -91,6 +91,9 @@ function readStorage(key: string): string | null {
   }
 }
 
+/** How many unreadable saves to keep (the newest) for support. */
+const KEEP_BROKEN = 3;
+
 function loadState(): GameState {
   const main = readStorage(SAVE_KEY);
   const picked = pickSave(main, readStorage(BACKUP_KEY));
@@ -98,6 +101,9 @@ function loadState(): GameState {
     // Keep the unreadable save around rather than overwriting it.
     try {
       localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), main);
+      // Keep the newest few only, so a save that keeps breaking cannot fill storage and stop saving.
+      const broken = Object.keys(localStorage).filter((k) => k.startsWith(SAVE_KEY + '-broken-')).sort();
+      for (const k of broken.slice(0, -KEEP_BROKEN)) localStorage.removeItem(k);
     } catch {
       /* storage full or unavailable */
     }
