@@ -134,13 +134,16 @@ export function rewardedAvailable(): boolean {
  */
 export async function showRewarded(what: string): Promise<boolean> {
   if (!rewardedAvailable()) return false;
-  await initAds();
-  if (!ready) return noAd();
   const ad = admob();
-  if (isNative() && ad) {
-    // No fill or no network is common; wait a little for one, then say so
-    // rather than leave the button doing nothing.
-    if (!rewardedLoaded) await Promise.race([preloadRewarded(), new Promise((r) => setTimeout(r, LOAD_WAIT_MS))]);
+  const native = isNative() && !!ad;
+  // Starting the SDK and loading an ad can stall with no network, and no fill
+  // is common; wait a little, then say so rather than leave the button dead.
+  await Promise.race([
+    initAds().then(() => (ready && native && !rewardedLoaded ? preloadRewarded() : undefined)),
+    new Promise((r) => setTimeout(r, LOAD_WAIT_MS)),
+  ]);
+  if (!ready) return noAd();
+  if (native && ad) {
     if (!rewardedLoaded) return noAd();
     rewardedLoaded = false;
     suspendAudio();

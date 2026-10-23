@@ -1211,6 +1211,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 128. Rewarded buttons say when no ad is available.** On a phone, a rewarded button did nothing when AdMob had no ad (no fill, or no network). If loading hung, the tap waited forever. All ten rewarded placements go through `showRewarded`, which now waits up to 6 seconds for an ad that is not loaded yet. If none arrives, it shows "No ad is ready right now. Please try again in a minute.", translated into all five languages. An ad that fails while showing still returns quietly, because some plugin versions report closing an ad early the same way. Checked with a fake Android AdMob plugin: an ad loads and rewards; with no fill, the message appears at once; when loading hangs, the message appears after 6 s (the old code was still waiting when the test gave up at 30 s).
 
+**Run 129. The ad wait also covers starting the ad SDK.** Run 128 capped the wait for an ad to load, but `showRewarded` first waited, with no limit, for AdMob to start, and starting includes the consent check. With no network that can stall, leaving the button dead again. The 6-second wait now covers starting and loading together. Checked with the fake Android plugin: ad loads (rewarded), no fill (message at once), loading hangs (message at 6 s), starting hangs (message at 6 s). The browser stand-in ad still opens and rewards.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
