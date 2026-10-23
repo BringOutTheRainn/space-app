@@ -44,6 +44,8 @@ export interface Settings {
   saver: boolean;
   /** True once the game has offered or switched on battery saver by itself. */
   saverAuto: boolean;
+  /** True once the player has set battery saver themselves; the game then leaves it alone. */
+  saverManual: boolean;
   /** 'auto' follows the phone's language where the game is fully translated. */
   lang: LangSetting;
   /** The Build tab's last buy amount (x1, x10, x100, Next or Max), kept between sessions. */
@@ -283,7 +285,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, lang: 'auto', buyAmount: '1' },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, saverManual: false, lang: 'auto', buyAmount: '1' },
   };
 }
 

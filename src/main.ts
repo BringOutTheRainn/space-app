@@ -120,6 +120,8 @@ function start(): void {
   layout();
   let lastBackupAt = 0;
   let saveWarned = false;
+  // Later forms draw a heavier sky, so the battery saver check runs again after each evolution.
+  let saverRecheck = false;
   // On Android, wait until the preferences copy has been checked before
   // writing over it, in case localStorage was cleared, or holds only unreadable
   // saves, and this is a fresh state.
@@ -351,6 +353,7 @@ function start(): void {
       toast(`<div class="t-ico">${icon('cosmos')}</div><div><b>${esc(t('Evolution! {from} → {to}', { from: t(STAGES[shownStage].name), to: t(STAGES[stage].name) }))}</b><br>${esc(sub)}</div>`, 'good', 5000);
       sfxAchievement();
       haptic('medium');
+      saverRecheck = true;
     }
     shownStage = stage;
     sky.setStage(stage);
@@ -530,11 +533,14 @@ function start(): void {
     if (ctx.s.settings.saver && gap < 30) return;
     const dt = Math.min(1, Math.max(0, gap / 1000));
     last = now;
-    if (!paused && !ctx.s.settings.saverAuto && gap > 0 && gap < 1000) {
+    const st = ctx.s.settings;
+    if (!paused && !st.saver && !st.saverManual && (!st.saverAuto || saverRecheck) && gap > 0 && gap < 1000) {
       slowSample.push(gap);
       if (slowSample.length >= 400 || slowSample.reduce((a, b) => a + b, 0) > 20000) {
         const sorted = slowSample.slice().sort((a, b) => a - b);
-        ctx.s.settings.saverAuto = true;
+        slowSample.length = 0;
+        saverRecheck = false;
+        st.saverAuto = true;
         if (sorted[sorted.length >> 1] > SLOW_FRAME_MS) {
           ctx.s.settings.saver = true;
           applySettings(ctx);

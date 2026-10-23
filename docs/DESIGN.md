@@ -1205,6 +1205,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 125. Save codes survive chat and email.** A save code pasted back from a message app often comes with quotes, line breaks, invisible characters or the URL-safe alphabet. Before, any of these made Load save code fail with "That save code did not work". The loader now keeps only the code's own characters. A new unit test covers smart quotes, CRLF wrapping every 60 characters, zero-width spaces, missing padding and URL-safe codes. In Playwright, a quoted, wrapped code failed before the fix and loads now. Also measured late-game frame times with the CPU slowed 6x against the build from 30 commits ago: they are the same, so there is no regression (this container is slower than earlier ones).
 
+**Run 126. Battery saver check runs again after each evolution.** Later forms draw a heavier sky. With the CPU slowed 6x, the Build tab's median frame goes from 67 ms as an Asteroid to 100 ms at a late form, with the same buildings. The automatic battery saver check only ran once, in the first 20 seconds of a new game when the sky is lightest, so a phone that coped early could stutter later. The 20-second check now runs again after each evolution, unless saver is already on or the player set it themselves (new `saverManual` setting). Checked in Playwright with the CPU slowed 6x: after an evolution, saver turned on for an auto player and stayed off for a player who had set it by hand.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

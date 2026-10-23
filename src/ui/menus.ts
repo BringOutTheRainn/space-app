@@ -215,6 +215,7 @@ export function openSettings(ctx: Ctx): void {
   bind('set-saver', (on) => {
     st.saver = on;
     st.saverAuto = true;
+    st.saverManual = true;
   });
   bind('set-sci', (on) => (st.numberStyle = on ? 'scientific' : 'short'));
   el.querySelector<HTMLSelectElement>('#set-lang')!.addEventListener('change', (e) => {
