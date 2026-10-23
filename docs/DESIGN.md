@@ -1155,6 +1155,13 @@ the Missions button and the gift on Hyperdrive. Under 520 px tall they now share
 top (event, Missions, then Hyperdrive and a slightly smaller gift on the right). A bounding-box check
 finds no overlaps at 412 x 520, 420 and 300, 360 x 330, 320 x 568 and 360 x 640.
 
+**Run 116. Windows in split-screen.** Every main window (Settings, Stats, Shop, Goals, the daily
+gift, the event and Hyperdrive) was opened at 412 x 300 and 360 x 330. All had their close button
+on screen and a scrolling middle, but at 412 x 300 the middle was only 139 px, under a card and a
+half, because of the 36 px gap above the window and roomy title and button rows. Under 520 px tall
+(and under 560 px wide) a window now uses the full height with tighter rows: the middle is 197 px at
+412 x 300 and 417 px at 412 x 520. No page errors in either size.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

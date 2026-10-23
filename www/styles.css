@@ -987,4 +987,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .gift-btn { top: 6px; width: 44px; height: 44px; padding: 5px; }
   .hyper-btn { top: 10px; bottom: auto; right: 64px; }
   .buffs { bottom: 30px; }
+  /* Windows: use the full height and trim the title and button rows, so the scrolling middle
+     shows more than a card and a half. */
+  .modal { max-height: 100dvh; border-radius: 16px 16px 0 0; }
+  .modal-head { padding: 8px 12px 2px; }
+  .modal-head h2 { font-size: 17px; }
+  .modal-body { padding: 2px 12px 6px; }
+  .modal-buttons { padding: 6px 12px 8px; }
 }
