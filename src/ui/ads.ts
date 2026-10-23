@@ -162,25 +162,29 @@ export async function showRewarded(what: string): Promise<boolean> {
   return webAd(t('Rewarded ad: {what}', { what }), 5, true);
 }
 
-/** Shows a full-screen ad if one is loaded. Never blocks the game for long. */
-export async function showInterstitial(): Promise<void> {
-  if (!AD_CONFIG.enabled || !ready) return;
+/** Shows a full-screen ad if one is loaded. Never blocks the game for long. Resolves true if one showed. */
+export async function showInterstitial(): Promise<boolean> {
+  if (!AD_CONFIG.enabled || !ready) return false;
   const ad = admob();
   if (isNative() && ad) {
-    if (!interstitialLoaded) return void preloadInterstitial();
+    if (!interstitialLoaded) {
+      void preloadInterstitial();
+      return false;
+    }
     interstitialLoaded = false;
     suspendAudio();
     try {
       await ad.showInterstitial();
+      return true;
     } catch {
-      /* no fill */
+      return false;
     } finally {
       resumeAudio();
       void preloadInterstitial();
     }
-    return;
   }
   await webAd(t('Full-screen ad'), 3, false);
+  return true;
 }
 
 let bannerListening = false;

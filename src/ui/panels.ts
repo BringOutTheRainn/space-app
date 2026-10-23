@@ -577,8 +577,12 @@ export class ProbesPanel implements Panel {
 /** A full-screen ad at a natural break, after the collapse animation. */
 function breakAd(ctx: Ctx): void {
   if (!interstitialAllowed(ctx.s)) return;
-  ctx.s.lastInterstitialAt = Date.now();
-  setTimeout(() => void showInterstitial(), 1800);
+  // The gap counts from an ad actually shown, so no fill does not cost the next break.
+  setTimeout(() => void showInterstitial().then((shown) => {
+    if (!shown) return;
+    ctx.s.lastInterstitialAt = Date.now();
+    ctx.save();
+  }), 1800);
 }
 
 export function stageName(earned: number): string {
