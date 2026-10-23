@@ -97,8 +97,9 @@ const KEEP_BROKEN = 3;
 function loadState(): { state: GameState; found: boolean } {
   const main = readStorage(SAVE_KEY);
   const picked = pickSave(main, readStorage(BACKUP_KEY));
-  if (picked?.from === 'backup' && main) {
-    // Keep the unreadable save around rather than overwriting it.
+  if (picked?.from !== 'main' && main) {
+    // Keep the unreadable save around rather than overwriting it, also when
+    // the backup is unreadable too and the game starts fresh.
     try {
       localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), main);
       // Keep the newest few only, so a save that keeps breaking cannot fill storage and stop saving.
@@ -107,7 +108,7 @@ function loadState(): { state: GameState; found: boolean } {
     } catch {
       /* storage full or unavailable */
     }
-    console.warn('Main save unreadable; loaded the backup');
+    console.warn(picked ? 'Main save unreadable; loaded the backup' : 'Saves unreadable; starting fresh');
   }
   return { state: picked?.state ?? newState(), found: !!picked };
 }
