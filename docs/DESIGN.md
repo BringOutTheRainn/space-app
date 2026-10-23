@@ -1223,6 +1223,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 134. A missed full-screen ad no longer costs the next break.** Full-screen ads only come after a collapse, at most one per 8 minutes. The 8-minute clock started when the game asked for an ad, even if AdMob had none loaded, so after a no-fill the next collapse within 8 minutes also went without an ad. `showInterstitial` now reports whether an ad showed, and the clock starts only then. Players see no more ads than the rules allow. Checked by collapsing with a fake Android plugin: with an ad, it shows and the clock starts; with no fill, nothing shows and the clock stays free (old code started it anyway); the browser stand-in still shows and starts the clock. Also ran two 500-step late-game monkey sessions with no errors.
 
+**Run 135. Red warnings outlast routine toasts.** Only two toasts show at once, and a new one pushed out the oldest. So the run 123 "browser is not saving" warning (and other red ones, such as the store being down) could vanish in a second under a burst of achievement or comet toasts. Routine toasts are now pushed out first, and a red one goes only when nothing else can. Checked in Playwright: a save warning followed by three routine toasts stays on screen (old code dropped it at the second one); with two warnings showing, a new toast pushes out the older warning.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

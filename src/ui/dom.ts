@@ -149,7 +149,11 @@ export function toast(html: string, kind: 'info' | 'good' | 'trophy' | 'comet' |
   // Over an open window, so a toast it fires (a copy, a share) is seen.
   toastRoot.classList.toggle('over-modal', !!document.querySelector('.modal-backdrop'));
   toastRoot.appendChild(el);
-  while (toastRoot.children.length > 2) toastRoot.firstElementChild?.remove();
+  // Keep at most two; red warnings (a save failing, the store being down) go last.
+  while (toastRoot.children.length > 2) {
+    const kids = [...toastRoot.children];
+    (kids.find((k) => k !== el && !k.classList.contains('toast-bad')) ?? kids[0]).remove();
+  }
   setTimeout(() => {
     el.classList.add('out');
     setTimeout(() => el.remove(), 300);
