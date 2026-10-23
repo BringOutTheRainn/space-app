@@ -255,6 +255,17 @@ test('save round trip and migration of missing fields', () => {
   assert.throws(() => importSave('not base64!!'));
 });
 
+test('save codes survive being pasted back from chat or email', () => {
+  const s = newState(1000);
+  s.stardust = 123456;
+  const code = exportSave(s);
+  const wrapped = code.match(/.{1,60}/g).join('\r\n');
+  const urlSafe = code.replace(/\+/g, '-').replace(/\//g, '_');
+  for (const pasted of [`  ${code}\n`, `"${code}"`, `\u201c${code}\u201d`, wrapped, `\u200b${code}\u200b`, code.replace(/=+$/, ''), urlSafe]) {
+    assert.deepEqual(importSave(pasted), s);
+  }
+});
+
 test('saved settings keep their types and fall back on bad values', () => {
   const s = newState(1000);
   const raw = JSON.parse(serialize(s));

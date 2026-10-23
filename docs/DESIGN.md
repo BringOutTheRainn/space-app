@@ -1203,6 +1203,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 124. Settings says when the browser is not saving.** The run 123 toast disappears after nine seconds. Settings still said "Progress saves automatically on this device" even while saves were failing. While browser saves fail, that line is now replaced by a red note: "This browser is not saving your progress right now. Copy your save code before you close the game." It sits right above the Copy save code button, is translated into all five languages, and clears after the next successful save. Also checked with storage fully blocked (as with cookies off): the game loads, plays and shows both warnings with no errors.
 
+**Run 125. Save codes survive chat and email.** A save code pasted back from a message app often comes with quotes, line breaks, invisible characters or the URL-safe alphabet. Before, any of these made Load save code fail with "That save code did not work". The loader now keeps only the code's own characters. A new unit test covers smart quotes, CRLF wrapping every 60 characters, zero-width spaces, missing padding and URL-safe codes. In Playwright, a quoted, wrapped code failed before the fix and loads now. Also measured late-game frame times with the CPU slowed 6x against the build from 30 commits ago: they are the same, so there is no regression (this container is slower than earlier ones).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

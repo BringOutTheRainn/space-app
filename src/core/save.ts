@@ -158,7 +158,10 @@ export function exportSave(s: GameState): string {
 }
 
 export function importSave(code: string, now = Date.now()): GameState {
-  const bin = atob(code.trim());
+  // Codes pasted back from chat or email can pick up quotes, line breaks,
+  // invisible characters or the URL-safe alphabet; keep only the code itself.
+  const clean = code.replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
+  const bin = atob(clean);
   const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
   return deserialize(new TextDecoder().decode(bytes), now);
 }
