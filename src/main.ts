@@ -26,7 +26,7 @@ import { awayReport } from './core/away.js';
 import { growCrystals } from './core/crystals.js';
 import { badgeReady, currentEvent, eventTimeLeft } from './core/event.js';
 import { planReminders } from './core/notify.js';
-import { clearReminders, scheduleReminders } from './ui/notify.js';
+import { clearReminders, notificationsStillAllowed, scheduleReminders } from './ui/notify.js';
 import { initAds, setBanner } from './ui/ads.js';
 import { initStore, maybeOfferStarter, openShop } from './ui/store.js';
 import { fillVault } from './core/shop.js';
@@ -271,6 +271,17 @@ function start(): void {
   });
 
   let paused = false;
+  // Reminders that the phone now blocks show as off in Settings, not on and silent.
+  function syncReminderPermission(): void {
+    if (!ctx.s.settings.notifications) return;
+    void notificationsStillAllowed().then((ok) => {
+      if (ok) return;
+      ctx.s.settings.notifications = false;
+      ctx.save();
+    });
+  }
+  syncReminderPermission();
+
   onPause(
     () => {
       if (paused) return;
@@ -284,6 +295,7 @@ function start(): void {
       paused = false;
       resumeAudio();
       void clearReminders();
+      syncReminderPermission();
       const back = applyOffline(ctx.s, ctx.d);
       const backReport = awayReport(ctx.s, Date.now(), back.seconds);
       if (back.earned > 0 && back.seconds >= 60) {

@@ -37,6 +37,17 @@ export async function requestNotifications(): Promise<boolean> {
   }
 }
 
+/** False once the player has turned notifications off for the game in the phone's settings. */
+export async function notificationsStillAllowed(): Promise<boolean> {
+  const p = plugin();
+  if (!p) return true;
+  try {
+    return (await p.checkPermissions()).display === 'granted';
+  } catch {
+    return true;
+  }
+}
+
 export async function scheduleReminders(list: Reminder[]): Promise<void> {
   const p = plugin();
   if (!p) return;
