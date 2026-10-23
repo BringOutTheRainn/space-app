@@ -980,4 +980,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .sky-wrap { flex: 0 0 30%; min-height: 96px; }
   .tab { padding: 4px 2px 5px; }
   .hint { bottom: 30px; padding: 4px 10px; font-size: 11px; }
+  /* The corner buttons stack two high on each side and overlapped in a sky this short, so they
+     share one row along the top instead. */
+  .event-btn { top: 6px; }
+  .mission-btn { top: 6px; bottom: auto; left: 76px; }
+  .gift-btn { top: 6px; width: 44px; height: 44px; padding: 5px; }
+  .hyper-btn { top: 10px; bottom: auto; right: 64px; }
+  .buffs { bottom: 30px; }
 }

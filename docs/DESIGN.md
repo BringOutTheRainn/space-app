@@ -1147,6 +1147,14 @@ bar and a smaller hint. Measured in Playwright: the Build list is 92 px at 412 x
 under the tab bar), 182 px at 412 x 420 and 252 px at 412 x 520, with the tab bar on screen in all.
 Unfolded and landscape large screens were already fine (shop beside the sky).
 
+**Run 115. Large text on short phones, and sky buttons in split-screen.** At Android's 130% text
+size (the most the game follows), every tab at 320 x 568 and 360 x 640 and the Build tab in a
+412 x 420 split-screen window read without clipping; long lines end in an ellipsis. The split-screen
+check found the sky's corner buttons overlapping: in a sky 96 to 156 px tall, the event timer sat on
+the Missions button and the gift on Hyperdrive. Under 520 px tall they now share one row along the
+top (event, Missions, then Hyperdrive and a slightly smaller gift on the right). A bounding-box check
+finds no overlaps at 412 x 520, 420 and 300, 360 x 330, 320 x 568 and 360 x 640.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
