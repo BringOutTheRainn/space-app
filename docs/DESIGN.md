@@ -1227,6 +1227,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 136. A message instead of an endless splash when the game cannot start.** If the game script fails to load or crashes before the first frame (for example an old or broken WebView that the version check misses), the player used to stare at the splash screen forever. A small inline script in index.html now waits 15 seconds; if the game never came up and no crash or old-WebView screen is showing, it hides the splash and shows 'Stardust Empire could not start. Please close the game and open it again.' in the player's language. Checked in Playwright: a normal start shows nothing, a build with a broken main.js shows the message.
 
+**Run 137. The start message no longer appears on a slow load.** Run 136's 15-second timer replaced the splash with 'could not start' even when the game was only loading slowly; the game then came up over it, but a player may already have closed it. Now the message shows within a second when a game script fails to load or has an error before the game is up, and otherwise only after 30 seconds. Checked in Playwright: normal and 18-second loads show no message; a broken main.js, a missing main.js and a missing module show it after about one second; a script that never arrives shows it at 30 seconds.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
