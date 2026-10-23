@@ -94,7 +94,7 @@ function readStorage(key: string): string | null {
 /** How many unreadable saves to keep (the newest) for support. */
 const KEEP_BROKEN = 3;
 
-function loadState(): GameState {
+function loadState(): { state: GameState; found: boolean } {
   const main = readStorage(SAVE_KEY);
   const picked = pickSave(main, readStorage(BACKUP_KEY));
   if (picked?.from === 'backup' && main) {
@@ -109,18 +109,19 @@ function loadState(): GameState {
     }
     console.warn('Main save unreadable; loaded the backup');
   }
-  return picked?.state ?? newState();
+  return { state: picked?.state ?? newState(), found: !!picked };
 }
 
 function start(): void {
-  const state = loadState();
+  const { state, found } = loadState();
   setLanguage(state.settings.lang);
   installIcons();
   layout();
   let lastBackupAt = 0;
   // On Android, wait until the preferences copy has been checked before
-  // writing over it, in case localStorage was cleared and this is a fresh state.
-  let nativeChecked = !isNative() || !!readStorage(SAVE_KEY);
+  // writing over it, in case localStorage was cleared, or holds only unreadable
+  // saves, and this is a fresh state.
+  let nativeChecked = !isNative() || found;
   let derived: Derived = computeDerived(state);
   let rebuildAll = true;
   let activeTab = 'build';

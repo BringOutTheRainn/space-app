@@ -1195,6 +1195,8 @@ and once it was full every save would fail. Only the newest three copies are now
 Playwright, six corrupted starts in a row leave three copies (six before), each time loading the
 backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
+**Run 121. Phone copy used when local saves are unreadable.** On Android the game skipped the phone (Preferences) copy whenever any local save key existed, even if every local save was damaged. It then started fresh and overwrote the good phone copy on the next save. `loadState` now reports whether it found a readable save, and the phone copy is checked whenever it did not. Checked on a fake Android phone: old code lost the save (0 Stardust in both places), new code restored 777,777.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
