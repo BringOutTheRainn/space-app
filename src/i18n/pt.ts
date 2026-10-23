@@ -47,6 +47,7 @@ export const PT: Record<string, string> = {
   'This browser is not saving your progress. To keep it, use Copy save code in Settings.': 'Este navegador não está salvando seu progresso. Para mantê-lo, use Copiar código de salvamento em Configurações.',
   'This browser is not saving your progress right now. Copy your save code before you close the game.': 'Este navegador não está salvando seu progresso agora. Copie seu código de salvamento antes de fechar o jogo.',
   'No ad is ready right now. Please try again in a minute.': 'Nenhum anúncio está pronto agora. Tente de novo em um minuto.',
+  'Your purchase is pending. It will be added as soon as the payment goes through.': 'Sua compra está pendente. Ela será adicionada assim que o pagamento for concluído.',
   'Stardust Empire could not start': 'Stardust Empire não conseguiu iniciar',
   'Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.': 'Seu progresso continua salvo neste celular. Feche o jogo e abra de novo. Se isso continuar acontecendo, copie o relatório abaixo e envie ao desenvolvedor.',
 

@@ -54,6 +54,8 @@ function platformId(c: CdvGlobal): string {
 
 let appCtx: Ctx | null = null;
 let nativeReady = false;
+/** How long a purchase that went through Google Play may take to be approved before it counts as pending. */
+const PENDING_WAIT_MS = 15000;
 /** Resolves the purchase the player is waiting on, by product id. */
 const waiting = new Map<string, (ok: boolean) => void>();
 
@@ -147,13 +149,22 @@ export function buyProduct(ctx: Ctx, id: string): Promise<boolean> {
     }
     return new Promise((resolve) => {
       waiting.set(id, resolve);
+      const giveUp = (): void => {
+        if (!waiting.has(id)) return;
+        waiting.delete(id);
+        resolve(false);
+      };
       // order() resolves with an error when the player cancels; approval comes through initStore.
-      void offer.order().then((err) => {
-        if (err && waiting.has(id)) {
-          waiting.delete(id);
-          resolve(false);
-        }
-      });
+      offer.order().then((err) => {
+        if (err) return giveUp();
+        // A pending payment (cash, bank transfer) is approved later, maybe after a restart;
+        // initStore grants it whenever it arrives, so stop holding the button.
+        setTimeout(() => {
+          if (!waiting.has(id)) return;
+          toast(t('Your purchase is pending. It will be added as soon as the payment goes through.'), 'info', 6000);
+          giveUp();
+        }, PENDING_WAIT_MS);
+      }, giveUp);
     });
   }
   return testCheckout(p).then((ok) => {
@@ -190,8 +201,12 @@ export async function restorePurchases(): Promise<void> {
     toast(t('The store is not available right now.'), 'bad');
     return;
   }
-  await c.store.restorePurchases();
-  toast(t('Purchases restored.'), 'good');
+  try {
+    await c.store.restorePurchases();
+    toast(t('Purchases restored.'), 'good');
+  } catch {
+    toast(t('The store is not available right now.'), 'bad');
+  }
 }
 
 // ------------------------------------------------------------------ Shop
