@@ -71,7 +71,8 @@ fi
 # - A ShareText plugin that opens Android's share sheet with a line of text (Stats screen).
 # - Apps targeting Android 15+ are drawn edge to edge, under the status and navigation
 #   bars. Pad the game's view by the bars (and any camera cutout) so the header and the
-#   bottom tabs stay clear of them, with light bar icons on the dark background.
+#   bottom tabs stay clear of them, with light bar icons on the dark background, and
+#   lift it above the on-screen keyboard (Android 15+ no longer resizes for it).
 ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -1)
 if [ -n "$ACTIVITY" ] && ! grep -q 'InAppReviewPlugin' "$ACTIVITY"; then
   PKG=$(grep -m1 '^package ' "$ACTIVITY")
@@ -108,7 +109,10 @@ public class MainActivity extends BridgeActivity {
         bars.setAppearanceLightNavigationBars(false);
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets i = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            v.setPadding(i.left, i.top, i.right, i.bottom);
+            // Edge to edge, the window no longer shrinks for the keyboard; lift the game above it
+            // so the save code box and its Load button stay in view.
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            v.setPadding(i.left, i.top, i.right, Math.max(i.bottom, ime.bottom));
             return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(root);

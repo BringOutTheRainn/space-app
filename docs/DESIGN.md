@@ -1219,6 +1219,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 132. Reminders follow the phone's permission.** If a player turned reminders on and later blocked notifications for the game in Android settings, Settings still showed reminders as on, and nothing arrived. The game now checks the permission at start and on every return to the app. If it is blocked, the setting turns off, so Settings matches what the phone allows and the player can turn it back on (which asks again). Checked with a fake notifications plugin: granted keeps it on; denied turns it off and the Settings toggle shows off (the old code showed on).
 
+**Run 133. Keyboard no longer covers the save code box on Android 15+.** Builds target API 36, so the app is drawn edge to edge. Edge to edge, Android no longer shrinks the window for the on-screen keyboard (`adjustResize` stops working), and the insets listener added in run 54 only padded for the system bars. The Load save code sheet sits at the bottom, so the keyboard would cover its text box and Load button. The listener in `tools/android.sh` now pads the bottom by whichever is taller, the navigation bar or the keyboard (`WindowInsetsCompat.Type.ime()`), so the WebView shrinks and the sheet moves up. The Android build in CI compiles the change. The web side was checked by shrinking the viewport as the keyboard would, to 440 and 340 px tall with the box focused, in English and German: the text box and Load button stay fully in view.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
