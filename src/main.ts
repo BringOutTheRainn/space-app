@@ -659,9 +659,9 @@ try {
   // Startup failed: show what happened instead of a blank screen. The save is untouched.
   recordError('start', e);
   hideSplash();
-  document.body.innerHTML = `<div class="crash"><h2>${t('Stardust Empire could not start')}</h2>
+  document.body.innerHTML = `<div class="crash" role="alert"><h2>${t('Stardust Empire could not start')}</h2>
     <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')}</p>
-    <textarea class="code" readonly>${esc(errorReport(VERSION))}</textarea></div>`;
+    <textarea class="code" readonly aria-label="${t('Error report')}">${esc(errorReport(VERSION))}</textarea></div>`;
 }
 
 /** A caught comet's title and detail line in the player's language. */

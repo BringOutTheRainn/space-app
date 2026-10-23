@@ -243,7 +243,7 @@ export function openSettings(ctx: Ctx): void {
   el.querySelector('#btn-errors')?.addEventListener('click', async () => {
     const report = errorReport(VERSION);
     if (await copyText(report)) toast(t('Error report copied'), 'good');
-    else openModal({ title: t('Error report'), body: `<textarea class="code" readonly>${esc(report)}</textarea>` });
+    else openModal({ title: t('Error report'), body: `<textarea class="code" readonly aria-label="${t('Error report')}">${esc(report)}</textarea>` });
   });
   el.querySelector('#btn-ad-privacy')?.addEventListener('click', () => void showAdPrivacyOptions());
   el.querySelector('#btn-export')!.addEventListener('click', async () => {

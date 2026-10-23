@@ -28,7 +28,7 @@
         de: 'Stardust Empire braucht eine neuere Version von Android System WebView. Aktualisiere sie (und Chrome) über Google Play und öffne das Spiel dann erneut.'
       }[l] || 'Stardust Empire needs a newer Android System WebView. Update it (and Chrome) from Google Play, then open the game again.';
       var app = document.getElementById('app');
-      app.innerHTML = '<div class="boot old-webview"></div>';
+      app.innerHTML = '<div class="boot old-webview" role="alert"></div>';
       app.firstChild.textContent = m;
       // The game normally hides the splash screen itself.
       try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
@@ -49,7 +49,7 @@
           de: 'Stardust Empire konnte nicht starten. Schließe das Spiel und öffne es erneut.'
         }[l] || 'Stardust Empire could not start. Please close the game and open it again.';
         var app = document.getElementById('app');
-        app.innerHTML = '<div class="boot old-webview"></div>';
+        app.innerHTML = '<div class="boot old-webview" role="alert"></div>';
         app.firstChild.textContent = m;
         try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
       }

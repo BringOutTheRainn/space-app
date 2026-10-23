@@ -1229,6 +1229,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 137. The start message no longer appears on a slow load.** Run 136's 15-second timer replaced the splash with 'could not start' even when the game was only loading slowly; the game then came up over it, but a player may already have closed it. Now the message shows within a second when a game script fails to load or has an error before the game is up, and otherwise only after 30 seconds. Checked in Playwright: normal and 18-second loads show no message; a broken main.js, a missing main.js and a missing module show it after about one second; a script that never arrives shows it at 30 seconds.
 
+**Run 138. Start-up problems are announced by screen readers.** The three screens a player sees when the game cannot run (old WebView, could not start, and the crash report) were plain text, so TalkBack said nothing until the player went looking. Each now has `role="alert"`, and the crash report box (and the one in Settings) is labelled "Error report" in every language instead of reading out the raw report. Checked with Playwright's accessibility snapshot for each screen, with a missing main.js, a simulated old WebView and a forced error in `start()`.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
