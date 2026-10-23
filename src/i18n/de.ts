@@ -45,6 +45,7 @@ export const DE: Record<string, string> = {
   "Progress restored from the phone backup.": "Fortschritt aus der Sicherung auf dem Handy wiederhergestellt.",
   "This browser is not saving your progress. To keep it, use Copy save code in Settings.": "Dieser Browser speichert deinen Fortschritt nicht. Um ihn zu behalten, nutze Speichercode kopieren in den Einstellungen.",
   "This browser is not saving your progress right now. Copy your save code before you close the game.": "Dieser Browser speichert deinen Fortschritt gerade nicht. Kopiere deinen Speichercode, bevor du das Spiel schließt.",
+  "No ad is ready right now. Please try again in a minute.": "Gerade ist keine Werbung bereit. Versuch es in einer Minute noch einmal.",
   "Stardust Empire could not start": "Stardust Empire konnte nicht starten",
   "Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.": "Dein Fortschritt ist weiterhin auf diesem Handy gespeichert. Bitte schließe das Spiel und öffne es erneut. Wenn das wieder passiert, kopiere den Bericht unten und schicke ihn an den Entwickler.",
   "Asteroid": "Asteroid",

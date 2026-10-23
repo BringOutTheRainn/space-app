@@ -4,7 +4,7 @@
 
 import { t } from '../i18n/index.js';
 import { AD_CONFIG } from '../data/ads.js';
-import { esc, openModal, closeModal } from './dom.js';
+import { esc, openModal, closeModal, toast } from './dom.js';
 import { isNative } from './platform.js';
 import { suspendAudio, resumeAudio } from './audio.js';
 
@@ -113,6 +113,14 @@ async function preloadInterstitial(): Promise<void> {
   }
 }
 
+/** How long a tap on a rewarded button waits for an ad that is not loaded yet. */
+const LOAD_WAIT_MS = 6000;
+
+function noAd(): false {
+  toast(t('No ad is ready right now. Please try again in a minute.'), 'info');
+  return false;
+}
+
 /** Is a rewarded ad worth offering right now? */
 export function rewardedAvailable(): boolean {
   if (!AD_CONFIG.enabled) return false;
@@ -127,17 +135,20 @@ export function rewardedAvailable(): boolean {
 export async function showRewarded(what: string): Promise<boolean> {
   if (!rewardedAvailable()) return false;
   await initAds();
-  if (!ready) return false;
+  if (!ready) return noAd();
   const ad = admob();
   if (isNative() && ad) {
-    if (!rewardedLoaded) await preloadRewarded();
-    if (!rewardedLoaded) return false;
+    // No fill or no network is common; wait a little for one, then say so
+    // rather than leave the button doing nothing.
+    if (!rewardedLoaded) await Promise.race([preloadRewarded(), new Promise((r) => setTimeout(r, LOAD_WAIT_MS))]);
+    if (!rewardedLoaded) return noAd();
     rewardedLoaded = false;
     suspendAudio();
     try {
       const reward = await ad.showRewardVideoAd();
       return !!reward;
     } catch {
+      // Also how some plugin versions report an ad closed early, so no message.
       return false;
     } finally {
       resumeAudio();

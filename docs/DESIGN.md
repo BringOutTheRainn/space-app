@@ -1209,6 +1209,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 127. Release regression pass after the save changes.** Runs 121 to 126 touched the save, load and frame loop, so the release checks ran again. All 40 damaged late-game saves loaded and clicked through every tab and window with no errors (seed 127). The memory soak ended at 6,473 nodes and a 3.2 MB heap with no errors, the same as run 110. Also timed the sky's drawing for each of the seven forms: 4 to 8 ms per frame at full speed, with the Gas Giant and Star forms heaviest. Baking the backdrop colour into the nebula image was tried and dropped, because the gain was smaller than run-to-run noise.
 
+**Run 128. Rewarded buttons say when no ad is available.** On a phone, a rewarded button did nothing when AdMob had no ad (no fill, or no network). If loading hung, the tap waited forever. All ten rewarded placements go through `showRewarded`, which now waits up to 6 seconds for an ad that is not loaded yet. If none arrives, it shows "No ad is ready right now. Please try again in a minute.", translated into all five languages. An ad that fails while showing still returns quietly, because some plugin versions report closing an ad early the same way. Checked with a fake Android AdMob plugin: an ad loads and rewards; with no fill, the message appears at once; when loading hangs, the message appears after 6 s (the old code was still waiting when the test gave up at 30 s).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
