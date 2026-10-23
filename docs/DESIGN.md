@@ -1199,6 +1199,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 122. Unreadable save kept when both copies are damaged.** The game already set aside an unreadable main save (newest three kept) when it loaded the backup. When the backup was unreadable too, it started fresh and overwrote the damaged main save, losing the only thing support could try to recover. It now sets that save aside in both cases. Checked in Playwright: old code kept nothing, new code kept the damaged save; the run 120 cap of three and the run 121 phone copy still work.
 
+**Run 123. Warning when the browser cannot save.** If storage was full or blocked, a save failed silently and the player lost everything on reload. On Android the phone copy still saves, so nothing changes there. In a browser the game now shows one red toast per session: "This browser is not saving your progress. To keep it, use Copy save code in Settings." It is translated into all four other languages. Checked in Playwright with storage forced full: one toast after two failed saves, no errors.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

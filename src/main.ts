@@ -119,6 +119,7 @@ function start(): void {
   installIcons();
   layout();
   let lastBackupAt = 0;
+  let saveWarned = false;
   // On Android, wait until the preferences copy has been checked before
   // writing over it, in case localStorage was cleared, or holds only unreadable
   // saves, and this is a fresh state.
@@ -178,6 +179,11 @@ function start(): void {
         }
       } catch (e) {
         console.warn('Save failed', e);
+        // On Android the phone copy below still saves; in a browser nothing does.
+        if (!isNative() && !saveWarned) {
+          saveWarned = true;
+          toast(t('This browser is not saving your progress. To keep it, use Copy save code in Settings.'), 'bad', 9000);
+        }
       }
       if (nativeChecked) nativeSaveWrite(SAVE_KEY, text);
     },

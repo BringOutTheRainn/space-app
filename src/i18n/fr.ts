@@ -43,6 +43,7 @@ export const FR: Record<string, string> = {
   "Something went wrong, but your progress is safe. Settings has an error report.": "Un problème est survenu, mais votre progression est sauvegardée. Un rapport d'erreur est dans Réglages.",
   "Battery saver is on to keep things smooth. You can change it in Settings.": "L'économie de batterie est activée pour garder le jeu fluide. Vous pouvez la changer dans Réglages.",
   "Progress restored from the phone backup.": "Progression restaurée depuis la sauvegarde du téléphone.",
+  "This browser is not saving your progress. To keep it, use Copy save code in Settings.": "Ce navigateur n'enregistre pas votre progression. Pour la garder, utilisez Copier le code de sauvegarde dans Réglages.",
   "Stardust Empire could not start": "Stardust Empire n'a pas pu démarrer",
   "Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.": "Votre progression est toujours sauvegardée sur ce téléphone. Fermez le jeu et rouvrez-le. Si cela continue, copiez le rapport ci-dessous et envoyez-le au développeur.",
   "Asteroid": "Astéroïde",
