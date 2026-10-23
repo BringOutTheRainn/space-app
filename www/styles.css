@@ -995,3 +995,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .modal-body { padding: 2px 12px 6px; }
   .modal-buttons { padding: 6px 12px 8px; }
 }
+
+/* Settings: shown in place of the "saves automatically" line while browser saves fail. */
+.save-failing { color: var(--red); font-weight: 600; }

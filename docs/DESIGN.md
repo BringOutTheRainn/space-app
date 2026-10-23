@@ -1201,6 +1201,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 123. Warning when the browser cannot save.** If storage was full or blocked, a save failed silently and the player lost everything on reload. On Android the phone copy still saves, so nothing changes there. In a browser the game now shows one red toast per session: "This browser is not saving your progress. To keep it, use Copy save code in Settings." It is translated into all four other languages. Checked in Playwright with storage forced full: one toast after two failed saves, no errors.
 
+**Run 124. Settings says when the browser is not saving.** The run 123 toast disappears after nine seconds. Settings still said "Progress saves automatically on this device" even while saves were failing. While browser saves fail, that line is now replaced by a red note: "This browser is not saving your progress right now. Copy your save code before you close the game." It sits right above the Copy save code button, is translated into all five languages, and clears after the next successful save. Also checked with storage fully blocked (as with cookies off): the game loads, plays and shows both warnings with no errors.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -187,7 +187,7 @@ export function openSettings(ctx: Ctx): void {
       ${notificationsSupported() ? toggleRow('set-notify', t('Reminders (storage full, probes back, daily drop)'), st.notifications) : ''}
       ${languageRow(st.lang)}
       <h3 class="section-title">${t('Save')}</h3>
-      <p class="dim">${t('Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.')}</p>
+      ${ctx.saveFailing ? `<p class="save-failing">${t('This browser is not saving your progress right now. Copy your save code before you close the game.')}</p>` : `<p class="dim">${t('Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.')}</p>`}
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">${t('Copy save code')}</button><button class="btn btn-plain" id="btn-import">${t('Load save code')}</button></div>
       ${hasErrors() ? `<h3 class="section-title">${t('Problems')}</h3><p class="dim">${t('The game caught an error. If something looked wrong, copy this report and send it to the developer.')}</p><button class="btn btn-plain" id="btn-errors">${t('Copy error report')}</button>` : ''}
       ${adPrivacyOptionsAvailable() ? `<h3 class="section-title">${t('Ads')}</h3><button class="btn btn-plain" id="btn-ad-privacy">${t('Ad privacy choices')}</button>` : ''}

@@ -158,6 +158,7 @@ function start(): void {
     d: derived,
     sky,
     buyAmount: buyAmountFrom(state.settings.buyAmount),
+    saveFailing: false,
     recalc() {
       derived = computeDerived(ctx.s);
       ctx.d = derived;
@@ -177,8 +178,10 @@ function start(): void {
           localStorage.setItem(BACKUP_KEY, text);
           lastBackupAt = now;
         }
+        ctx.saveFailing = false;
       } catch (e) {
         console.warn('Save failed', e);
+        ctx.saveFailing = !isNative();
         // On Android the phone copy below still saves; in a browser nothing does.
         if (!isNative() && !saveWarned) {
           saveWarned = true;

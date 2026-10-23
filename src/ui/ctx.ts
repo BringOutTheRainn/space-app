@@ -18,6 +18,8 @@ export interface Ctx {
   /** Recompute derived numbers after a purchase or state change. */
   recalc(): void;
   save(): void;
+  /** True while saves fail in a browser (storage full or blocked). */
+  saveFailing: boolean;
   /** Swap in a new state (import, hard reset). */
   replaceState(s: GameState): void;
   /** Force every panel to rebuild on the next refresh. */
