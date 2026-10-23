@@ -1172,6 +1172,14 @@ Friday and caught a real problem with the tool: the weekend event put its banner
 times into the Boosts shot. `tools/store-shots.mjs` now shifts the page's `Date` to a Wednesday (only
 the date, so animations still run), which makes the shots the same on any day.
 
+**Run 118. Midnight with the game open.** The weekend event opens tonight (Friday) for the first
+real players to see it, so the day changes were checked live, with the page's clock shifted to 20
+seconds before local midnight (New York time zone) and the game left running. Thursday to Friday:
+the event button appears with "2d 23h" and the daily gift button lights without a reload. Sunday
+to Monday: the event button goes away on the dot, and an open event window switches to "This
+weekend's event has ended. The next one opens on Friday." instead of counting below zero. A daily
+gift taken just before midnight is offered again just after. No page errors; no code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
