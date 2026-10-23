@@ -94,6 +94,17 @@ const browser = await playwright.chromium.launch({ executablePath: process.env.C
 const page = tablet
   ? await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5, hasTouch: true, locale: LOCALES[lang] })
   : await browser.newPage({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true, locale: LOCALES[lang] });
+// Shift the game's clock to a Wednesday, so a run from Friday to Sunday does not put the weekend
+// event's banner and doubled boost times into the shots. (Only Date moves; animation timers do not.)
+await page.addInitScript(() => {
+  const Real = Date;
+  const shift = ((3 - new Real().getDay() + 7) % 7) * 86400000;
+  class Shifted extends Real {
+    constructor(...a) { if (a.length) super(...a); else super(Real.now() + shift); }
+    static now() { return Real.now() + shift; }
+  }
+  globalThis.Date = Shifted;
+});
 const [W, H] = tablet ? [1920, 1080] : [1080, 1920];
 const frame = await browser.newPage({ viewport: { width: W, height: H } });
 const errors = [];

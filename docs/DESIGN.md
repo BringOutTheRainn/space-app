@@ -1162,6 +1162,16 @@ half, because of the 36 px gap above the window and roomy title and button rows.
 (and under 560 px wide) a window now uses the full height with tighter rows: the middle is 197 px at
 412 x 300 and 417 px at 412 x 520. No page errors in either size.
 
+**Run 117. Release check after runs 108 to 116, and weekday store shots.** Runs 108 to 116 were
+layout changes for small and split-screen windows, so: 77 unit tests; random-tap sessions of 400
+taps at 412 x 300, 320 x 568 (German, late game) and 412 x 420 (French, late game) with no errors
+and saves that reload; the soak test back to 6,473 DOM nodes and a 3.2 MB heap; the
+accessibility-tree sweep (54 scans) clean; no contrast failures. The English tablet shots, retaken,
+match the stored ones apart from animation, so landscape tablets are untouched. That retake ran on a
+Friday and caught a real problem with the tool: the weekend event put its banner and doubled boost
+times into the Boosts shot. `tools/store-shots.mjs` now shifts the page's `Date` to a Wednesday (only
+the date, so animations still run), which makes the shots the same on any day.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
