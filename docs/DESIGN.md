@@ -1180,6 +1180,14 @@ to Monday: the event button goes away on the dot, and an open event window switc
 weekend's event has ended. The next one opens on Friday." instead of counting below zero. A daily
 gift taken just before midnight is offered again just after. No page errors; no code changed.
 
+**Run 119. Weekend event window in every language.** With the first live weekend starting, the event
+window was opened on a Saturday clock at 320 x 568 in all five languages, top and bottom. Every
+title, badge line, the Event Pass card, the four Flux generators and the footer fit with nothing cut
+or overflowing (checked by script and by eye), and there were no page errors. The ad button's
+"+10 min of Flux" still pays at least 600 Flux for a player with no Flux production yet
+(`eventAdBoost` uses a rate of at least 1 per second), enough for the first Flux Skimmer. No code
+changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
