@@ -19,6 +19,7 @@ interface AdMobPlugin {
   showInterstitial(): Promise<void>;
   showBanner(o: { adId: string; adSize: string; position: string; margin?: number; isTesting?: boolean }): Promise<void>;
   removeBanner(): Promise<void>;
+  addListener?(event: string, cb: (info: { height?: number }) => void): unknown;
 }
 
 function admob(): AdMobPlugin | undefined {
@@ -182,15 +183,36 @@ export async function showInterstitial(): Promise<void> {
   await webAd(t('Full-screen ad'), 3, false);
 }
 
+let bannerListening = false;
+let bannerFailed = false;
+
+/** Room is made for the banner only once one is showing, at its real height. */
+function bannerSpace(px: number): void {
+  document.body.classList.toggle('has-banner', px > 0);
+  if (px > 0) document.body.style.setProperty('--banner-h', `${Math.round(px)}px`);
+}
+
 export async function setBanner(on: boolean): Promise<void> {
   const ad = admob();
-  document.body.classList.toggle('has-banner', on);
+  if (!on) bannerSpace(0);
   if (!isNative() || !ad) return;
+  if (!bannerListening && ad.addListener) {
+    bannerListening = true;
+    // Adaptive banners vary in height by phone; no fill leaves no gap.
+    void ad.addListener('bannerAdSizeChanged', (info) => { if (info?.height) bannerSpace(info.height); });
+    void ad.addListener('bannerAdFailedToLoad', () => {
+      bannerFailed = true;
+      bannerSpace(0);
+    });
+  }
   try {
-    if (on) await ad.showBanner({ adId: ids().banner, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: AD_CONFIG.testing });
-    else await ad.removeBanner();
+    if (on) {
+      bannerFailed = false;
+      await ad.showBanner({ adId: ids().banner, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: AD_CONFIG.testing });
+      if (!bannerFailed && !document.body.classList.contains('has-banner')) bannerSpace(60);
+    } else await ad.removeBanner();
   } catch {
-    /* banner is optional */
+    bannerSpace(0);
   }
 }
 

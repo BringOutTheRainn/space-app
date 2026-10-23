@@ -236,7 +236,7 @@ svg.ico { width: 100%; height: 100%; display: block; }
 .fake-ad { text-align: center; padding: 10px 0; }
 .fake-ad-tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--panel-3); color: var(--dim); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 .fake-ad-count { font-size: 44px; font-weight: 800; color: var(--gold); }
-body.has-banner #app { padding-bottom: 60px; }
+body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
 
 .hint {
   position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%);

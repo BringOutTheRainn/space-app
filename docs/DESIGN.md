@@ -1213,6 +1213,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 129. The ad wait also covers starting the ad SDK.** Run 128 capped the wait for an ad to load, but `showRewarded` first waited, with no limit, for AdMob to start, and starting includes the consent check. With no network that can stall, leaving the button dead again. The 6-second wait now covers starting and loading together. Checked with the fake Android plugin: ad loads (rewarded), no fill (message at once), loading hangs (message at 6 s), starting hangs (message at 6 s). The browser stand-in ad still opens and rewards.
 
+**Run 130. Banner space matches the real banner.** The banner is off by default (`AD_CONFIG.banner`), but if cj turns it on, the game reserved a fixed 60 px at the bottom as soon as it asked for a banner. With no fill that left an empty strip, and adaptive banners on taller phones are up to 90 px or more, so the banner covered part of the tab bar. Space is now made only once AdMob shows a banner, at the height its `bannerAdSizeChanged` event reports, and removed on `bannerAdFailedToLoad` or an error. Checked with a fake Android plugin: a 90 px banner gets 90 px (old: 60), no fill or an error leaves no gap (old: 60 px empty strip), and turning it off removes the space.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
