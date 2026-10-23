@@ -1225,6 +1225,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 135. Red warnings outlast routine toasts.** Only two toasts show at once, and a new one pushed out the oldest. So the run 123 "browser is not saving" warning (and other red ones, such as the store being down) could vanish in a second under a burst of achievement or comet toasts. Routine toasts are now pushed out first, and a red one goes only when nothing else can. Checked in Playwright: a save warning followed by three routine toasts stays on screen (old code dropped it at the second one); with two warnings showing, a new toast pushes out the older warning.
 
+**Run 136. A message instead of an endless splash when the game cannot start.** If the game script fails to load or crashes before the first frame (for example an old or broken WebView that the version check misses), the player used to stare at the splash screen forever. A small inline script in index.html now waits 15 seconds; if the game never came up and no crash or old-WebView screen is showing, it hides the splash and shows 'Stardust Empire could not start. Please close the game and open it again.' in the player's language. Checked in Playwright: a normal start shows nothing, a build with a broken main.js shows the message.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -34,6 +34,24 @@
       try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
     })();
   </script>
+  <script>
+    // If the game script never starts (a file missing or broken by a bad update), say so
+    // after a while instead of leaving the splash screen up forever.
+    setTimeout(function () {
+      if (window.__game || document.querySelector('.crash, .old-webview')) return;
+      var l = (navigator.language || 'en').slice(0, 2);
+      var m = {
+        es: 'Stardust Empire no pudo iniciarse. Cierra el juego y vuelve a abrirlo.',
+        pt: 'Stardust Empire não conseguiu iniciar. Feche o jogo e abra de novo.',
+        fr: 'Stardust Empire n\u2019a pas pu démarrer. Fermez le jeu puis rouvrez-le.',
+        de: 'Stardust Empire konnte nicht starten. Schließe das Spiel und öffne es erneut.'
+      }[l] || 'Stardust Empire could not start. Please close the game and open it again.';
+      var app = document.getElementById('app');
+      app.innerHTML = '<div class="boot old-webview"></div>';
+      app.firstChild.textContent = m;
+      try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
+    }, 15000);
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
