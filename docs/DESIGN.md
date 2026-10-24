@@ -1275,6 +1275,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 160. Lockfile added.** Run 159 pinned the game's own packages but left their dependencies to be resolved fresh. The npm registry is still blocked here, so CI printed the `package-lock.json` it produced once, and that file is now committed (106 packages, every one from registry.npmjs.org with an integrity hash). Both workflows now run `npm ci`, which installs exactly what the lockfile says and fails if it disagrees with `package.json`. The temporary print step is removed.
 
+**Run 161. A test keeps the packages pinned.** A new test fails if any package in `package.json` uses a range such as `^7.0.0` instead of an exact version, or if its version differs from `package-lock.json`. This keeps runs 159 and 160 from being undone by an accidental `npm install some-plugin`, which writes a caret range by default. Checked by changing TypeScript back to `^5.9.3`, which failed the test.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -1714,3 +1714,13 @@ test('Play release notes count the generators, upgrades and achievements the gam
     }
   }
 });
+
+test('packages are pinned to exact versions that match the lockfile', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+  for (const [name, want] of Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })) {
+    assert.match(want, /^\d+\.\d+\.\d+$/, `${name} should be an exact version, not ${want}`);
+    assert.equal(lock.packages[`node_modules/${name}`]?.version, want, `${name} in package-lock.json`);
+  }
+});
