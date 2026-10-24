@@ -662,7 +662,7 @@ try {
   recordError('start', e);
   hideSplash();
   document.body.innerHTML = `<div class="crash" role="alert"><h2>${t('Stardust Empire could not start')}</h2>
-    <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')}</p>
+    <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')} ${t("The developer's email address is on the game's Google Play page.")}</p>
     <textarea class="code" readonly aria-label="${t('Error report')}">${esc(errorReport(VERSION))}</textarea>
     <button class="btn btn-primary" id="crash-copy">${t('Copy error report')}</button></div>`;
   // Long-pressing a text box to select all of it is fiddly on a phone, so offer a button.

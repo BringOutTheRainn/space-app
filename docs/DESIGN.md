@@ -1245,6 +1245,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 145. One version number for updates.** The Play build takes its version name from `package.json`, while the game shows `VERSION` from `src/ui/menus.ts` in Settings, in error reports and to decide when to show "What's new". Bumping only one for the first update would label error reports with the wrong version and could skip "What's new". A test now fails when the two differ or a changelog entry is newer than the release, and the README's table lists the three places to touch for an update. Checked by bumping `package.json` alone: the test failed.
 
+**Run 146. Players are told where to send an error report.** The crash screen and Settings' Problems section asked players to send the report to the developer but never said how. Both now add "The developer's email address is on the game's Google Play page." in all five languages (Play requires a contact email on every listing, so the address cj enters there is the one players will find). The privacy policy now says error notes are kept for up to seven days (run 141) and can also be copied from the crash screen (run 140). Checked in screenshots: the crash screen in French and Settings in Spanish.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

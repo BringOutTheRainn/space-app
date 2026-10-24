@@ -635,4 +635,5 @@ export const FR: Record<string, string> = {
   "This universe: {now} Dark Matter per hour. Last one: {last}.": "Cet univers : {now} de Matière noire par heure. Le précédent : {last}.",
   "Past its best rate: a good time to collapse.": "Son meilleur rythme est passé : bon moment pour l'effondrer.",
   "something new": "du nouveau",
+  "The developer's email address is on the game's Google Play page.": "L'adresse e-mail du développeur figure sur la page du jeu sur Google Play.",
 };

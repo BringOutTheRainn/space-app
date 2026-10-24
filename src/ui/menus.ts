@@ -189,7 +189,7 @@ export function openSettings(ctx: Ctx): void {
       <h3 class="section-title">${t('Save')}</h3>
       ${ctx.saveFailing ? `<p class="save-failing">${t('This browser is not saving your progress right now. Copy your save code before you close the game.')}</p>` : `<p class="dim">${t('Progress saves automatically on this device. Copy your save code to keep a backup or move to another device.')}</p>`}
       <div class="btn-row"><button class="btn btn-plain" id="btn-export">${t('Copy save code')}</button><button class="btn btn-plain" id="btn-import">${t('Load save code')}</button></div>
-      ${hasErrors() ? `<h3 class="section-title">${t('Problems')}</h3><p class="dim">${t('The game caught an error. If something looked wrong, copy this report and send it to the developer.')}</p><button class="btn btn-plain" id="btn-errors">${t('Copy error report')}</button>` : ''}
+      ${hasErrors() ? `<h3 class="section-title">${t('Problems')}</h3><p class="dim">${t('The game caught an error. If something looked wrong, copy this report and send it to the developer.')} ${t("The developer's email address is on the game's Google Play page.")}</p><button class="btn btn-plain" id="btn-errors">${t('Copy error report')}</button>` : ''}
       ${adPrivacyOptionsAvailable() ? `<h3 class="section-title">${t('Ads')}</h3><button class="btn btn-plain" id="btn-ad-privacy">${t('Ad privacy choices')}</button>` : ''}
       ${isNative() ? `<button class="btn btn-plain" id="btn-rate">${t('Rate on Google Play')}</button>` : ''}
       <h3 class="section-title">${t('Danger zone')}</h3>

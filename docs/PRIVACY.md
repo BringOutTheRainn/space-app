@@ -1,6 +1,6 @@
 # Stardust Empire privacy policy
 
-Last updated: October 16, 2026
+Last updated: October 24, 2026
 
 Stardust Empire is an idle game for Android. This policy explains what information the game and the
 services inside it collect, and why.
@@ -13,8 +13,8 @@ services inside it collect, and why.
 - **Reminders** are optional. If you turn them on, the game schedules notifications on your phone only.
   No push server is involved.
 - **Error reports**: if the game hits an unexpected error, a short technical note (the error and your
-  phone's browser version) is kept on your phone. It is only shared if you copy it from Settings and
-  send it yourself.
+  phone's browser version) is kept on your phone for up to seven days. It is only shared if you copy
+  it (from Settings, or from the screen shown if the game cannot start) and send it yourself.
 - The game has **no accounts, no sign-in and no analytics** of its own.
 
 ## Ads (Google AdMob)
