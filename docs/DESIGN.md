@@ -1231,6 +1231,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 138. Start-up problems are announced by screen readers.** The three screens a player sees when the game cannot run (old WebView, could not start, and the crash report) were plain text, so TalkBack said nothing until the player went looking. Each now has `role="alert"`, and the crash report box (and the one in Settings) is labelled "Error report" in every language instead of reading out the raw report. Checked with Playwright's accessibility snapshot for each screen, with a missing main.js, a simulated old WebView and a forced error in `start()`.
 
+**Run 139. Release check after runs 128 to 138.** Those runs changed ads, purchases, reminders, toasts, Android insets and start-up, so the regression set was run again with no code changes needed. Random-tap sessions (700 taps each: fresh game, late game, late game in German) had no errors, values stayed finite and each save reloaded. 60 damaged late-game saves loaded and every tab and window opened without errors; the phone-copy and both-copies-broken cases from runs 121 and 122 still behave. The soak test (Stats and Missions left open, a burst of toasts) stayed flat: 6,334 to 6,476 nodes and about 3.2 MB of heap.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
