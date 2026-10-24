@@ -858,6 +858,21 @@ test('every Shop product id is listed in the Play Console setup table in docs/RE
   assert.deepEqual(missing, [], 'create these in Play Console too');
 });
 
+test('the Play Console product table gives each product its real type and price', async () => {
+  const { PRODUCTS } = await import('../www/js/data/store.js');
+  const { readFileSync } = await import('node:fs');
+  const doc = readFileSync(new URL('../docs/RELEASE.md', import.meta.url), 'utf8');
+  for (const p of PRODUCTS) {
+    const row = doc.split('\n').find((l) => l.startsWith('| ') && l.includes('`' + p.id + '`'));
+    const [, , type, price] = row.split('|').map((c) => c.trim());
+    assert.equal(type, p.kind === 'consumable' ? 'Consumable' : 'One-time', `${p.id} type`);
+    assert.ok(price.startsWith(p.price), `${p.id}: table says ${price}, the Shop shows ${p.price}`);
+  }
+  // The store listing's purchase list names the same prices.
+  const store = readFileSync(new URL('../docs/STORE.md', import.meta.url), 'utf8');
+  for (const p of PRODUCTS) assert.ok(store.includes(p.price), `docs/STORE.md mentions ${p.price}`);
+});
+
 test('tier bands end exactly where each generator unlocks a new upgrade, and stop after the last', async () => {
   const { tierBand, UPGRADES } = await import('../www/js/data/upgrades.js');
   assert.deepEqual(tierBand(1, 12), { from: 5, to: 25 });

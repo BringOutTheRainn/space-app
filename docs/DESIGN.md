@@ -1277,6 +1277,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 161. A test keeps the packages pinned.** A new test fails if any package in `package.json` uses a range such as `^7.0.0` instead of an exact version, or if its version differs from `package-lock.json`. This keeps runs 159 and 160 from being undone by an accidental `npm install some-plugin`, which writes a caret range by default. Checked by changing TypeScript back to `^5.9.3`, which failed the test.
 
+**Run 162. Play product table checked against the Shop.** docs/RELEASE.md tells cj which in-app products to create in Play Console. A test already checked every Shop id is in that table. A new test also checks each row's type and price: a consumable created as one-time in Play Console could never be bought twice, and a different price would confuse players. The prices in docs/STORE.md's content answers are checked too. Everything matched. Checked by marking Crystal Cluster as one-time in the table, which failed the test.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
