@@ -23,7 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - name: Record the package versions in this build
         run: npm ls --depth=0
       - name: Build the web game

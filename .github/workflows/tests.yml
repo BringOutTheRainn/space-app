@@ -13,9 +13,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
-      - run: npm install --no-audit --no-fund
-      - name: TEMP print lockfile
-        run: echo LOCKSTART; base64 -w0 package-lock.json; echo; echo LOCKEND
+      - run: npm ci --no-audit --no-fund
       - name: Build and run the rule tests
         run: npm test
       - name: Pacing simulation (three hours of play)

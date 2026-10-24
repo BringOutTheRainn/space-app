@@ -1273,6 +1273,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 159. Release builds use fixed package versions.** The repository has no lockfile and `package.json` asked for any 7.x Capacitor and AdMob release, so every CI build installed whatever was newest that day. A plugin update the night before launch could change ads, purchases or the Android build without any code change here. The npm registry is blocked in this workspace, so the Android build now prints the installed versions (`npm ls --depth=0`), and `package.json` pins exactly those: Capacitor 7.6.9, AdMob plugin 7.2.0, billing plugin 13.19.1, TypeScript 5.9.3 and the rest. docs/RELEASE.md says how to move to newer versions on purpose. Plugins' own dependencies are still resolved fresh; a lockfile would fix that and can be added from any machine with npm access.
 
+**Run 160. Lockfile added.** Run 159 pinned the game's own packages but left their dependencies to be resolved fresh. The npm registry is still blocked here, so CI printed the `package-lock.json` it produced once, and that file is now committed (106 packages, every one from registry.npmjs.org with an integrity hash). Both workflows now run `npm ci`, which installs exactly what the lockfile says and fails if it disagrees with `package.json`. The temporary print step is removed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

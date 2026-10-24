@@ -122,7 +122,7 @@ In a browser the Shop runs a test checkout and nothing is charged.
 
 For each update after the first:
 
-The game's packages are pinned to exact versions in `package.json`, so every build uses the same Capacitor, AdMob and billing code. To move to newer ones, change the numbers on purpose, then check the Android build and test ads and purchases on a phone before releasing.
+The game's packages are pinned to exact versions in `package.json`, and `package-lock.json` fixes everything they depend on, so every build (CI runs `npm ci`) uses the same Capacitor, AdMob and billing code. To move to newer ones, change the numbers on purpose, run `npm install` to update the lockfile, then check the Android build and test ads and purchases on a phone before releasing.
 
 1. Raise `version` in `package.json` and `VERSION` in `src/ui/menus.ts` to the same number (a test
    checks they match).
