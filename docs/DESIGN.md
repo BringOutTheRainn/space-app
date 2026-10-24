@@ -1269,6 +1269,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 157. Pacing re-check after runs 75 to 156.** The last pacing check was run 74, and since then the game gained Stellar Echoes, the Warp Exchange, the Nebula Garden and many fixes. `tools/simulate.mjs` gives the same numbers as before: at 3 taps per second the first Dark Matter comes at 1h 24m and the first collapse at 3h 54m, and ten minutes every two hours reaches them at 10h and 1d 6h. The new systems all sit past the first collapse or need the player to use them, so the early game is unchanged and balance stays as it is.
 
+**Run 158. Build pipeline brought up to date before launch.** Every CI run warned that the GitHub actions it used run on Node.js 20, which GitHub is retiring, and that setup-java v4 gets no more updates. The workflows now use checkout v6, setup-node v6, setup-java v5 and upload-artifact v6, which all run on Node.js 24 and were released at least three months ago. GitHub is also moving `ubuntu-latest` to Ubuntu 26 from October 19, and the Android build relies on the Android SDK that comes with the runner image, so both workflows are pinned to `ubuntu-24.04` until after launch. The game itself is unchanged.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
