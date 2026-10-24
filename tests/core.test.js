@@ -1671,3 +1671,19 @@ test('timers set under a clock that later went back do not stay locked', async (
   fixClockJump(s, now);
   assert.equal(JSON.stringify(s), before);
 });
+
+test('Play listing text fits Play Console limits in every language', async () => {
+  const { readFileSync } = await import('node:fs');
+  let found = 0;
+  for (const f of ['STORE.md', 'STORE-es-pt.md', 'STORE-fr.md', 'STORE-de.md']) {
+    const doc = readFileSync(`docs/${f}`, 'utf8');
+    const re = /\*\*App name \(30 max\):\*\* (.+)\n[\s\S]*?\*\*Short description \(80 max\):\*\*\n(.+)\n[\s\S]*?\*\*Full description[^*]*\*\*\n([\s\S]*?)(?=\n## |\n\*\*App name|$)/g;
+    for (const [, name, short, full] of doc.matchAll(re)) {
+      found++;
+      assert.ok([...name.trim()].length <= 30, `${f}: app name over 30: ${name}`);
+      assert.ok([...short.trim()].length <= 80, `${f}: short description over 80: ${short}`);
+      assert.ok([...full.trim()].length <= 4000, `${f}: full description over 4000`);
+    }
+  }
+  assert.equal(found, 5, 'English, Spanish, Portuguese, French and German listings');
+});

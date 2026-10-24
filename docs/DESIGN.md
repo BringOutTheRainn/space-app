@@ -1261,6 +1261,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 153. Contrast check covers the warning and failure screens.** `tools/contrast-check.mjs` (WCAG AA over every tab and window) passed, but it never showed Settings with its red save warning (run 124) or Problems section, the crash screen (runs 138 to 140) or the could-not-start message (run 136). It now does, last for the two that replace the page. All pass; a deliberately low-contrast line added to the crash screen was caught (1.6:1), so the new checks do read those screens.
 
+**Run 154. Store listing lengths checked by a test.** A new test reads the English, Spanish, Portuguese, French and German Play listings and fails if an app name is over 30 characters, a short description over 80, or a full description over 4000. Today they measure at most 29, 80 and 2273. Checked by making the English short description too long, which failed the test.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
