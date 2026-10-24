@@ -1265,6 +1265,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 155. Release note counts checked by a test.** The first-release notes in all five languages say the game has 14 generators and over 150 upgrades and achievements. A new test reads those notes and fails if the generator number differs from the game data or a count claims more than the game has (it has 152 upgrades and 153 achievements). The note length was already tested; the comment in docs/STORE.md now gives the real range, 439 to 500 characters. Checked by changing the French note to 15 generators, which failed the test.
 
+**Run 156. Store listing names and counts match the game.** Compared the feature names in the Spanish, Portuguese, French and German listings with the names the game shows in those languages (generators, Warp Exchange, Nebula Garden, Dark Matter, Stardust Rush, Lucky Haul and others). They all match. The count test from run 155 now also reads the full descriptions in every language, so a listing that names the wrong number of generators, or more upgrades or achievements than the game has, fails the build. Checked by changing the English listing to 15 generators.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

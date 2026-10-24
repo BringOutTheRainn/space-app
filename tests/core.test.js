@@ -1703,4 +1703,14 @@ test('Play release notes count the generators, upgrades and achievements the gam
     }
   }
   assert.deepEqual(langs.sort(), ['de-DE', 'en-US', 'es-419', 'fr-FR', 'pt-BR']);
+  // The full descriptions make the same claims.
+  for (const f of ['STORE.md', 'STORE-es-pt.md', 'STORE-fr.md', 'STORE-de.md']) {
+    const doc = readFileSync(`docs/${f}`, 'utf8');
+    const gens = [...doc.matchAll(/\b(\d+) (?:generators|generadores|geradores|générateurs|Generatoren)\b/g)];
+    assert.ok(gens.length > 0, `${f}: names the generator count`);
+    for (const [line, n] of gens) assert.equal(Number(n), GENERATORS.length, `${f}: ${line}`);
+    for (const [line, n] of doc.matchAll(/\b(\d+)\+? (?:upgrades|achievements|mejoras|logros|melhorias|conquistas|améliorations|succès|Verbesserungen|Erfolge)/g)) {
+      assert.ok(Number(n) <= Math.min(UPGRADES.length, ACHIEVEMENTS.length), `${f}: ${line}`);
+    }
+  }
 });
