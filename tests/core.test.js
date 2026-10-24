@@ -1687,3 +1687,20 @@ test('Play listing text fits Play Console limits in every language', async () =>
   }
   assert.equal(found, 5, 'English, Spanish, Portuguese, French and German listings');
 });
+
+test('Play release notes count the generators, upgrades and achievements the game really has', async () => {
+  const { readFileSync } = await import('node:fs');
+  const langs = [];
+  for (const f of ['STORE.md', 'STORE-fr.md', 'STORE-de.md']) {
+    const doc = readFileSync(`docs/${f}`, 'utf8');
+    for (const [, lang, body] of doc.matchAll(/^<([a-z]{2}-[A-Z0-9]{2,3})>\n([\s\S]*?)\n<\/\1>$/gm)) {
+      langs.push(lang);
+      const gens = body.match(/\b(\d+) (generators|generadores|geradores|générateurs|Generatoren)\b/);
+      assert.equal(Number(gens?.[1]), GENERATORS.length, `${f} ${lang}: generator count`);
+      for (const [, n] of body.matchAll(/\b(\d+)\+? (?:upgrades|achievements|mejoras|logros|melhorias|conquistas|améliorations|succès|Verbesserungen|Erfolge)/g)) {
+        assert.ok(Number(n) <= Math.min(UPGRADES.length, ACHIEVEMENTS.length), `${f} ${lang}: claims ${n}`);
+      }
+    }
+  }
+  assert.deepEqual(langs.sort(), ['de-DE', 'en-US', 'es-419', 'fr-FR', 'pt-BR']);
+});

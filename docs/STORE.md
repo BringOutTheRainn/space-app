@@ -112,7 +112,7 @@ tablets when they are uploaded. Spanish, Portuguese, French and German versions 
 ## Release notes for the first release
 
 Paste into **Release notes** when creating the release (closed test and production). Play limits
-each language to 500 characters; these are 423 to 495. Keep the language tags.
+each language to 500 characters; these are 439 to 500, and tests check them. Keep the language tags.
 
 ```
 <en-US>

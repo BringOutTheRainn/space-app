@@ -1263,6 +1263,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 154. Store listing lengths checked by a test.** A new test reads the English, Spanish, Portuguese, French and German Play listings and fails if an app name is over 30 characters, a short description over 80, or a full description over 4000. Today they measure at most 29, 80 and 2273. Checked by making the English short description too long, which failed the test.
 
+**Run 155. Release note counts checked by a test.** The first-release notes in all five languages say the game has 14 generators and over 150 upgrades and achievements. A new test reads those notes and fails if the generator number differs from the game data or a count claims more than the game has (it has 152 upgrades and 153 achievements). The note length was already tested; the comment in docs/STORE.md now gives the real range, 439 to 500 characters. Checked by changing the French note to 15 generators, which failed the test.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
