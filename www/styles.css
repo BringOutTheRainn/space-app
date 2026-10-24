@@ -925,7 +925,7 @@ html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-
 /* Startup failure screen */
 .crash { max-width: 520px; margin: 0 auto; padding: 48px 20px; color: var(--text, #e9edff); }
 .crash h2 { margin: 0 0 12px; }
-.crash .code { width: 100%; min-height: 220px; margin-top: 12px; }
+.crash .code { width: 100%; min-height: 220px; margin: 12px 0; }
 
 /* Lucky Orbit streak */
 .wheel-streak { display: flex; gap: 5px; margin-top: 2px; }

@@ -34,7 +34,7 @@ import { passClaimable } from './core/pass.js';
 import { hyperRemainingMs } from './core/ads.js';
 import { AD_CONFIG } from './data/ads.js';
 import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel } from './ui/panels.js';
-import { haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
+import { copyText, haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 import { maybeAskRating } from './ui/rating.js';
@@ -652,6 +652,8 @@ function start(): void {
   };
 }
 
+// The phone's language until the save is read, so a crash this early is still explained in it.
+setLanguage('auto');
 installErrorHandlers();
 try {
   start();
@@ -661,7 +663,15 @@ try {
   hideSplash();
   document.body.innerHTML = `<div class="crash" role="alert"><h2>${t('Stardust Empire could not start')}</h2>
     <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')}</p>
-    <textarea class="code" readonly aria-label="${t('Error report')}">${esc(errorReport(VERSION))}</textarea></div>`;
+    <textarea class="code" readonly aria-label="${t('Error report')}">${esc(errorReport(VERSION))}</textarea>
+    <button class="btn btn-primary" id="crash-copy">${t('Copy error report')}</button></div>`;
+  // Long-pressing a text box to select all of it is fiddly on a phone, so offer a button.
+  const box = document.querySelector<HTMLTextAreaElement>('.crash .code')!;
+  const btn = document.getElementById('crash-copy')!;
+  btn.addEventListener('click', async () => {
+    if (await copyText(box.value)) btn.textContent = t('Error report copied');
+    else { box.focus(); box.select(); }
+  });
 }
 
 /** A caught comet's title and detail line in the player's language. */
