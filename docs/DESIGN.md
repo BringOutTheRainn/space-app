@@ -1251,6 +1251,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 148. Untranslated text fails the tests.** `tools/i18n-keys.mjs` lists English text (game data and every literal passed to `t()`) that a language lacks, but it only ran by hand, so a string added after launch could ship in English to Spanish, Portuguese, French and German players. `npm test`, which CI runs, now ends with it and fails when any of the four languages misses a string (all 869 are there today). Checked by adding an untranslated string: the run failed and listed it for each language.
 
+**Run 149. Translation check covers the game's own tables.** Run 148's check read the data files and `t()` literals but not the tables in `core/` (shop products and skins, contracts, weekend event generators and themes, badges, forge spells, garden seeds, market goods, wheel slices, reminder text). Adding them found one real gap: the Warp Exchange's short names, shown on the Build tab as "Ore cheap", were never translated, so a Spanish player read "Ore barato". Ice, Ore and Plasma now have Spanish, Portuguese, French and German names ("Mineral barato", "Erz günstig" in the game), and the check now covers 936 strings, all present.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

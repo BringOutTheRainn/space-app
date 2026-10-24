@@ -636,4 +636,8 @@ export const DE: Record<string, string> = {
   "Past its best rate: a good time to collapse.": "Die beste Rate ist vorbei: ein guter Zeitpunkt zum Kollabieren.",
   "something new": "etwas Neues",
   "The developer's email address is on the game's Google Play page.": "Die E-Mail-Adresse des Entwicklers steht auf der Google-Play-Seite des Spiels.",
+  // Short market names, as in "Ice cheap" on the Build tab.
+  "Ice": "Eis",
+  "Ore": "Erz",
+  "Plasma": "Plasma",
 };
