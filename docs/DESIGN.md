@@ -1253,6 +1253,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 149. Translation check covers the game's own tables.** Run 148's check read the data files and `t()` literals but not the tables in `core/` (shop products and skins, contracts, weekend event generators and themes, badges, forge spells, garden seeds, market goods, wheel slices, reminder text). Adding them found one real gap: the Warp Exchange's short names, shown on the Build tab as "Ore cheap", were never translated, so a Spanish player read "Ore barato". Ice, Ore and Plasma now have Spanish, Portuguese, French and German names ("Mineral barato", "Erz günstig" in the game), and the check now covers 936 strings, all present.
 
+**Run 150. Release check after runs 140 to 149.** Those runs changed start-up, the crash screen, error logging, every real-time stamp on load (the clock fix) and translations, so the regression set was run again; no code changes were needed. Random-tap sessions (600 taps each: fresh game in English, late game in Spanish and French, late game in German on a 320 x 568 phone) had no errors, values stayed finite and each save reloaded. 60 damaged late-game saves loaded and every tab and window opened without errors. The soak test stayed flat (6,334 to 6,476 nodes, about 3.2 MB of heap).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
