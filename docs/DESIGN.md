@@ -1235,6 +1235,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 140. Copy button on the crash screen, in the phone's language.** When `start()` fails, the crash screen asks the player to send the report to the developer, but on a phone the only way to copy it was to long-press and drag across the text box. It now has a Copy error report button that copies the report and says so; if the clipboard is refused it selects the whole report so the player can copy it by hand. The game also switches to the phone's language before reading the save, so a crash that early is no longer shown in English to a German or French player. Checked in Playwright with a forced error in `start()`: in English the report reached the clipboard, and in German with the clipboard blocked the button read Fehlerbericht kopieren and the report was selected.
 
+**Run 141. Old error reports expire.** Once the game caught an error, Settings showed a Problems section ("The game caught an error...") with a Copy error report button, and nothing ever cleared it: a player hit by a bug that a later update fixed would see the warning forever. Saved errors older than seven days are now dropped when the log is read, so the section goes away a week after the last error. A new test covers it (it fails on the old code), and in the game Settings shows Problems for a one-day-old error and not for an eight-day-old one.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

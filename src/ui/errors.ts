@@ -3,6 +3,8 @@
 
 const ERROR_KEY = 'stardust-empire-errors';
 const MAX_ERRORS = 10;
+// Errors older than this are dropped, so a bug fixed by an update stops showing in Settings.
+const KEEP_MS = 7 * 24 * 3600 * 1000;
 
 export interface ErrorEntry {
   t: number;
@@ -18,7 +20,8 @@ function load(): ErrorEntry[] {
   try {
     const raw = localStorage.getItem(ERROR_KEY);
     const list = raw ? (JSON.parse(raw) as ErrorEntry[]) : [];
-    memory = Array.isArray(list) ? list : [];
+    const since = Date.now() - KEEP_MS;
+    memory = Array.isArray(list) ? list.filter((x) => x && x.t > since) : [];
   } catch {
     memory = [];
   }

@@ -1615,3 +1615,19 @@ test('the collapse nudge waits for Dark Matter per hour to pass its peak', async
   collapse(s, computeDerived(s), 0);
   assert.equal(s.runPeakRate, 0, 'reset by a collapse');
 });
+
+test('old error reports expire after a week', async () => {
+  const store = {};
+  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; } };
+  const day = 24 * 3600 * 1000;
+  store['stardust-empire-errors'] = JSON.stringify([
+    { t: Date.now() - 8 * day, where: 'frame', msg: 'old bug', stack: '' },
+    { t: Date.now() - 1 * day, where: 'frame', msg: 'recent bug', stack: '' },
+  ]);
+  const { hasErrors, recordError } = await import('../www/js/ui/errors.js');
+  assert.equal(hasErrors(), true);
+  recordError('frame', new Error('new bug'));
+  const kept = JSON.parse(store['stardust-empire-errors']).map((x) => x.msg);
+  assert.deepEqual(kept, ['recent bug', 'new bug']);
+  delete globalThis.localStorage;
+});
