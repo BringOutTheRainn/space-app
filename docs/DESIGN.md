@@ -1255,6 +1255,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 150. Release check after runs 140 to 149.** Those runs changed start-up, the crash screen, error logging, every real-time stamp on load (the clock fix) and translations, so the regression set was run again; no code changes were needed. Random-tap sessions (600 taps each: fresh game in English, late game in Spanish and French, late game in German on a 320 x 568 phone) had no errors, values stayed finite and each save reloaded. 60 damaged late-game saves loaded and every tab and window opened without errors. The soak test stayed flat (6,334 to 6,476 nodes, about 3.2 MB of heap).
 
+**Run 151. Start-up time unchanged on a slow phone.** Runs 121 to 150 added start-up work (the boot-failure scripts in index.html, reading the phone's language first, the clock fix, the save checks). Time from opening the page to the game running, with the CPU slowed 6x, six loads each, two rounds: this build 1,356 and 1,315 ms median, the build from 30 commits earlier 1,205 and 1,313 ms. The difference is within the run-to-run spread (about 1.0 to 1.7 s), so no change was needed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
