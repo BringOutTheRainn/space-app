@@ -57,4 +57,14 @@ await p.evaluate(async () => { const { COSMIC } = await import('./js/data/cosmic
 await p.click('[data-tab="cosmos"]'); await p.waitForTimeout(400);
 await p.evaluate(() => { const b = document.querySelector('.tab-body:not([hidden])'); if (b) b.scrollTop = 99999; }); await p.waitForTimeout(200);
 pr(await scan('stellar echoes'));
+// Settings with both warnings showing: saves failing and a caught error.
+await p.evaluate(async () => { const { ctx } = window.__game; ctx.saveFailing = true; const e = await import('./js/ui/errors.js'); e.recordError('frame', new Error('contrast check')); const m = await import('./js/ui/menus.js'); m.openSettings(ctx, () => {}); });
+await p.waitForTimeout(600); await p.evaluate(() => { document.querySelectorAll('.modal-body').forEach((b) => b.scrollTop = 99999); }); await p.waitForTimeout(200);
+pr(await scan('settings with warnings'));
+await close();
+// Last, since they replace the page: the crash screen and the could-not-start message.
+await p.evaluate(() => { document.body.innerHTML = '<div class="crash" role="alert"><h2>Stardust Empire could not start</h2><p>Your progress is still saved on this phone.</p><textarea class="code" readonly>report</textarea><button class="btn btn-primary">Copy error report</button></div>'; });
+pr(await scan('crash screen'));
+await p.evaluate(() => { document.body.innerHTML = '<div id="app"><div class="boot old-webview" role="alert">Stardust Empire could not start. Please close the game and open it again.</div></div>'; });
+pr(await scan('start failure'));
 await b.close();

@@ -1259,6 +1259,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 152. Tap target sweep in the late game.** Run 31's sweep (anything under 44 px without an invisible hit extender) ran on an early-game save, so the Garden, Forge, Warp Exchange and auto-buy windows were never in it, and many windows have changed since. Run on a late-game save at 360 px across every tab and window, including those four: nothing new under 44 px. The only hits are the seven known Settings checkboxes, which sit inside full-width toggle rows that are the real targets. No code changes were needed.
 
+**Run 153. Contrast check covers the warning and failure screens.** `tools/contrast-check.mjs` (WCAG AA over every tab and window) passed, but it never showed Settings with its red save warning (run 124) or Problems section, the crash screen (runs 138 to 140) or the could-not-start message (run 136). It now does, last for the two that replace the page. All pass; a deliberately low-contrast line added to the crash screen was caught (1.6:1), so the new checks do read those screens.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
