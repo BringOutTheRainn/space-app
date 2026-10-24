@@ -1648,7 +1648,7 @@ test('timers set under a clock that later went back do not stay locked', async (
   const s = newState();
   const now = Date.UTC(2026, 9, 24), month = 30 * 24 * 3600000, h = 3600000;
   const later = now + month;
-  Object.assign(s, { crystalNextAt: later + 20 * h, gardenFertilizeAt: later + 4 * h, forgeAdAt: later + 4 * h, vaultAt: later, forgeHeatAt: later, hyperEndsAt: later + h });
+  Object.assign(s, { runStartedAt: later, crystalNextAt: later + 20 * h, gardenFertilizeAt: later + 4 * h, forgeAdAt: later + 4 * h, vaultAt: later, forgeHeatAt: later, hyperEndsAt: later + h });
   s.garden = [{ seed: 'x', plantedAt: later }, null];
   s.expeditions = [{ id: 'x', startedAt: later, returnsAt: later + 2 * h }];
   fixClockJump(s, now);
@@ -1656,6 +1656,7 @@ test('timers set under a clock that later went back do not stay locked', async (
   assert.equal(s.gardenFertilizeAt, now + 4 * h);
   assert.equal(s.forgeAdAt, now + 4 * h);
   assert.equal(s.vaultAt, now);
+  assert.equal(s.runStartedAt, now);
   assert.equal(s.forgeHeatAt, now);
   assert.equal(s.hyperEndsAt, now);
   assert.equal(s.garden[0].plantedAt, now);

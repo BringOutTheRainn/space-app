@@ -21,6 +21,8 @@ export function fixClockJump(s: GameState, now: number): void {
   // Written as comparisons so a missing or junk value is left for the save checks to handle.
   const past = (t: number): number => (t > now ? now : t);
   const wait = (t: number, ms: number): number => (t > now + ms ? now + ms : t);
+  s.startedAt = past(s.startedAt);
+  s.runStartedAt = past(s.runStartedAt);
   s.vaultAt = past(s.vaultAt);
   s.forgeHeatAt = past(s.forgeHeatAt);
   s.rateAskedAt = past(s.rateAskedAt);
@@ -41,5 +43,8 @@ export function fixClockJump(s: GameState, now: number): void {
     s.market.last = past(s.market.last);
     s.market.tipAt = wait(s.market.tipAt, TIP_COOLDOWN_HOURS * HOUR);
   }
-  if (s.event) s.event.adReadyAt = wait(s.event.adReadyAt, EVENT_AD_COOLDOWN_MINUTES * 60000);
+  if (s.event) {
+    s.event.last = past(s.event.last);
+    s.event.adReadyAt = wait(s.event.adReadyAt, EVENT_AD_COOLDOWN_MINUTES * 60000);
+  }
 }

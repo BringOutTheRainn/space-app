@@ -1241,6 +1241,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 143. Timers survive the phone clock going back.** If a player set the date ahead (a common way to skip idle waits) and then back, or the network corrected a wrong clock, every timer stamped under the later clock sat in the future: crystals, the forge and garden ad cooldowns, garden plants, expeditions, the market and the event ad stayed locked for as long as the clock had moved. A month's jump left the crystal timer at 740 hours. `core/clock.ts` now runs whenever the game loads or comes back: a "when it happened" stamp is pulled back to now, a cooldown is capped at its full length, an expedition keeps its length but starts now, and a Hyperdrive ending past its 8-hour cap simply ends (it was timed by the wrong clock). A correct clock changes nothing. Checked with a new test and in the game (740 h back to 20 h); 60 damaged saves and a late-game random-tap run in Portuguese were clean.
 
+**Run 144. Clock fix covers the universe timer and weekend events.** Run 143 missed three stamps. The start of the current universe (Stats' "This universe started", how long a universe lasted in Recent universes, and the Dark Matter per hour the collapse hint uses) sat in the future after the clock went back, so Stats read "0s ago" for as long as the clock had moved. The weekend event's last tick did too, which froze event Flux. The game's own start date is fixed the same way. Checked in the test and in the game: Stats now counts up from the reload.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
