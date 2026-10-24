@@ -1267,6 +1267,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 156. Store listing names and counts match the game.** Compared the feature names in the Spanish, Portuguese, French and German listings with the names the game shows in those languages (generators, Warp Exchange, Nebula Garden, Dark Matter, Stardust Rush, Lucky Haul and others). They all match. The count test from run 155 now also reads the full descriptions in every language, so a listing that names the wrong number of generators, or more upgrades or achievements than the game has, fails the build. Checked by changing the English listing to 15 generators.
 
+**Run 157. Pacing re-check after runs 75 to 156.** The last pacing check was run 74, and since then the game gained Stellar Echoes, the Warp Exchange, the Nebula Garden and many fixes. `tools/simulate.mjs` gives the same numbers as before: at 3 taps per second the first Dark Matter comes at 1h 24m and the first collapse at 3h 54m, and ten minutes every two hours reaches them at 10h and 1d 6h. The new systems all sit past the first collapse or need the player to use them, so the early game is unchanged and balance stays as it is.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
