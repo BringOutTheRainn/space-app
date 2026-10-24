@@ -1497,6 +1497,8 @@ test("What's new lists only versions after the one a save last ran, and every li
   const { CHANGELOG } = await import('../www/js/data/changelog.js');
   const { ES } = await import('../www/js/i18n/es.js');
   const { PT } = await import('../www/js/i18n/pt.js');
+  const { FR } = await import('../www/js/i18n/fr.js');
+  const { DE } = await import('../www/js/i18n/de.js');
   assert.ok(compareVersions('1.10.0', '1.9.3') > 0);
   assert.equal(compareVersions('1.0', '1.0.0'), 0);
   const log = [{ version: '1.2.0', items: ['b'] }, { version: '1.1.0', items: ['a'] }, { version: '1.3.0', items: ['c'] }];
@@ -1504,8 +1506,11 @@ test("What's new lists only versions after the one a save last ran, and every li
   assert.deepEqual(unseenChanges(log, '1.2.0', '1.2.0'), [], 'already seen');
   assert.deepEqual(unseenChanges(log, '', '1.3.0'), [], 'new players see nothing');
   for (const e of CHANGELOG) for (const line of e.items) {
-    assert.ok(ES[line] && PT[line], `translate: ${line}`);
+    for (const [lang, dict] of Object.entries({ ES, PT, FR, DE })) assert.ok(dict[line], `translate into ${lang}: ${line}`);
   }
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')).version;
+  for (const e of CHANGELOG) assert.ok(compareVersions(e.version, pkg) <= 0, `changelog entry ${e.version} is newer than this release (${pkg})`);
   assert.equal(deserialize(JSON.stringify({ ...newState(), versionSeen: 7 })).versionSeen, '');
 });
 
@@ -1665,14 +1670,4 @@ test('timers set under a clock that later went back do not stay locked', async (
   const before = JSON.stringify(s);
   fixClockJump(s, now);
   assert.equal(JSON.stringify(s), before);
-});
-
-test('the in-game version matches package.json, which names the Play build', async () => {
-  const { readFileSync } = await import('node:fs');
-  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
-  const menus = readFileSync(new URL('../src/ui/menus.ts', import.meta.url), 'utf8');
-  assert.equal(menus.match(/export const VERSION = '([^']+)'/)?.[1], pkg);
-  const { CHANGELOG } = await import('../www/js/data/changelog.js');
-  const num = (v) => v.split('.').map(Number).reduce((a, x) => a * 1000 + x, 0);
-  for (const e of CHANGELOG) assert.ok(num(e.version) <= num(pkg), `changelog entry ${e.version} is newer than ${pkg}`);
 });

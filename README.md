@@ -62,7 +62,7 @@ tests/         Rule tests
 | Add a cosmic upgrade | `src/data/cosmic.ts` (x and y place it in the tree) |
 | Add a headline | `src/data/news.ts` |
 | Change the app icon | `www/icon.svg` and `resources/icon-foreground.svg`, then `npm run icons` |
-| Release an update | `version` in `package.json` and `VERSION` in `src/ui/menus.ts` (a test keeps them equal), plus a `src/data/changelog.ts` entry for anything players will notice |
+| Release an update | See `docs/RELEASE.md`, Later releases |
 
 Saves live in local storage under `stardust-empire-save`, are versioned, and migrate through
 `MIGRATIONS` in `src/core/save.ts`. Players can copy and load a save code from Settings.

@@ -34,6 +34,9 @@
 
 ## Store listing
 
+Fill in the contact email in Play Console (Store presence, Store settings): the game's crash screen
+and Settings tell players to send error reports to the address shown on the Play page.
+
 The full listing (name, descriptions, graphics, category, content rating, data safety and the closed
 test steps) is in `docs/STORE.md`. Make the eight 1080 x 1920 screenshots with `npm run store-shots`.
 
@@ -122,6 +125,6 @@ For each update after the first:
 1. Raise `version` in `package.json` and `VERSION` in `src/ui/menus.ts` to the same number (a test
    checks they match).
 2. Add an entry at the top of `src/data/changelog.ts` with one short line per change players will
-   notice, and add each line to `src/i18n/es.ts` and `src/i18n/pt.ts` (a test fails until both are
-   there). Players who update see these once in a "What's new" window; new players never do.
+   notice, and add each line to `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (a test fails until all
+   four are there). Players who update see these once in a "What's new" window; new players never do.
 3. Write the Play "What's new" release notes from the same lines (500 characters per language).
