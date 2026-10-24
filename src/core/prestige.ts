@@ -38,6 +38,14 @@ export function starterGenerators(s: GameState): number[] {
 }
 
 /** Collapse the universe. Returns the Dark Matter gained. */
+/** Dark Matter per hour for a universe that gave `dm` over `secs` seconds; 0 when no time passed. */
+export function darkMatterPerHour(dm: number, secs: number): number {
+  return secs > 0 ? (dm * 3600) / secs : 0;
+}
+
+/** How many finished universes Stats lists. */
+export const PAST_RUNS_KEPT = 10;
+
 export function collapse(s: GameState, d: Derived, now = Date.now()): number {
   if (pendingDarkMatter(s) < 1) return 0;
   // Goods are priced from production, so sell them while it is high. Profit counts toward Dark Matter.
@@ -45,6 +53,7 @@ export function collapse(s: GameState, d: Derived, now = Date.now()): number {
   const gained = pendingDarkMatter(s);
   s.darkMatter += gained;
   s.collapses++;
+  s.pastRuns = [{ dm: gained, secs: Math.max(0, s.time - s.runStartClock) }, ...s.pastRuns].slice(0, PAST_RUNS_KEPT);
   resetRun(s, d, now);
   s.anomaly = null;
   return gained;
@@ -67,5 +76,44 @@ export function resetRun(s: GameState, d: Derived, now = Date.now()): void {
   s.upgrades = kept;
   s.runStartedAt = now;
   s.runStartClock = s.time;
+  s.runPeakRate = 0;
   s.nextCometAt = s.time + 90;
+}
+
+/** Production bonus per Dark Matter held: 2%, plus the Resonance Cosmic upgrades. */
+export function darkMatterPct(s: GameState): number {
+  let pct = 0.02;
+  for (const c of COSMIC) {
+    if (!s.cosmic[c.id]) continue;
+    for (const e of c.effects) if (e.k === 'dmBonus') pct += e.pct;
+  }
+  return pct;
+}
+
+/** How much a collapse now would multiply the Dark Matter production bonus (1 = no change). */
+export function collapseGain(s: GameState): number {
+  const pct = darkMatterPct(s);
+  return (1 + pct * (s.darkMatter + pendingDarkMatter(s))) / (1 + pct * s.darkMatter);
+}
+
+/** Dark Matter per hour this universe so far, counting what a collapse now would give. */
+export function runRate(s: GameState): number {
+  return darkMatterPerHour(pendingDarkMatter(s), s.time - s.runStartClock);
+}
+
+/** Remembers this universe's best rate; called every second or so. */
+export function sampleRunPeak(s: GameState): void {
+  if (pendingDarkMatter(s) >= 1) s.runPeakRate = Math.max(s.runPeakRate, runRate(s));
+}
+
+/**
+ * True once this universe's Dark Matter per hour has clearly passed its best and the collapse is
+ * worth a quarter of the Dark Matter already owned: from here, waiting earns Dark Matter more
+ * slowly than starting again. Not before the first collapse (Cosmos has its own hint then) or
+ * during an anomaly, which has its own goal.
+ */
+export function pastPeak(s: GameState): boolean {
+  const pending = pendingDarkMatter(s);
+  return s.collapses > 0 && !s.anomaly && pending >= 10 && pending >= s.darkMatter * 0.25
+    && s.runPeakRate > 0 && runRate(s) < s.runPeakRate * 0.95;
 }

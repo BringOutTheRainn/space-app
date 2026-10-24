@@ -1,8 +1,8 @@
 // Auto-Fabricators: a late Cosmic upgrade that keeps buying the generator
-// that pays itself back fastest. Upgrades are left to the player.
+// that pays itself back fastest. Auto-Researchers, a later one, buy upgrades too.
 
 import { GENERATORS } from '../data/generators.js';
-import { buyGenerator, generatorPrice, generatorVisible, type Derived } from './economy.js';
+import { buyAllUpgrades, buyGenerator, generatorPrice, generatorVisible, type Derived } from './economy.js';
 import type { GameState } from './state.js';
 
 /** The visible generator with the shortest payback time, or -1. */
@@ -24,13 +24,14 @@ export function bestGenerator(s: GameState, d: Derived): number {
 }
 
 /**
- * Buys the best-value generator while it is affordable, up to `limit` times.
+ * With Auto-Researchers, buys every affordable upgrade first. Then buys the
+ * best-value generator while it is affordable, up to `limit` times.
  * Returns how many were bought. The caller recomputes Derived afterwards.
  */
 export function autoBuyStep(s: GameState, d: Derived, limit = 10): number {
   if (!d.autoBuy || !s.autoBuyOn) return 0;
-  let bought = 0;
-  while (bought < limit) {
+  let bought = d.autoUpgrade ? buyAllUpgrades(s, d) : 0;
+  for (let gens = 0; gens < limit; gens++) {
     const gen = bestGenerator(s, d);
     if (gen < 0 || generatorPrice(s, d, gen, 1) > s.stardust) break;
     if (buyGenerator(s, d, gen, 1) <= 0) break;

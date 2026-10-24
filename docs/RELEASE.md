@@ -8,6 +8,10 @@
 - The version name comes from `package.json` and the version code from the workflow run number, so each
   build uploads as a newer version.
 
+- Every Android build runs `tools/preflight.mjs` (also `npm run preflight`), which warns while ads are
+  still in test mode, the AdMob IDs are Google's test ones, the version numbers disagree, or the
+  privacy policy link doesn't open. The warnings show on the run summary.
+
 ## One-time setup
 
 1. **Create an upload key** on your computer (keep the file and passwords safe; losing them is painful):
@@ -30,34 +34,11 @@
 
 ## Store listing
 
-**App name:** Stardust Empire
+Fill in the contact email in Play Console (Store presence, Store settings): the game's crash screen
+and Settings tell players to send error reports to the address shown on the Play page.
 
-**Short description (80 characters max):**
-Tap an asteroid, build a galactic empire, collapse the universe, do it again.
-
-**Full description:**
-
-It starts with one lonely asteroid. Tap it, harvest a speck of Stardust, and buy your first Mining
-Drone. Before long you are running Lunar Bases, Gas Giant Siphons, Dyson Swarms and Warp Gates, and
-your asteroid has grown into a moon, a planet, a star and finally a black hole.
-
-- 14 generators, from tiny Mining Drones to the reality-bending Universe Compiler
-- Around 170 upgrades, including synergies that make generators boost each other
-- Catch comets for Stardust Rushes, Lucky Hauls and 777x Supernova Taps
-- Over 100 achievements, each one making your empire stronger
-- Collapse the universe for Dark Matter and unlock a tree of permanent cosmic upgrades
-- Six anomalies: twisted universes with one strange rule and a permanent reward
-- Send probes on expeditions to find ancient Relics
-- Your empire keeps working while you are away
-- Daily supply drops and missions that always give you a next goal
-- Play offline, no account. Optional ads give boosts; you never have to watch one
-
-**Category:** Games, Simulation (Idle)
-**Content rating:** Everyone (no violence, no user content, no purchases). Declare **Contains ads**.
-**Tags:** idle, clicker, incremental, space, tycoon
-
-**Graphics:** the 512 px icon is `www/icon-512.png`. Phone screenshots can be made with
-`npm run screens`. The 1024 x 500 feature graphic is `resources/feature-graphic.png`.
+The full listing (name, descriptions, graphics, category, content rating, data safety and the closed
+test steps) is in `docs/STORE.md`. Make the eight 1080 x 1920 screenshots with `npm run store-shots`.
 
 ## Privacy
 
@@ -71,7 +52,10 @@ interaction data to show and measure ads. In the Play Console data safety form, 
 Reminder notifications are opt-in, scheduled on the device only, and need the Android 13 notification
 permission (the build adds it). No push server is involved.
 
-The privacy policy page must name AdMob and link https://policies.google.com/technologies/partner-sites.
+The privacy policy is `docs/PRIVACY.md`; use its GitHub address as the Play Console privacy policy URL:
+https://github.com/BringOutTheRainn/space-app/blob/main/docs/PRIVACY.md (Settings in the game links to it).
+That address only works once this branch is merged into `main`, so merge before submitting the app.
+It names AdMob and links https://policies.google.com/technologies/partner-sites.
 The app asks for consent in the EEA and UK through Google's consent form (configure a GDPR message in
 AdMob under Privacy & messaging).
 
@@ -121,6 +105,7 @@ Products, **In-app products**, with exactly these ids, then activate them:
 | `crystals_80` | Consumable | $9.99 | 80 Quasar Crystals |
 | `event_pass` | Consumable | $2.99 | This weekend: double Flux and a Platinum badge |
 | `vault_open` | Consumable | $2.99 | Pays out the Stardust Vault (up to 12 h of production) |
+| `star_pass` | Consumable | $4.99 | This season's Star Pass premium track (bought again each season) |
 | `skin_lava`, `skin_ice`, `skin_neon`, `skin_gold` | One-time | $0.99 each | Planet skins |
 
 Play Console only lets you create products after an APK or bundle with the billing permission has
@@ -132,3 +117,14 @@ in between replays the purchase on next launch rather than losing it. Purchases 
 phone only; if fraud becomes a problem, add server-side receipt validation (for example with
 RevenueCat or a Firebase function). A "Restore purchases" button sits at the bottom of the Shop.
 In a browser the Shop runs a test checkout and nothing is charged.
+
+## Later releases
+
+For each update after the first:
+
+1. Raise `version` in `package.json` and `VERSION` in `src/ui/menus.ts` to the same number (a test
+   checks they match).
+2. Add an entry at the top of `src/data/changelog.ts` with one short line per change players will
+   notice, and add each line to `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (a test fails until all
+   four are there). Players who update see these once in a "What's new" window; new players never do.
+3. Write the Play "What's new" release notes from the same lines (500 characters per language).

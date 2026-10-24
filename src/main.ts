@@ -5,27 +5,28 @@ import { availableNews } from './data/news.js';
 import { checkAchievements, grantAchievement } from './core/achievements.js';
 import { checkAnomaly } from './core/anomalies.js';
 import { ANOMALY_BY_ID } from './data/anomalies.js';
-import { catchComet, cometDue, cometStaySeconds, rollBlack, scheduleNextComet } from './core/comets.js';
+import { catchComet, cometDue, cometStaySeconds, rollBlack, scheduleNextComet, type CometResult } from './core/comets.js';
 import { dailyReady } from './core/daily.js';
 import { freeSpinReady } from './core/wheel.js';
-import { availableUpgrades, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
-import { fmt, fmtRate, fmtTime } from './core/format.js';
-import { canCollapse } from './core/prestige.js';
-import { applyOffline, deserialize, SAVE_KEY, serialize } from './core/save.js';
-import { newState, type GameState } from './core/state.js';
+import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
+import { fmt, fmtRate, fmtSpoken, fmtTime } from './core/format.js';
+import { canCollapse, pastPeak, sampleRunPeak } from './core/prestige.js';
+import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
+import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';
-import type { BuyAmount, Ctx, Panel } from './ui/ctx.js';
-import { $, closeModal, esc, modalOpen, setText, toast, toggleClass, topModalDismissable } from './ui/dom.js';
+import { buyAmountFrom, type Ctx, type Panel } from './ui/ctx.js';
+import { $, closeModal, esc, modalOpen, setAttr, setHidden, setSpoken, setText, speakNumbersIn, toast, toggleClass, topModalDismissable } from './ui/dom.js';
 import { icon, installIcons } from './ui/icons.js';
-import { applySettings, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
+import { VERSION, applySettings, showWhatsNew, openDaily, openEvent, openHyperdrive, openMissions, openSettings, openStats, showOffline } from './ui/menus.js';
 import { claimableMissions, ensureMissions } from './core/missions.js';
 import { contractClaimable } from './core/contracts.js';
 import { autoBuyStep } from './core/autobuy.js';
+import { awayReport } from './core/away.js';
 import { growCrystals } from './core/crystals.js';
 import { badgeReady, currentEvent, eventTimeLeft } from './core/event.js';
 import { planReminders } from './core/notify.js';
-import { clearReminders, scheduleReminders } from './ui/notify.js';
+import { clearReminders, notificationsStillAllowed, scheduleReminders } from './ui/notify.js';
 import { initAds, setBanner } from './ui/ads.js';
 import { initStore, maybeOfferStarter, openShop } from './ui/store.js';
 import { fillVault } from './core/shop.js';
@@ -33,8 +34,11 @@ import { passClaimable } from './core/pass.js';
 import { hyperRemainingMs } from './core/ads.js';
 import { AD_CONFIG } from './data/ads.js';
 import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel } from './ui/panels.js';
-import { haptic, hideSplash, onBackButton, onPause } from './ui/platform.js';
+import { copyText, haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
+import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
+import { maybeAskRating } from './ui/rating.js';
+import { setLanguage, t, tDesc, tName } from './i18n/index.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -48,58 +52,80 @@ function layout(): void {
   $('#app').innerHTML = `
     <header class="top">
       <div class="bank">
-        <div class="amount-row"><span class="sd-dot big"></span><span class="amount" id="amount">0</span></div>
-        <div class="rate" id="rate">0 per second</div>
+        <div class="amount-row"><span class="sd-dot big"></span><span class="sr-only">${t('Stardust')}: <span id="amount-sr">0</span></span><span class="amount" id="amount" aria-hidden="true">0</span></div>
+        <div class="rate" id="rate" aria-hidden="true">${t('{n} per second', { n: 0 })}</div><span class="sr-only" id="rate-sr"></span>
       </div>
-      <button class="icon-btn shop-btn" id="btn-shop" aria-label="Shop">${icon('cart')}</button>
-      <button class="icon-btn" id="btn-stats" aria-label="Stats">${icon('chart')}</button>
-      <button class="icon-btn" id="btn-settings" aria-label="Settings">${icon('gear')}</button>
+      <button class="icon-btn shop-btn" id="btn-shop" aria-label="${t('Shop')}">${icon('cart')}</button>
+      <button class="icon-btn" id="btn-stats" aria-label="${t('Stats')}">${icon('chart')}</button>
+      <button class="icon-btn" id="btn-settings" aria-label="${t('Settings')}">${icon('gear')}</button>
     </header>
     <section class="sky-wrap">
-      <canvas id="sky" aria-label="Celestial body. Tap to harvest Stardust."></canvas>
+      <canvas id="sky" role="button" tabindex="0" aria-label="${t('Celestial body. Tap to harvest Stardust.')}"></canvas>
       <div class="stage-label" id="stage-label"></div>
       <div class="toasts" id="toasts" aria-live="polite"></div>
       <div class="buffs" id="buffs"></div>
-      <button class="gift-btn" id="btn-daily" hidden aria-label="Daily reward">${icon('gift')}</button>
-      <button class="event-btn" id="btn-event" hidden aria-label="Weekend event">${icon('rift')}<span class="event-text" id="event-text">Event</span></button>
-      <button class="mission-btn" id="btn-missions" hidden aria-label="Missions">${icon('mission')}<i class="mission-count" id="mission-count" hidden></i></button>
-      <button class="hyper-btn" id="btn-hyper" hidden aria-label="Hyperdrive"><span class="hyper-ico">${icon('probe')}</span><span class="hyper-text" id="hyper-text">x2</span></button>
+      <button class="gift-btn" id="btn-daily" hidden aria-label="${t('Daily reward')}">${icon('gift')}</button>
+      <button class="event-btn" id="btn-event" hidden aria-label="${t('Weekend event')}">${icon('rift')}<span class="event-text" id="event-text">${t('Event')}</span></button>
+      <button class="mission-btn" id="btn-missions" hidden aria-label="${t('Missions')}">${icon('mission')}<i class="mission-count" id="mission-count" hidden></i></button>
+      <button class="hyper-btn" id="btn-hyper" hidden aria-label="${t('Hyperdrive')}"><span class="hyper-ico">${icon('probe')}</span><span class="hyper-text" id="hyper-text">x2</span></button>
       <div class="tap-info" id="tap-info"></div>
       <div class="hint" id="hint" hidden></div>
       <div class="ticker" aria-hidden="true"><div class="ticker-text" id="ticker"></div></div>
     </section>
     <section class="panel">
       <div class="tab-bodies">
-        ${TABS.map((t) => `<div class="tab-body" id="tab-${t.id}" hidden></div>`).join('')}
+        ${TABS.map((tab) => `<div class="tab-body" id="tab-${tab.id}" role="tabpanel" aria-label="${t(tab.label)}" hidden></div>`).join('')}
       </div>
       <nav class="tabs" role="tablist">
-        ${TABS.map((t) => `<button class="tab" role="tab" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span><i class="badge" hidden></i></button>`).join('')}
+        ${TABS.map((tab) => `<button class="tab" role="tab" aria-selected="false" aria-controls="tab-${tab.id}" data-tab="${tab.id}">${icon(tab.icon)}<span>${t(tab.label)}</span><i class="badge" hidden><span class="sr-only">(${t('something new')})</span></i></button>`).join('')}
       </nav>
     </section>
     <div id="modals"></div>`;
 }
 
-function loadState(): GameState {
+function readStorage(key: string): string | null {
   try {
-    const text = localStorage.getItem(SAVE_KEY);
-    if (text) return deserialize(text);
-  } catch (e) {
-    console.warn('Could not load save', e);
-    try {
-      const text = localStorage.getItem(SAVE_KEY);
-      if (text) localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), text);
-    } catch {
-      /* storage unavailable */
-    }
+    return localStorage.getItem(key);
+  } catch {
+    return null;
   }
-  return newState();
+}
+
+/** How many unreadable saves to keep (the newest) for support. */
+const KEEP_BROKEN = 3;
+
+function loadState(): { state: GameState; found: boolean } {
+  const main = readStorage(SAVE_KEY);
+  const picked = pickSave(main, readStorage(BACKUP_KEY));
+  if (picked?.from !== 'main' && main) {
+    // Keep the unreadable save around rather than overwriting it, also when
+    // the backup is unreadable too and the game starts fresh.
+    try {
+      localStorage.setItem(SAVE_KEY + '-broken-' + Date.now(), main);
+      // Keep the newest few only, so a save that keeps breaking cannot fill storage and stop saving.
+      const broken = Object.keys(localStorage).filter((k) => k.startsWith(SAVE_KEY + '-broken-')).sort();
+      for (const k of broken.slice(0, -KEEP_BROKEN)) localStorage.removeItem(k);
+    } catch {
+      /* storage full or unavailable */
+    }
+    console.warn(picked ? 'Main save unreadable; loaded the backup' : 'Saves unreadable; starting fresh');
+  }
+  return { state: picked?.state ?? newState(), found: !!picked };
 }
 
 function start(): void {
+  const { state, found } = loadState();
+  setLanguage(state.settings.lang);
   installIcons();
   layout();
-
-  const state = loadState();
+  let lastBackupAt = 0;
+  let saveWarned = false;
+  // Later forms draw a heavier sky, so the battery saver check runs again after each evolution.
+  let saverRecheck = false;
+  // On Android, wait until the preferences copy has been checked before
+  // writing over it, in case localStorage was cleared, or holds only unreadable
+  // saves, and this is a fresh state.
+  let nativeChecked = !isNative() || found;
   let derived: Derived = computeDerived(state);
   let rebuildAll = true;
   let activeTab = 'build';
@@ -108,7 +134,7 @@ function start(): void {
   const sky = new Sky($('#sky') as HTMLCanvasElement, {
     onTap: (x, y) => {
       if (ctx.d.noTaps) {
-        if (Math.random() < 0.2) sky.floatText(x, y, 'Hands tied!', '#ff5f7a', 18);
+        if (Math.random() < 0.2) sky.floatText(x, y, t('Hands tied!'), '#ff5f7a', 18);
         return null;
       }
       const amount = tap(ctx.s, ctx.d);
@@ -121,9 +147,10 @@ function start(): void {
       ctx.recalc();
       sfxComet();
       haptic('heavy');
-      sky.floatCenter(r.title, black ? '#c58bff' : '#bff6ff', 28);
+      const [title, detail] = cometText(r);
+      sky.floatCenter(title, black ? '#c58bff' : '#bff6ff', 28);
       if (r.amount > 0) sky.floatCenter('+' + fmt(r.amount), '#ffcf5a', 26);
-      toast(`<div class="t-ico">${icon(black ? 'blackComet' : 'comet')}</div><div><b>${esc(r.title)}</b><br>${esc(r.amount > 0 ? `+${fmt(r.amount)} Stardust` : r.detail)}</div>`, r.kind === 'well' ? 'bad' : 'comet');
+      toast(`<div class="t-ico">${icon(black ? 'blackComet' : 'comet')}</div><div><b>${esc(title)}</b><br>${esc(detail)}</div>`, r.kind === 'well' ? 'bad' : 'comet');
     },
     onCometMissed: () => undefined,
   });
@@ -132,21 +159,42 @@ function start(): void {
     s: state,
     d: derived,
     sky,
-    buyAmount: 1 as BuyAmount,
+    buyAmount: buyAmountFrom(state.settings.buyAmount),
+    saveFailing: false,
     recalc() {
       derived = computeDerived(ctx.s);
       ctx.d = derived;
     },
     save() {
-      ctx.s.lastSeen = Date.now();
+      const now = Date.now();
+      ctx.s.lastSeen = now;
+      const fixed = repairNumbers(ctx.s, now);
+      if (fixed.length) {
+        console.warn('Repaired save fields', fixed);
+        ctx.recalc();
+      }
+      const text = serialize(ctx.s);
       try {
-        localStorage.setItem(SAVE_KEY, serialize(ctx.s));
+        localStorage.setItem(SAVE_KEY, text);
+        if (now - lastBackupAt >= BACKUP_EVERY_MS) {
+          localStorage.setItem(BACKUP_KEY, text);
+          lastBackupAt = now;
+        }
+        ctx.saveFailing = false;
       } catch (e) {
         console.warn('Save failed', e);
+        ctx.saveFailing = !isNative();
+        // On Android the phone copy below still saves; in a browser nothing does.
+        if (!isNative() && !saveWarned) {
+          saveWarned = true;
+          toast(t('This browser is not saving your progress. To keep it, use Copy save code in Settings.'), 'bad', 9000);
+        }
       }
+      if (nativeChecked) nativeSaveWrite(SAVE_KEY, text);
     },
     replaceState(s: GameState) {
       ctx.s = s;
+      ctx.buyAmount = buyAmountFrom(s.settings.buyAmount);
       ctx.recalc();
       applySettings(ctx);
       sky.setStage(stageFor(s.earnedRun));
@@ -160,7 +208,10 @@ function start(): void {
     },
     showTab(id: string) {
       activeTab = id;
-      document.querySelectorAll<HTMLElement>('.tab').forEach((b) => toggleClass(b, 'on', b.dataset.tab === id));
+      document.querySelectorAll<HTMLElement>('.tab').forEach((b) => {
+        toggleClass(b, 'on', b.dataset.tab === id);
+        setAttr(b, 'aria-selected', String(b.dataset.tab === id));
+      });
       document.querySelectorAll<HTMLElement>('.tab-body').forEach((b) => (b.hidden = b.id !== `tab-${id}`));
       $(`#tab-${id}`).scrollTop = 0;
       panels[id]?.refresh(ctx);
@@ -180,10 +231,12 @@ function start(): void {
 
   // Offline progress since the last session.
   const off = applyOffline(ctx.s, ctx.d);
+  const offReport = awayReport(ctx.s, Date.now(), off.seconds);
   if (off.earned > 0) {
     if (off.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
-    showOffline(ctx, off.seconds, off.earned);
+    showOffline(ctx, off.seconds, off.earned, offReport);
   }
+  showWhatsNew(ctx);
 
   document.querySelector('.tabs')!.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]');
@@ -218,6 +271,17 @@ function start(): void {
   });
 
   let paused = false;
+  // Reminders that the phone now blocks show as off in Settings, not on and silent.
+  function syncReminderPermission(): void {
+    if (!ctx.s.settings.notifications) return;
+    void notificationsStillAllowed().then((ok) => {
+      if (ok) return;
+      ctx.s.settings.notifications = false;
+      ctx.save();
+    });
+  }
+  syncReminderPermission();
+
   onPause(
     () => {
       if (paused) return;
@@ -231,10 +295,12 @@ function start(): void {
       paused = false;
       resumeAudio();
       void clearReminders();
+      syncReminderPermission();
       const back = applyOffline(ctx.s, ctx.d);
+      const backReport = awayReport(ctx.s, Date.now(), back.seconds);
       if (back.earned > 0 && back.seconds >= 60) {
         if (back.seconds >= 3600) grantAchievement(ctx.s, 'offline_hour');
-        showOffline(ctx, back.seconds, back.earned);
+        showOffline(ctx, back.seconds, back.earned, backReport);
       }
       ctx.recalc();
       last = performance.now();
@@ -243,8 +309,13 @@ function start(): void {
 
   // ---------------------------------------------------------------- slow UI
 
+  // Toasts and windows read short-form numbers ("+4.95B") in words for screen readers.
+  speakNumbersIn($('#toasts'));
+  speakNumbersIn($('#modals'));
   const amountEl = $('#amount');
+  const amountSr = $('#amount-sr');
   const rateEl = $('#rate');
+  const rateSr = $('#rate-sr');
   const buffsEl = $('#buffs');
   const stageEl = $('#stage-label');
   const tapInfo = $('#tap-info');
@@ -257,8 +328,11 @@ function start(): void {
   const eventText = $('#event-text');
   let shownAmount = state.stardust;
 
+  let shownStage = -1;
+
   function refreshSlow(force = false): void {
     const { s, d } = ctx;
+    maybeAskRating(ctx);
     // Achievements.
     const fresh = checkAchievements(s, d.sps);
     if (fresh.length) {
@@ -266,9 +340,9 @@ function start(): void {
       sfxAchievement();
       for (const id of fresh.slice(0, 3)) {
         const a = ACHIEVEMENT_BY_ID[id];
-        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>Achievement: ${esc(a.name)}</b><br>${esc(a.desc)}</div>`, 'trophy', 4000);
+        toast(`<div class="t-ico">${icon('trophy')}</div><div><b>${t('Achievement: {name}', { name: esc(tName(a)) })}</b><span class="t-desc"><br>${esc(tDesc(a))}</span></div>`, 'trophy', 4000);
       }
-      if (fresh.length > 3) toast(`and ${fresh.length - 3} more achievements!`, 'trophy');
+      if (fresh.length > 3) toast(t('and {n} more achievements!', { n: fresh.length - 3 }), 'trophy');
       rebuildAll = true;
     }
 
@@ -279,46 +353,56 @@ function start(): void {
       ctx.recalc();
       sfxAchievement();
       haptic('heavy');
-      toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>Anomaly complete: ${esc(a.name)}</b><br>${esc(a.rewardText)} The rule is lifted.</div>`, 'good', 6000);
+      toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('Anomaly complete: {name}', { name: esc(t(a.name)) })}</b><br>${t('{reward} The rule is lifted.', { reward: esc(t(a.rewardText)) })}</div>`, 'good', 6000);
       rebuildAll = true;
     }
 
-    // Stage of the celestial body.
+    // Stage of the celestial body. Growing into the next form is celebrated once.
     const stage = stageFor(s.earnedRun);
+    if (stage > shownStage && shownStage >= 0) {
+      const next = STAGES[stage + 1];
+      const sub = next ? t('Next form: {name} at {n} Stardust this universe.', { name: t(next.name), n: fmt(next.at) }) : t('This is the final form.');
+      toast(`<div class="t-ico">${icon('cosmos')}</div><div><b>${esc(t('Evolution! {from} → {to}', { from: t(STAGES[shownStage].name), to: t(STAGES[stage].name) }))}</b><br>${esc(sub)}</div>`, 'good', 5000);
+      sfxAchievement();
+      haptic('medium');
+      saverRecheck = true;
+    }
+    shownStage = stage;
     sky.setStage(stage);
     sky.setDrones(s.generators[0]);
     sky.setOwned(s.generators);
-    setText(stageEl, s.anomaly ? `${STAGES[stage].name} · ${ANOMALY_BY_ID[s.anomaly]?.name ?? ''}` : STAGES[stage].name);
+    setText(stageEl, s.anomaly ? `${t(STAGES[stage].name)} · ${t(ANOMALY_BY_ID[s.anomaly]?.name ?? '')}` : t(STAGES[stage].name));
     toggleClass(stageEl, 'anomaly', !!s.anomaly);
-    setText(tapInfo, d.noTaps ? 'Tapping is disabled' : `${fmt(d.tap, 1)} per tap`);
+    if (d.noTaps) setText(tapInfo, t('Tapping is disabled'));
+    else setSpoken(tapInfo, t('{n} per tap', { n: fmt(d.tap, 1) }), () => t('{n} per tap', { n: d.tap < 1000 ? fmt(d.tap, 1) : fmtSpoken(d.tap) }));
 
     // Buff chips.
     const buffHtml = s.buffs.map((b) => {
       const left = Math.max(0, b.endsAt - s.time);
-      const label = { rush: 'Rush x7', supernova: 'Tap x777', well: 'Well x0.5', horizon: 'Horizon x66', frenzy: 'Frenzy x10' }[b.kind];
+      const label = t({ rush: 'Rush x7', supernova: 'Tap x777', well: 'Well x0.5', horizon: 'Horizon x66', frenzy: 'Frenzy x10' }[b.kind]);
       return `<div class="buff buff-${b.kind}"><span>${label}</span><b>${Math.ceil(left)}s</b><i style="width:${(left / b.duration) * 100}%"></i></div>`;
     }).join('');
     if (buffsEl.innerHTML !== buffHtml) buffsEl.innerHTML = buffHtml;
     const top = s.buffs.find((b) => b.kind === 'well') ?? s.buffs.find((b) => b.kind === 'horizon') ?? s.buffs.find((b) => b.kind === 'rush') ?? s.buffs.find((b) => b.kind === 'supernova' || b.kind === 'frenzy');
     sky.aura = !top ? 'none' : top.kind === 'frenzy' ? 'supernova' : top.kind;
 
-    dailyBtn.hidden = !dailyReady(s) || s.tapsAll < 10;
+    setHidden(dailyBtn, !dailyReady(s) || s.tapsAll < 10);
 
     // Quasar Crystals grow in real time, including time away.
     const grown = growCrystals(s);
     if (grown > 0) {
-      toast(`<div class="t-ico">${icon('crystal')}</div><div><b>${grown > 1 ? `${grown} Quasar Crystals formed` : 'A Quasar Crystal formed'}</b><br>Spend it on the Build tab to level up a generator.</div>`, 'good', 5000);
+      toast(`<div class="t-ico">${icon('crystal')}</div><div><b>${grown > 1 ? t('{n} Quasar Crystals formed', { n: grown }) : t('A Quasar Crystal formed')}</b><br>${t('Spend it on the Build tab to level up a generator.')}</div>`, 'good', 5000);
       rebuildAll = true;
     }
 
     // Missions start once the first drone is built.
     const missionsOn = s.generators[0] > 0 || s.collapses > 0;
     if (missionsOn) ensureMissions(s, d);
-    missionBtn.hidden = !missionsOn;
+    setHidden(missionBtn, !missionsOn);
     // Checking the contract also starts a new week's one as soon as the week turns.
     const contractReady = contractClaimable(s);
     const ready = claimableMissions(s) + (missionsOn ? contractReady + passClaimable(s) : 0);
-    missionCount.hidden = ready === 0;
+    setHidden(missionCount, ready === 0);
     setText(missionCount, String(ready));
     toggleClass(missionBtn, 'ready', ready > 0);
 
@@ -328,27 +412,33 @@ function start(): void {
 
     // Weekend event: Friday to Sunday, once the player has a real economy.
     const ev = currentEvent(s);
-    eventBtn.hidden = !ev;
+    setHidden(eventBtn, !ev);
     if (ev) {
       const badge = badgeReady(ev);
       toggleClass(eventBtn, 'ready', badge);
-      setText(eventText, badge ? 'Badge!' : fmtTime(eventTimeLeft() / 1000));
+      setText(eventText, badge ? t('Badge!') : fmtTime(eventTimeLeft() / 1000));
     }
 
     // Hyperdrive (rewarded ad) button, offered once the player is hooked.
     const hyperLeft = hyperRemainingMs(s);
     if (d.hyper && hyperLeft <= 0) ctx.recalc();
-    hyperBtn.hidden = !AD_CONFIG.enabled || (s.generators[1] === 0 && s.collapses === 0);
+    setHidden(hyperBtn, !AD_CONFIG.enabled || (s.generators[1] === 0 && s.collapses === 0));
     toggleClass(hyperBtn, 'on', hyperLeft > 0);
-    toggleClass(hyperBtn, 'spin-ready', freeSpinReady(s));
+    const spinReady = freeSpinReady(s);
+    toggleClass(hyperBtn, 'spin-ready', spinReady);
+    // The dot is only drawn, so screen readers hear it in the label.
+    setAttr(hyperBtn, 'aria-label', spinReady ? `${t('Hyperdrive')}, ${t('Spin free')}` : t('Hyperdrive'));
     setText(hyperText, hyperLeft > 0 ? fmtTime(hyperLeft / 1000) : 'x2');
 
     // Tabs: Cosmos shows a lock until unlocked, Probes only once bought.
     const probeTab = document.querySelector<HTMLElement>('[data-tab="probes"]')!;
-    probeTab.hidden = !d.expeditions;
+    setHidden(probeTab, !d.expeditions);
     toggleClass(document.querySelector('[data-tab="cosmos"]')!, 'locked', !cosmosUnlocked(ctx));
     badge('upgrades', !d.noUpgrades && availableUpgrades(s).some((u) => upgradePrice(d, u) <= s.stardust));
-    badge('cosmos', canCollapse(s) && s.collapses === 0);
+    sampleRunPeak(s);
+    badge('cosmos', canCollapse(s) && (s.collapses === 0 || pastPeak(s)));
+    if (activeTab === 'trophies') s.trophiesSeen = achievementCount(s);
+    badge('trophies', achievementCount(s) > s.trophiesSeen);
     badge('probes', s.expeditions.some((e) => e.returnsAt <= Date.now()) || (d.expeditions && s.expeditions.length < d.expeditionSlots));
 
     if (rebuildAll || force) {
@@ -362,7 +452,7 @@ function start(): void {
 
   function badge(tab: string, on: boolean): void {
     const b = document.querySelector<HTMLElement>(`[data-tab="${tab}"] .badge`);
-    if (b) b.hidden = !on;
+    if (b) setHidden(b, !on);
   }
 
   // ---------------------------------------------------------------- hints
@@ -375,25 +465,30 @@ function start(): void {
     hintEl.textContent = text;
     hintEl.hidden = false;
     hintEl.dataset.hint = id;
+    // Short skies only (small phones): there the toasts would cover the hint.
+    hintEl.parentElement!.classList.toggle('hinting', hintEl.parentElement!.clientHeight < 290);
   }
   function hints(): void {
     const { s } = ctx;
     const seen = s.seenHints;
     toggleClass(document.querySelector('.gen[data-gen="0"]')!, 'pulse', s.generators[0] === 0 && s.stardust >= 15);
-    if (s.tapsAll < 5) return showHint('tap', 'Tap the asteroid to harvest Stardust');
-    if (s.generators[0] === 0 && s.stardust >= 15 && !seen.buy) return showHint('buy', 'Buy a Mining Drone below. It mines for you.');
+    // Only until the first drone can be bought: a player who builds without tapping (comets, offline)
+    // must still get the later hints, and the body is no longer an asteroid after the early game.
+    if (s.tapsAll < 5 && s.generators[0] === 0 && s.collapses === 0 && s.stardust < 15) return showHint('tap', t('Tap the asteroid to harvest Stardust'));
+    if (s.generators[0] === 0 && s.stardust >= 15 && !seen.buy) return showHint('buy', t('Buy a Mining Drone below. It mines for you.'));
     if (s.generators[0] > 0) seen.buy = true;
-    if (sky.hasComet && !seen.comet) return showHint('comet', 'A comet! Tap it quickly for a boost');
+    if (sky.hasComet && !seen.comet) return showHint('comet', t('A comet! Tap it quickly for a boost'));
     if (!sky.hasComet && s.cometsAll > 0) seen.comet = true;
     if (!seen.upgrade && Object.keys(s.upgrades).length === 0 && availableUpgrades(s).some((u) => upgradePrice(ctx.d, u) <= s.stardust)) {
-      return showHint('upgrade', 'An upgrade is ready. Tap it in the strip above your generators.');
+      return showHint('upgrade', t('An upgrade is ready. Tap it in the strip above your generators.'));
     }
     if (Object.keys(s.upgrades).length > 0) seen.upgrade = true;
-    if (!seen.cosmos && canCollapse(s)) return showHint('cosmos', 'Dark Matter is ready. Open Cosmos to collapse.');
+    if (!seen.cosmos && canCollapse(s)) return showHint('cosmos', t('Dark Matter is ready. Open Cosmos to collapse.'));
     if (s.collapses > 0) seen.cosmos = true;
     if (hintId) {
       hintId = '';
       hintEl.hidden = true;
+      hintEl.parentElement!.classList.remove('hinting');
     }
   }
 
@@ -406,7 +501,7 @@ function start(): void {
     let pick = list[Math.floor(Math.random() * list.length)];
     if (pick === lastNews && list.length > 1) pick = list[(list.indexOf(pick) + 1) % list.length];
     lastNews = pick;
-    tickerEl.textContent = pick;
+    tickerEl.textContent = t(pick);
     tickerEl.classList.remove('run');
     void tickerEl.offsetWidth;
     tickerEl.classList.add('run');
@@ -423,9 +518,49 @@ function start(): void {
   let autoBuyAcc = 0;
   let cometPending = false;
 
+  // Slow phones: watch the first 20 s of play and switch on battery saver
+  // once if the game runs below about 22 fps.
+  const SLOW_FRAME_MS = 45;
+  const slowSample: number[] = [];
+
+  // One bad frame must never stop the game: errors are logged for the report
+  // in Settings and the loop carries on.
+  let frameErrorShown = false;
   function frame(now: number): void {
-    const dt = Math.min(1, Math.max(0, (now - last) / 1000));
+    try {
+      step(now);
+    } catch (e) {
+      recordError('frame', e);
+      if (!frameErrorShown) {
+        frameErrorShown = true;
+        toast(t('Something went wrong, but your progress is safe. Settings has an error report.'), 'bad', 5000);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function step(now: number): void {
+    const gap = now - last;
+    // Battery saver runs the whole loop at about 30 fps.
+    if (ctx.s.settings.saver && gap < 30) return;
+    const dt = Math.min(1, Math.max(0, gap / 1000));
     last = now;
+    const st = ctx.s.settings;
+    if (!paused && !st.saver && !st.saverManual && (!st.saverAuto || saverRecheck) && gap > 0 && gap < 1000) {
+      slowSample.push(gap);
+      if (slowSample.length >= 400 || slowSample.reduce((a, b) => a + b, 0) > 20000) {
+        const sorted = slowSample.slice().sort((a, b) => a - b);
+        slowSample.length = 0;
+        saverRecheck = false;
+        st.saverAuto = true;
+        if (sorted[sorted.length >> 1] > SLOW_FRAME_MS) {
+          ctx.s.settings.saver = true;
+          applySettings(ctx);
+          toast(t('Battery saver is on to keep things smooth. You can change it in Settings.'), 'info', 5000);
+        }
+        ctx.save();
+      }
+    }
     if (!paused) {
       const { s } = ctx;
       if (tick(s, ctx.d, dt)) ctx.recalc();
@@ -464,8 +599,17 @@ function start(): void {
       // Number counters ease towards the real value.
       shownAmount += (s.stardust - shownAmount) * Math.min(1, dt * 12);
       if (Math.abs(s.stardust - shownAmount) < 1 || s.stardust < shownAmount) shownAmount = s.stardust;
-      setText(amountEl, fmt(shownAmount));
-      setText(rateEl, `${fmtRate(ctx.d.sps)} per second`);
+      const shownText = fmt(shownAmount);
+      // Screen readers get the number in words; only worked out when the visible text changes.
+      if (amountEl.textContent !== shownText) {
+        amountEl.textContent = shownText;
+        setText(amountSr, fmtSpoken(shownAmount));
+      }
+      const rateText = t('{n} per second', { n: fmtRate(ctx.d.sps) });
+      if (rateEl.textContent !== rateText) {
+        rateEl.textContent = rateText;
+        setText(rateSr, t('{n} per second', { n: ctx.d.sps < 1000 ? fmtRate(ctx.d.sps) : fmtSpoken(ctx.d.sps) }));
+      }
       toggleClass(rateEl, 'boosted', ctx.d.prodBuff > 1);
       toggleClass(rateEl, 'nerfed', ctx.d.prodBuff < 1);
 
@@ -481,7 +625,6 @@ function start(): void {
       }
     }
     sky.frame(dt);
-    requestAnimationFrame(frame);
   }
 
   if (ctx.s.nextCometAt < ctx.s.time) scheduleNextComet(ctx.s, ctx.d);
@@ -489,6 +632,16 @@ function start(): void {
   refreshSlow(true);
   requestAnimationFrame(frame);
   hideSplash();
+  if (!nativeChecked) {
+    void nativeSaveRead(SAVE_KEY).then((text) => {
+      nativeChecked = true;
+      const found = pickSave(text, null);
+      if (found && found.state.earnedAll > ctx.s.earnedAll) {
+        ctx.replaceState(found.state);
+        toast(t('Progress restored from the phone backup.'), 'good');
+      }
+    });
+  }
 
   // Hooks for automated screenshots and tests.
   (window as unknown as { __game: unknown }).__game = {
@@ -499,4 +652,37 @@ function start(): void {
   };
 }
 
-start();
+// The phone's language until the save is read, so a crash this early is still explained in it.
+setLanguage('auto');
+installErrorHandlers();
+try {
+  start();
+} catch (e) {
+  // Startup failed: show what happened instead of a blank screen. The save is untouched.
+  recordError('start', e);
+  hideSplash();
+  document.body.innerHTML = `<div class="crash" role="alert"><h2>${t('Stardust Empire could not start')}</h2>
+    <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')} ${t("The developer's email address is on the game's Google Play page.")}</p>
+    <textarea class="code" readonly aria-label="${t('Error report')}">${esc(errorReport(VERSION))}</textarea>
+    <button class="btn btn-primary" id="crash-copy">${t('Copy error report')}</button></div>`;
+  // Long-pressing a text box to select all of it is fiddly on a phone, so offer a button.
+  const box = document.querySelector<HTMLTextAreaElement>('.crash .code')!;
+  const btn = document.getElementById('crash-copy')!;
+  btn.addEventListener('click', async () => {
+    if (await copyText(box.value)) btn.textContent = t('Error report copied');
+    else { box.focus(); box.select(); }
+  });
+}
+
+/** A caught comet's title and detail line in the player's language. */
+function cometText(r: CometResult): [string, string] {
+  const gain = t('+{n} Stardust', { n: fmt(r.amount) });
+  switch (r.kind) {
+    case 'rush': return [t('Stardust Rush!'), t('Production x{m} for {s}s', { m: BUFF_MULT.rush, s: r.secs })];
+    case 'haul': return [t('Lucky Haul!'), gain];
+    case 'supernova': return [t('Supernova Tap!'), t('Taps x{m} for {s}s', { m: BUFF_MULT.supernova, s: r.secs })];
+    case 'horizon': return [t('Event Horizon!'), t('Production x{m} for {s}s', { m: BUFF_MULT.horizon, s: r.secs })];
+    case 'bighaul': return [t('Dark Bounty!'), gain];
+    case 'well': return [t('Gravity Well...'), t('Production halved for {s}s', { s: r.secs })];
+  }
+}

@@ -25,6 +25,10 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Build the web game
         run: npm run build
+      - name: Release checklist (warnings only)
+        env:
+          ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID }}
+        run: node tools/preflight.mjs
       - name: Restore the Play signing key, if the repository has one
         if: env.HAS_SIGNING_KEY == 'true'
         env:

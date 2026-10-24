@@ -55,9 +55,15 @@ export class Sky {
   private rockShape: number[] = [];
   private craters: Array<[number, number, number]> = [];
   particlesOn = true;
+  /** Reduce motion: no full-screen flash or squash, and the sky moves at a third of the speed. */
+  reduceMotion = false;
+  /** Battery saver draws the sky at 1x pixel density. */
+  private lowRes = false;
   aura: 'none' | 'rush' | 'horizon' | 'well' | 'supernova' = 'none';
   /** Canvas filter for the bought planet skin. */
   private bodyFilter = 'none';
+  /** The Golden Halo sky trail, earned on a long spin streak. */
+  halo = false;
 
   setSkin(id: string): void {
     this.bodyFilter = SKINS.find((k) => k.id === id)?.filter ?? 'none';
@@ -68,6 +74,15 @@ export class Sky {
     for (let i = 0; i < 20; i++) this.rockShape.push(0.82 + Math.random() * 0.22);
     for (let i = 0; i < 9; i++) this.craters.push([Math.random() * TAU, Math.random() * 0.75, 0.08 + Math.random() * 0.13]);
     canvas.addEventListener('pointerdown', (e) => this.pointer(e));
+    // Screen readers and keyboards: activating the canvas taps the body's centre.
+    canvas.addEventListener('click', (e) => {
+      if (e.detail === 0) this.tapAt(this.center[0], this.center[1]);
+    });
+    canvas.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      this.tapAt(this.center[0], this.center[1]);
+    });
     new ResizeObserver(() => this.resize()).observe(canvas);
     this.resize();
   }
@@ -101,10 +116,16 @@ export class Sky {
     this.owned = counts;
   }
 
+  setLowRes(on: boolean): void {
+    if (on === this.lowRes) return;
+    this.lowRes = on;
+    this.resize();
+  }
+
   private resize(): void {
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = this.lowRes ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     this.w = rect.width;
     this.h = rect.height;
     this.canvas.width = Math.round(rect.width * this.dpr);
@@ -212,7 +233,11 @@ export class Sky {
   }
 
   frame(dt: number): void {
-    this.t += dt;
+    this.t += this.reduceMotion ? dt / 3 : dt;
+    if (this.reduceMotion) {
+      this.squash = 0;
+      this.stageFlash = 0;
+    }
     this.squash = Math.max(0, this.squash - dt * 6);
     this.stageFlash = Math.max(0, this.stageFlash - dt * 0.8);
     this.updateEntities(dt);
@@ -281,6 +306,7 @@ export class Sky {
     const r = this.radius;
     this.drawEmpire(cx, cy);
     this.drawAura(cx, cy, r);
+    if (this.halo) this.drawHalo(cx, cy, r, true);
     const sq = Math.sin(this.squash * Math.PI) * 0.05;
     g.save();
     g.translate(cx, cy);
@@ -289,6 +315,7 @@ export class Sky {
     this.drawBody(r);
     g.filter = 'none';
     g.restore();
+    if (this.halo) this.drawHalo(cx, cy, r, false);
     this.drawDrones(cx, cy, r);
 
     if (this.stageFlash > 0) {
@@ -311,13 +338,71 @@ export class Sky {
     for (const f of this.floaters) {
       g.globalAlpha = Math.min(1, f.life * 1.5);
       g.font = `800 ${f.size}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+      // Long translated banners ("Ruée de Poussière d'étoiles !") must fit on a narrow phone:
+      // shrink the text to the sky's width and keep it clear of both edges.
+      const room = this.w - 16;
+      let width = g.measureText(f.text).width;
+      if (width > room) {
+        g.font = `800 ${Math.floor((f.size * room) / width)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+        width = room;
+      }
+      const x = Math.min(Math.max(f.x, 8 + width / 2), this.w - 8 - width / 2);
       g.lineWidth = 4;
       g.strokeStyle = 'rgba(0,0,0,0.6)';
-      g.strokeText(f.text, f.x, f.y);
+      g.strokeText(f.text, x, f.y);
       g.fillStyle = f.color;
-      g.fillText(f.text, f.x, f.y);
+      g.fillText(f.text, x, f.y);
     }
     g.globalAlpha = 1;
+  }
+
+  /**
+   * Golden Halo: two sparks on a tilted orbit, each dragging a fading trail.
+   * Drawn in two passes so the far half of the orbit passes behind the body.
+   */
+  private drawHalo(cx: number, cy: number, r: number, back: boolean): void {
+    const g = this.ctx;
+    const rx = r * 1.22;
+    const ry = r * 0.34;
+    const tilt = -0.32;
+    const cos = Math.cos(tilt);
+    const sin = Math.sin(tilt);
+    const at = (a: number): [number, number] => {
+      const x = Math.cos(a) * rx;
+      const y = Math.sin(a) * ry;
+      return [cx + x * cos - y * sin, cy + x * sin + y * cos];
+    };
+    // sin(a) < 0 is the far side of the orbit.
+    const far = (a: number): boolean => Math.sin(a) < 0;
+    g.lineCap = 'round';
+    for (let k = 0; k < 2; k++) {
+      const head = this.t * 0.9 + k * Math.PI;
+      const steps = 26;
+      for (let i = steps; i > 0; i--) {
+        const a0 = head - (i / steps) * 2.2;
+        const a1 = head - ((i - 1) / steps) * 2.2;
+        if (far((a0 + a1) / 2) !== back) continue;
+        const [x0, y0] = at(a0);
+        const [x1, y1] = at(a1);
+        const f = 1 - i / steps;
+        g.strokeStyle = `rgba(255,${200 + Math.round(f * 40)},${90 + Math.round(f * 80)},${(0.15 + f * f * 0.85).toFixed(3)})`;
+        g.lineWidth = 1.5 + f * 4;
+        g.beginPath();
+        g.moveTo(x0, y0);
+        g.lineTo(x1, y1);
+        g.stroke();
+      }
+      if (far(head) !== back) continue;
+      const [hx, hy] = at(head);
+      const glow = g.createRadialGradient(hx, hy, 0, hx, hy, 11);
+      glow.addColorStop(0, 'rgba(255,248,210,0.95)');
+      glow.addColorStop(0.4, 'rgba(255,205,90,0.55)');
+      glow.addColorStop(1, 'rgba(255,190,60,0)');
+      g.fillStyle = glow;
+      g.beginPath();
+      g.arc(hx, hy, 11, 0, TAU);
+      g.fill();
+    }
   }
 
   /** Your other generators drift around the edge of the sky. */

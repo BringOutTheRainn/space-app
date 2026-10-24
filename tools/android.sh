@@ -10,6 +10,14 @@ if [ ! -d android ]; then
 fi
 npx cap sync android
 
+# Google Play only accepts new apps and updates that target Android 16 (API 36)
+# from August 31, 2026. Capacitor 7 defaults to 35, so raise compile and target.
+PLAY_TARGET_SDK=36
+sed -i -E "s/(compileSdkVersion|targetSdkVersion) = [0-9]+/\1 = $PLAY_TARGET_SDK/" android/variables.gradle
+grep -q 'suppressUnsupportedCompileSdk' android/gradle.properties \
+  || echo "android.suppressUnsupportedCompileSdk=$PLAY_TARGET_SDK" >> android/gradle.properties
+grep -E 'compileSdkVersion|targetSdkVersion' android/variables.gradle
+
 RES=android/app/src/main/res
 for dpi in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   cp resources/android/mipmap-$dpi/*.png "$RES/mipmap-$dpi/"
@@ -44,10 +52,129 @@ if [ -n "${ADMOB_MEDIATION_ADAPTERS:-}" ]; then
     fi
   done
 fi
+# Reminders do not need exact alarms; inexact ones keep the permission list short
+# (the local notifications plugin falls back to inexact alarms without it).
+if ! grep -q 'SCHEDULE_EXACT_ALARM' "$MANIFEST"; then
+  grep -q 'xmlns:tools' "$MANIFEST" || sed -i 's#<manifest #<manifest xmlns:tools="http://schemas.android.com/tools" #' "$MANIFEST"
+  sed -i 's#</manifest>#    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />\n</manifest>#' "$MANIFEST"
+fi
 # Portrait only.
 MANIFEST=android/app/src/main/AndroidManifest.xml
 if ! grep -q 'screenOrientation' "$MANIFEST"; then
   sed -i 's/<activity /<activity android:screenOrientation="portrait" /' "$MANIFEST"
+fi
+
+# Native extras in MainActivity:
+# - Android's font size setting zooms all WebView text (up to 200% on Android 14+), and
+#   past about 130% the game's buttons and cards overflow. Follow the setting up to 130%.
+# - An InAppReview plugin that shows Google Play's in-app review card (ui/rating.ts).
+# - A ShareText plugin that opens Android's share sheet with a line of text (Stats screen).
+# - Apps targeting Android 15+ are drawn edge to edge, under the status and navigation
+#   bars. Pad the game's view by the bars (and any camera cutout) so the header and the
+#   bottom tabs stay clear of them, with light bar icons on the dark background, and
+#   lift it above the on-screen keyboard (Android 15+ no longer resizes for it).
+ACTIVITY=$(find android/app/src/main/java -name MainActivity.java | head -1)
+if [ -n "$ACTIVITY" ] && ! grep -q 'InAppReviewPlugin' "$ACTIVITY"; then
+  PKG=$(grep -m1 '^package ' "$ACTIVITY")
+  cat > "$ACTIVITY" <<JAVA
+$PKG
+
+import android.os.Bundle;
+import android.view.View;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    private static final float MAX_TEXT_SCALE = 1.3f;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(InAppReviewPlugin.class);
+        registerPlugin(ShareTextPlugin.class);
+        super.onCreate(savedInstanceState);
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            float scale = Math.min(getResources().getConfiguration().fontScale, MAX_TEXT_SCALE);
+            getBridge().getWebView().getSettings().setTextZoom(Math.round(scale * 100));
+            fitSystemBars((View) getBridge().getWebView().getParent());
+        }
+    }
+
+    private void fitSystemBars(View root) {
+        root.setBackgroundColor(0xFF05060F);
+        WindowInsetsControllerCompat bars = new WindowInsetsControllerCompat(getWindow(), root);
+        bars.setAppearanceLightStatusBars(false);
+        bars.setAppearanceLightNavigationBars(false);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets i = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            // Edge to edge, the window no longer shrinks for the keyboard; lift the game above it
+            // so the save code box and its Load button stay in view.
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            v.setPadding(i.left, i.top, i.right, Math.max(i.bottom, ime.bottom));
+            return WindowInsetsCompat.CONSUMED;
+        });
+        ViewCompat.requestApplyInsets(root);
+    }
+}
+JAVA
+  cat > "$(dirname "$ACTIVITY")/InAppReviewPlugin.java" <<JAVA
+$PKG
+
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
+
+@CapacitorPlugin(name = "InAppReview")
+public class InAppReviewPlugin extends Plugin {
+    @PluginMethod
+    public void requestReview(PluginCall call) {
+        ReviewManager manager = ReviewManagerFactory.create(getContext());
+        manager.requestReviewFlow().addOnCompleteListener(request -> {
+            if (!request.isSuccessful()) {
+                call.reject("In-app review is not available");
+                return;
+            }
+            ReviewInfo info = request.getResult();
+            manager.launchReviewFlow(getActivity(), info).addOnCompleteListener(done -> call.resolve());
+        });
+    }
+}
+JAVA
+  cat > "$(dirname "$ACTIVITY")/ShareTextPlugin.java" <<JAVA
+$PKG
+
+import android.content.Intent;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+@CapacitorPlugin(name = "ShareText")
+public class ShareTextPlugin extends Plugin {
+    @PluginMethod
+    public void share(PluginCall call) {
+        String text = call.getString("text", "");
+        Intent send = new Intent(Intent.ACTION_SEND);
+        send.setType("text/plain");
+        send.putExtra(Intent.EXTRA_TEXT, text);
+        try {
+            getActivity().startActivity(Intent.createChooser(send, call.getString("title", "")));
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Sharing is not available");
+        }
+    }
+}
+JAVA
+  grep -q 'com.google.android.play:review' android/app/build.gradle \
+    || sed -i '0,/^dependencies {/s##dependencies {\n    implementation "com.google.android.play:review:2.0.1"#' android/app/build.gradle
+  echo "Text zoom cap, system bar insets, in-app review and sharing added in $(dirname "$ACTIVITY")"
 fi
 
 # Version: name from package.json, code from VERSION_CODE (CI run number) or 1.
@@ -59,6 +186,17 @@ sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/; s/versionName \"[^\"]*\
 mkdir -p build
 cp android/app/build/outputs/apk/debug/app-debug.apk build/stardust-empire.apk
 ls -la build/stardust-empire.apk
+
+# Google Play needs native libraries aligned for 16 KB memory pages (Android 15+).
+ZIPALIGN=$(ls "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/nonexistent}}"/build-tools/*/zipalign 2>/dev/null | sort -V | tail -1 || true)
+if [ -n "$ZIPALIGN" ]; then
+  if "$ZIPALIGN" -c -P 16 -v 4 build/stardust-empire.apk > build/zipalign.txt 2>&1; then
+    echo "16 KB page alignment: OK ($(grep -c '\.so' build/zipalign.txt || true) native libraries)"
+  else
+    echo "::warning::Some native libraries are not 16 KB aligned:"
+    grep -i '\.so' build/zipalign.txt | grep -iv 'OK' || tail -20 build/zipalign.txt
+  fi
+fi
 
 # A signed release bundle for Google Play, only when a signing key is provided:
 #   ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD

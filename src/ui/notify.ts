@@ -3,6 +3,7 @@
 
 import type { Reminder } from '../core/notify.js';
 import { isNative } from './platform.js';
+import { t } from '../i18n/index.js';
 
 interface LocalNotificationsPlugin {
   checkPermissions(): Promise<{ display: string }>;
@@ -11,7 +12,7 @@ interface LocalNotificationsPlugin {
   cancel(o: { notifications: Array<{ id: number }> }): Promise<void>;
 }
 
-const IDS = [1, 2, 3, 4];
+const IDS = [1, 2, 3, 4, 5];
 
 function plugin(): LocalNotificationsPlugin | undefined {
   if (!isNative()) return undefined;
@@ -36,13 +37,24 @@ export async function requestNotifications(): Promise<boolean> {
   }
 }
 
+/** False once the player has turned notifications off for the game in the phone's settings. */
+export async function notificationsStillAllowed(): Promise<boolean> {
+  const p = plugin();
+  if (!p) return true;
+  try {
+    return (await p.checkPermissions()).display === 'granted';
+  } catch {
+    return true;
+  }
+}
+
 export async function scheduleReminders(list: Reminder[]): Promise<void> {
   const p = plugin();
   if (!p) return;
   try {
     await p.cancel({ notifications: IDS.map((id) => ({ id })) });
     if (!list.length) return;
-    await p.schedule({ notifications: list.map((r) => ({ id: r.id, title: r.title, body: r.body, schedule: { at: new Date(r.at) } })) });
+    await p.schedule({ notifications: list.map((r) => ({ id: r.id, title: t(r.title), body: r.parts.map((part) => t(part.key, part.vars)).join(' '), schedule: { at: new Date(r.at) } })) });
   } catch {
     /* notifications are a nice-to-have */
   }

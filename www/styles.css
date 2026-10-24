@@ -42,6 +42,7 @@ svg.ico { width: 100%; height: 100%; display: block; }
 [hidden] { display: none !important; }
 
 .boot { display: grid; place-items: center; height: 100%; font-weight: 800; letter-spacing: .1em; color: var(--dim); }
+.boot.old-webview { padding: 0 24px; text-align: center; font-weight: 600; letter-spacing: 0; line-height: 1.5; color: var(--text); }
 
 #app {
   height: 100%;
@@ -73,7 +74,9 @@ svg.ico { width: 100%; height: 100%; display: block; }
   text-shadow: 0 0 18px rgba(255, 207, 90, .35);
   white-space: nowrap;
 }
-.rate { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; margin-left: 30px; }
+.rate { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; margin-left: 30px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 320 px phones: the rate wrapped to two lines ("pro / Sekunde") and made the header taller. */
+@media (max-width: 359px) { .rate { margin-left: 0; } }
 .rate.boosted { color: var(--gold); }
 .rate.nerfed { color: var(--red); }
 
@@ -178,6 +181,12 @@ svg.ico { width: 100%; height: 100%; display: block; }
 .boost-main p { margin: 4px 0 0; font-size: 13px; }
 .boost .btn { flex: none; }
 .boost .btn:disabled { opacity: .45; }
+/* Phones: the button goes under the text, so long labels ("Regarder une pub", "Werbung ansehen")
+   no longer squeeze the description into a one-word column. */
+@media (max-width: 520px) {
+  .boost { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: start; column-gap: 10px; row-gap: 10px; }
+  .boost .btn { grid-column: 2; justify-self: start; }
+}
 .buff-frenzy { color: var(--cyan); border-color: var(--cyan); }
 .crystal-chip { display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 9px 0 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text, #e9edff); font-weight: 800; font-variant-numeric: tabular-nums; }
 .crystal-chip .ico { width: 22px; height: 22px; }
@@ -227,14 +236,16 @@ svg.ico { width: 100%; height: 100%; display: block; }
 .fake-ad { text-align: center; padding: 10px 0; }
 .fake-ad-tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--panel-3); color: var(--dim); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 .fake-ad-count { font-size: 44px; font-weight: 800; color: var(--gold); }
-body.has-banner #app { padding-bottom: 60px; }
+body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
 
 .hint {
   position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%);
   max-width: 88%;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(94, 240, 255, .14);
+  /* Nearly opaque: the bubble sits over the asteroid, and tap sparks drawn on the canvas below
+     showed through the old see-through fill and hid words. */
+  background: linear-gradient(rgba(94, 240, 255, .16), rgba(94, 240, 255, .16)), rgba(8, 12, 30, .9);
   border: 1px solid rgba(94, 240, 255, .55);
   color: #dffcff;
   font-size: 13px; font-weight: 600; text-align: center;
@@ -310,7 +321,7 @@ body.has-banner #app { padding-bottom: 60px; }
 
 /* ------------------------------------------------------------------ build */
 
-.buy-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.buy-row { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
 .buy-label { color: var(--dim); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-right: auto; }
 .chip {
   min-width: 52px;
@@ -323,6 +334,8 @@ body.has-banner #app { padding-bottom: 60px; }
 }
 .chip.on { background: var(--gold); border-color: var(--gold); color: #241800; }
 .chip-auto { border-color: var(--cyan); color: var(--cyan); }
+.buy-row .chip { flex: 1 1 auto; min-width: 0; padding: 6px 8px; }
+.buy-row:has(.crystal-chip:not([hidden])) .buy-label { display: none; }
 .chip-auto.on { background: var(--cyan); color: #04202a; }
 
 .upg-strip {
@@ -365,7 +378,7 @@ body.has-banner #app { padding-bottom: 60px; }
   border-radius: var(--radius);
   border: 1px solid var(--line);
   background: linear-gradient(180deg, var(--panel-2), #10142d);
-  opacity: .62;
+  opacity: .86;
   transition: opacity .15s, border-color .15s;
 }
 .gen.afford { opacity: 1; border-color: #3a4590; }
@@ -383,7 +396,7 @@ body.has-banner #app { padding-bottom: 60px; }
 .gen.afford .gen-price { color: var(--green); }
 .gen-price .q { color: var(--dim); font-weight: 600; margin-left: 4px; }
 .gen-sub { color: var(--dim); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gen-owned { font-size: 30px; font-weight: 800; color: rgba(233, 237, 255, .35); font-variant-numeric: tabular-nums; }
+.gen-owned { font-size: 30px; font-weight: 800; color: rgba(233, 237, 255, .5); font-variant-numeric: tabular-nums; }
 
 /* ------------------------------------------------------------------ upgrades */
 
@@ -393,6 +406,9 @@ body.has-banner #app { padding-bottom: 60px; }
   color: var(--dim);
 }
 .section-title:first-child { margin-top: 2px; }
+.upg-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.upg-head .section-title { margin: 2px 2px 8px; }
+.upg-all { min-height: 44px; padding: 8px 14px; margin-bottom: 6px; font-size: 13px; color: var(--gold); border-color: var(--gold-dim); }
 .empty, .hint-text { color: var(--dim); font-size: 13px; margin: 6px 2px; }
 .upg-list { display: flex; flex-direction: column; gap: 6px; }
 .upg-card {
@@ -402,6 +418,8 @@ body.has-banner #app { padding-bottom: 60px; }
   border: 1px solid var(--line);
   background: var(--panel-2);
 }
+.upg-soon { border-style: dashed; background: transparent; }
+.upg-soon .upg-ico { opacity: .6; }
 .upg-ico { width: 44px; height: 44px; flex: none; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, .25); }
 .upg-text { flex: 1; min-width: 0; }
 .upg-name { font-weight: 700; }
@@ -418,7 +436,7 @@ body.has-banner #app { padding-bottom: 60px; }
 }
 .btn:active:not(:disabled) { transform: scale(.97); }
 .btn-primary { background: linear-gradient(180deg, #ffd977, #f0b22f); color: #241800; border-color: #ffd977; }
-.btn-danger { background: linear-gradient(180deg, #ff6b84, #c8304d); border-color: #ff8fa1; color: #fff; }
+.btn-danger { background: linear-gradient(180deg, #e8506c, #b02441); border-color: #ff8fa1; color: #fff; }
 .btn-cosmic { background: linear-gradient(180deg, #8a4dff, #5b22d6); border-color: #a774ff; color: #fff; }
 .btn-cosmic:disabled { opacity: .4; }
 .btn-plain { background: var(--panel-2); }
@@ -476,9 +494,13 @@ body.has-banner #app { padding-bottom: 60px; }
 .dm-sub { color: var(--dim); font-size: 13px; }
 .dm { color: var(--violet); }
 .collapse-card { margin-top: 10px; padding: 12px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel-2); }
-.collapse-row { display: flex; justify-content: space-between; align-items: baseline; }
-.collapse-row b { color: var(--violet); font-size: 18px; }
+.collapse-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; column-gap: 8px; }
+.collapse-row b { color: var(--violet); font-size: 18px; white-space: nowrap; margin-left: auto; }
 .collapse-note { color: var(--dim); font-size: 12px; }
+.collapse-note.peak { color: var(--gold); font-weight: 600; }
+.btn-cosmic.ready:not(:disabled) { box-shadow: 0 0 0 2px var(--gold); }
+.collapse-gain { color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; }
+.collapse-gain.good { color: var(--gold); font-weight: 700; }
 
 .tree { position: relative; margin: 8px 0 20px; }
 .tree-lines { position: absolute; left: 0; top: 0; overflow: visible; }
@@ -549,6 +571,10 @@ body.has-banner #app { padding-bottom: 60px; }
   z-index: 5;
   pointer-events: none;
 }
+/* While a hint shows on a short sky (main.ts sets .hinting), toasts shrink to one line and one at a
+   time so they do not cover it. The achievement text is in the Trophies tab. */
+.hinting .toasts:not(.over-modal) .toast:not(:last-child), .hinting .toasts:not(.over-modal) .t-desc { display: none; }
+.toasts.over-modal { position: fixed; top: calc(var(--safe-top, 0px) + 8px); z-index: 30; }
 .toast {
   display: flex; gap: 9px; align-items: center;
   max-width: 270px; width: 100%;
@@ -615,17 +641,24 @@ body.has-banner #app { padding-bottom: 60px; }
 .stats td { padding: 6px 2px; border-bottom: 1px solid #1a2048; }
 .stats td:first-child { color: var(--dim); }
 .stats td:not(:first-child) { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.past-runs th { padding: 4px 2px 4px 8px; text-align: right; font-size: 11px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: .04em; vertical-align: bottom; }
+.past-runs td { white-space: nowrap; }
+.past-runs td:not(:first-child) { padding-left: 8px; }
 
-.toggle { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a2048; }
+.toggle { position: relative; display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a2048; }
 .toggle span:first-child { flex: 1; }
-.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.toggle input { position: absolute; right: 0; top: 50%; margin: 0; opacity: 0; pointer-events: none; }
 .switch { width: 46px; height: 26px; border-radius: 999px; background: #262e63; position: relative; transition: background .2s; }
 .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #c5cbee; transition: transform .2s; }
 .toggle input:checked + .switch { background: var(--gold); }
 .toggle input:checked + .switch::after { transform: translateX(20px); background: #fff; }
+.select { min-height: 36px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: inherit; font-size: 14px; }
 .code { width: 100%; height: 110px; border-radius: 10px; border: 1px solid var(--line); background: #070915; color: var(--text); font: 12px ui-monospace, monospace; padding: 8px; }
 
 .offline { text-align: center; }
+.away-list { list-style: none; margin: 16px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); display: grid; gap: 10px; text-align: left; }
+.away-list li { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+.away-list li svg { width: 28px; height: 28px; flex: none; }
 .offline-amount { font-size: 34px; font-weight: 800; color: var(--gold); display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 0 !important; }
 
 .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0; }
@@ -647,7 +680,9 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 
 /* ------------------------------------------------------------------ wide screens */
 
-@media (min-width: 860px) and (orientation: landscape) {
+/* Landscape tablets, and short split-screen windows (Android 16 ignores the portrait lock on
+   large screens), put the shop beside the sky instead of squeezing it under it. */
+@media (min-width: 560px) and (orientation: landscape) {
   #app {
     display: grid;
     grid-template-columns: 1fr minmax(380px, 460px);
@@ -658,10 +693,23 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
   .panel { grid-column: 2; grid-row: 1 / span 2; border-top: 0; border-left: 1px solid var(--line); }
 }
 
+@media (min-width: 560px) and (max-width: 859px) and (orientation: landscape) {
+  #app { grid-template-columns: 1fr 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ticker-text.run { animation-duration: 30s; }
-  .gift-btn, .hint, .gen.pulse, .mission-btn.ready { animation: none; }
+  html .gift-btn, html .hint, html .gen.pulse, html .mission-btn.ready, html .plot.ready, html .event-btn.ready, html .ev-rift { animation: none; }
+  body.collapsing #app { animation: collapse-calm 1.6s ease-in-out; }
 }
+/* The same, from the in-game Reduce motion setting. */
+html.reduce-motion .ticker-text.run { animation-duration: 30s; }
+html.reduce-motion .gift-btn, html.reduce-motion .hint, html.reduce-motion .gen.pulse, html.reduce-motion .mission-btn.ready,
+html.reduce-motion .plot.ready, html.reduce-motion .event-btn.ready, html.reduce-motion .ev-rift,
+html.reduce-motion .wheel-wrap.golden { animation: none; }
+html.reduce-motion body.collapsing #app { animation: collapse-calm 1.6s ease-in-out; }
+/* A collapse without the bright flash: a slow dim and back. */
+@keyframes collapse-calm { 50% { opacity: .25; } }
 
 /* Nebula Garden */
 .seeds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
@@ -712,7 +760,7 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .ev-mark.got { background: var(--gold); }
 .ev-mark.got i { color: var(--gold); }
 .ev-gens { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px; }
-.ev-gen { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: inherit; font: inherit; text-align: left; opacity: .6; }
+.ev-gen { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: inherit; font: inherit; text-align: left; opacity: .86; }
 .ev-gen.ok { opacity: 1; border-color: #ff7ad9; }
 .ev-gen-ico .ico { width: 36px; height: 36px; }
 .ev-gen-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -728,6 +776,18 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .mini span { display: flex; flex-direction: column; min-width: 0; }
 .mini b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-sub { font-size: 11px; font-style: normal; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Small phones: three cards share about 100px each, so the subtitle gets its own full-width line. */
+@media (max-width: 420px) {
+  .mini { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 6px; row-gap: 2px; padding: 6px 8px; }
+  .mini .ico { width: 22px; height: 22px; }
+  .mini span { display: contents; }
+  .mini b { font-size: 12px; }
+  .mini-sub { grid-column: 1 / -1; }
+}
+@media (max-width: 340px) {
+  .mini { grid-template-columns: minmax(0, 1fr); }
+  .mini .ico { display: none; }
+}
 .mini[data-garden].ready { border-color: #7dffb0; box-shadow: 0 0 10px rgba(125, 255, 176, .35); }
 .mini[data-garden].ready .mini-sub { color: #7dffb0; }
 .mini-forge.ready { border-color: #ff9a4d; box-shadow: 0 0 10px rgba(255, 154, 77, .35); }
@@ -742,8 +802,8 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .market-head .ico { width: 48px; height: 48px; flex: none; }
 .market-tick { font-size: 17px; font-weight: 800; color: #7ff5e0; font-variant-numeric: tabular-nums; }
 .goods { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px; }
-.good { padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.good.tipped { border-color: #35e0c4; }
+.goods .good { padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.goods .good.tipped { border-color: #35e0c4; }
 .good-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .good-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
 .good-name b { font-size: 14px; color: var(--text); }
@@ -791,6 +851,10 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .shop-main span { font-size: 12px; color: var(--dim); line-height: 1.35; }
 .shop-sub { justify-content: space-between; }
 .shop-buy { flex: none; padding: 8px 12px; min-width: 72px; font-variant-numeric: tabular-nums; }
+/* Long labels wrap instead of squeezing the description beside them into a narrow column. */
+.shop-sub { flex-wrap: wrap; }
+.shop-sub > span { flex: 1 1 160px; }
+.shop-row > .shop-owned-note { flex: 0 1 40%; text-align: right; }
 .shop-owned { flex: none; font-size: 12px; font-weight: 800; color: #7dffb0; }
 .shop-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .shop-packs, .shop-skins { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -846,3 +910,91 @@ body.collapsing #app { animation: collapse 1.6s ease-in-out; }
 .wheel-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .wheel-side b { font-size: 16px; color: var(--gold); }
 .wheel-side p { margin: 0; font-size: 12px; line-height: 1.35; color: var(--dim); }
+
+.link { color: var(--cyan); text-decoration: underline; display: inline-block; padding: 16px 6px; margin: -16px -6px; }
+
+/* Larger touch areas (Android asks for 48 dp) without changing how buttons look. */
+.icon-btn, .chip, .btn-buy, .crystal-chip { position: relative; }
+.icon-btn::before { content: ''; position: absolute; inset: -3px; }
+.upg-all { position: relative; }
+.upg-all::before { content: ''; position: absolute; inset: -2px; }
+.chip::before, .btn-buy::before, .crystal-chip::before { content: ''; position: absolute; inset: -7px -2px; }
+.hyper-btn::before { content: ''; position: absolute; inset: -6px -2px; }
+#sky:focus-visible { outline: 3px solid var(--cyan); outline-offset: -3px; }
+
+/* Startup failure screen */
+.crash { max-width: 520px; margin: 0 auto; padding: 48px 20px; color: var(--text, #e9edff); }
+.crash h2 { margin: 0 0 12px; }
+.crash .code { width: 100%; min-height: 220px; margin: 12px 0; }
+
+/* Lucky Orbit streak */
+.wheel-streak { display: flex; gap: 5px; margin-top: 2px; }
+.sdot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; }
+.sdot.on { background: var(--cyan); border-color: var(--cyan); }
+.sdot.gold { border-color: var(--gold); }
+.sdot.gold.on { background: var(--gold); }
+.sdot.today { border-color: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.sdot.gold.today { border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.wheel-wrap.golden .wheel-disc { filter: drop-shadow(0 0 10px rgba(255, 207, 90, .8)); }
+.btn-golden { background: linear-gradient(135deg, #ffe08a, #ffb627); color: #2b1a00; }
+@media (prefers-reduced-motion: no-preference) {
+  .wheel-wrap.golden { animation: golden-pulse 1.8s ease-in-out infinite; }
+}
+@keyframes golden-pulse { 50% { transform: scale(1.03); } }
+.shop-halo { margin-top: 10px; }
+.halo-swatch { flex: none; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #3e5fa8 0 34%, transparent 36%), radial-gradient(ellipse 50% 18% at 50% 50%, transparent 72%, #ffd36a 76%, transparent 86%); }
+/* Touch targets: grow the tappable area of compact buttons to at least 48 px without changing their look. */
+.modal-x, .shop-buy, .btn-cosmic, .modal .btn { position: relative; }
+.modal-x::before, .shop-buy::before, .btn-cosmic::before, .modal .btn::before {
+  content: ''; position: absolute;
+  top: min(0px, calc(50% - 24px)); bottom: min(0px, calc(50% - 24px));
+  left: min(0px, calc(50% - 24px)); right: min(0px, calc(50% - 24px));
+}
+/* Keyboard, switch-access and D-pad focus: one clear ring everywhere, including the hidden toggle inputs. */
+button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-visible:not(#sky) { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.toggle input:focus-visible + .switch { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.modal:focus { outline: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Progress toward the generator's next tier upgrade. */
+.gen-tier { height: 3px; margin-top: 5px; border-radius: 2px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.gen-tier i { display: block; height: 100%; background: linear-gradient(90deg, #5ef0ff, #ffd36a); border-radius: inherit; transition: width .3s; }
+
+/* Short portrait phones (360 x 640 and smaller, common on low-end Android): a smaller sky and
+   tighter Build rows, so two generators fit above the tab bar instead of one and a half. Tap
+   targets stay at least 48 px. */
+@media (max-height: 700px) and (orientation: portrait) {
+  .sky-wrap { flex-basis: 36%; min-height: 200px; }
+  .gen { min-height: 60px; padding: 6px 10px 6px 6px; gap: 8px; }
+  .gen-ico { width: 44px; height: 44px; }
+  .gen-owned { font-size: 26px; }
+  .upg-chip { width: 48px; height: 48px; padding: 5px; }
+  .upg-strip { padding-bottom: 6px; margin-bottom: 2px; }
+}
+
+/* Very short narrow windows: a phone in split-screen (412 x 300 to 412 x 520). The 220 px sky
+   minimum used to push the tab bar off the screen, so the sky and top bar shrink here. */
+@media (max-height: 520px) and (max-width: 559px) {
+  .top { padding: 6px 12px 5px; }
+  .amount { font-size: 24px; }
+  .icon-btn { width: 40px; height: 40px; padding: 9px; }
+  .sky-wrap { flex: 0 0 30%; min-height: 96px; }
+  .tab { padding: 4px 2px 5px; }
+  .hint { bottom: 30px; padding: 4px 10px; font-size: 11px; }
+  /* The corner buttons stack two high on each side and overlapped in a sky this short, so they
+     share one row along the top instead. */
+  .event-btn { top: 6px; }
+  .mission-btn { top: 6px; bottom: auto; left: 76px; }
+  .gift-btn { top: 6px; width: 44px; height: 44px; padding: 5px; }
+  .hyper-btn { top: 10px; bottom: auto; right: 64px; }
+  .buffs { bottom: 30px; }
+  /* Windows: use the full height and trim the title and button rows, so the scrolling middle
+     shows more than a card and a half. */
+  .modal { max-height: 100dvh; border-radius: 16px 16px 0 0; }
+  .modal-head { padding: 8px 12px 2px; }
+  .modal-head h2 { font-size: 17px; }
+  .modal-body { padding: 2px 12px 6px; }
+  .modal-buttons { padding: 6px 12px 8px; }
+}
+
+/* Settings: shown in place of the "saves automatically" line while browser saves fail. */
+.save-failing { color: var(--red); font-weight: 600; }

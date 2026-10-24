@@ -15,13 +15,12 @@ export interface Seed {
   growMinutes: number;
   /** Harvest reward, in minutes of base production. */
   rewardMinutes: number;
-  flavor: string;
 }
 
 export const SEEDS: Seed[] = [
-  { id: 'moss', name: 'Star Moss', growMinutes: 5, rewardMinutes: 1.5, flavor: 'Fuzzy, glowing, and ready almost at once.' },
-  { id: 'bloom', name: 'Comet Bloom', growMinutes: 60, rewardMinutes: 12, flavor: 'Opens its petals once an hour, like a tail sweeping past.' },
-  { id: 'orchid', name: 'Void Orchid', growMinutes: 480, rewardMinutes: 90, flavor: 'Slow and silent. Plant one before bed.' },
+  { id: 'moss', name: 'Star Moss', growMinutes: 5, rewardMinutes: 1.5 },
+  { id: 'bloom', name: 'Comet Bloom', growMinutes: 60, rewardMinutes: 12 },
+  { id: 'orchid', name: 'Void Orchid', growMinutes: 480, rewardMinutes: 90 },
 ];
 
 export interface Plot {

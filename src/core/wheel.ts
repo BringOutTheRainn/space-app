@@ -9,6 +9,14 @@ import { earn, type Derived } from './economy.js';
 import type { GameState } from './state.js';
 
 export const AD_SPINS_PER_DAY = 2;
+/** Every 7th day in a row, the free spin is a Golden Orbit. */
+export const STREAK_DAYS = 7;
+/** On a golden spin the jackpot is six times as likely and every prize is doubled. */
+export const GOLDEN_JACKPOT_WEIGHT = 12;
+export const GOLDEN_MULT = 2;
+/** Four Golden Orbits in a row earn the Golden Halo, a sky trail around the body. */
+export const HALO_STREAK = 28;
+const JACKPOT = 7;
 
 export type SliceKind = 'stardust' | 'hyper' | 'comet' | 'crystal';
 
@@ -51,11 +59,33 @@ export function adSpinsLeft(s: GameState, now = Date.now()): number {
   return s.wheelFree ? 0 : Math.max(0, AD_SPINS_PER_DAY - s.wheelAds);
 }
 
-export function pickSlice(rng: () => number = Math.random): number {
-  const total = SLICES.reduce((n, x) => n + x.weight, 0);
+/** The streak the next free spin would make: one more if yesterday's free spin was used. */
+export function nextStreak(s: GameState, now = Date.now()): number {
+  const day = dayNumber(now);
+  if (s.wheelStreakDay === day) return s.wheelStreak;
+  return s.wheelStreakDay === day - 1 ? s.wheelStreak + 1 : 1;
+}
+
+/** Days in a row so far, counting today only once its free spin is used (0 when broken). */
+export function currentStreak(s: GameState, now = Date.now()): number {
+  const day = dayNumber(now);
+  return s.wheelStreakDay === day || s.wheelStreakDay === day - 1 ? s.wheelStreak : 0;
+}
+
+/** True when today's free spin, still unused, is a Golden Orbit. */
+export function goldenReady(s: GameState, now = Date.now()): boolean {
+  return freeSpinReady(s, now) && nextStreak(s, now) % STREAK_DAYS === 0;
+}
+
+function weightOf(i: number, golden: boolean): number {
+  return golden && i === JACKPOT ? GOLDEN_JACKPOT_WEIGHT : SLICES[i].weight;
+}
+
+export function pickSlice(rng: () => number = Math.random, golden = false): number {
+  const total = SLICES.reduce((n, _, i) => n + weightOf(i, golden), 0);
   let r = rng() * total;
   for (let i = 0; i < SLICES.length; i++) {
-    r -= SLICES[i].weight;
+    r -= weightOf(i, golden);
     if (r < 0) return i;
   }
   return 0;
@@ -69,44 +99,66 @@ export interface SpinResult {
   slice: number;
   /** Stardust paid, if any. */
   amount: number;
+  /** A Golden Orbit spin (7th day in a row): doubled prizes. */
+  golden: boolean;
+  /** Days in a row after this spin. */
+  streak: number;
+  /** This spin earned the Golden Halo. */
+  halo: boolean;
 }
 
 /** Spins the wheel: the free spin first, then ad spins. Null when none are left. */
 export function spin(s: GameState, d: Derived, viaAd: boolean, now = Date.now(), rng: () => number = Math.random): SpinResult | null {
   sync(s, now);
   if (viaAd ? adSpinsLeft(s, now) <= 0 : !s.wheelFree) return null;
+  let golden = false;
+  let halo = false;
   if (viaAd) {
     s.wheelAds++;
     s.adsWatched++;
   } else {
     s.wheelFree = false;
+    s.wheelStreak = nextStreak(s, now);
+    s.wheelStreakDay = dayNumber(now);
+    golden = s.wheelStreak % STREAK_DAYS === 0;
+    if (s.wheelStreak >= HALO_STREAK && !s.haloEarned) {
+      s.haloEarned = true;
+      s.haloOn = true;
+      halo = true;
+    }
   }
   s.wheelSpins++;
-  const i = pickSlice(rng);
+  const mult = golden ? GOLDEN_MULT : 1;
+  const i = pickSlice(rng, golden);
   const x = SLICES[i];
   let amount = 0;
   switch (x.kind) {
     case 'hyper': {
       const start = Math.max(now, s.hyperEndsAt);
-      s.hyperEndsAt = Math.min(now + AD_CONFIG.hyperCapMinutes * 60000, start + x.minutes * 60000);
+      s.hyperEndsAt = Math.min(now + AD_CONFIG.hyperCapMinutes * 60000, start + x.minutes * mult * 60000);
       break;
     }
     case 'comet':
       s.nextCometAt = s.time;
+      // A golden comet also brings the smallest prize's worth of Stardust.
+      if (golden) {
+        amount = sliceValue(d, SLICES[0]) * mult;
+        earn(s, amount);
+      }
       break;
     case 'crystal':
       if (crystalsUnlocked(s)) {
-        s.crystals++;
+        s.crystals += mult;
         break;
       }
       // Before crystals open, the slice pays its minutes instead.
-      amount = sliceValue(d, x);
+      amount = sliceValue(d, x) * mult;
       earn(s, amount);
       break;
     case 'stardust':
-      amount = sliceValue(d, x);
+      amount = sliceValue(d, x) * mult;
       earn(s, amount);
       break;
   }
-  return { slice: i, amount };
+  return { slice: i, amount, golden, streak: currentStreak(s, now), halo };
 }

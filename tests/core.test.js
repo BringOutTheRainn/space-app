@@ -1,12 +1,12 @@
 // Game rule tests. Run with `npm test` (compiles first) or `node --test tests/`.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, fmtTime, fmtPercent, setNumberStyle } from '../www/js/core/format.js';
+import { fmt, fmtTime, fmtPercent, setNumberStyle, setNumberLocale } from '../www/js/core/format.js';
 import { newState } from '../www/js/core/state.js';
-import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic } from '../www/js/core/economy.js';
+import { computeDerived, generatorPrice, maxAffordable, buyGenerator, buyUpgrade, tap, tick, availableUpgrades, buyCosmic, buyAllUpgrades, affordableUpgradeCount, upgradePrice } from '../www/js/core/economy.js';
 import { catchComet, scheduleNextComet, cometDue } from '../www/js/core/comets.js';
 import { darkMatterForEarnings, pendingDarkMatter, collapse, canCollapse } from '../www/js/core/prestige.js';
-import { checkAchievements } from '../www/js/core/achievements.js';
+import { checkAchievements, closestAchievements, achievementProgress } from '../www/js/core/achievements.js';
 import { serialize, deserialize, exportSave, importSave, applyOffline } from '../www/js/core/save.js';
 import { claimDaily, dayNumber, dailyReady } from '../www/js/core/daily.js';
 import { startExpedition, collectExpeditions } from '../www/js/core/expeditions.js';
@@ -37,8 +37,14 @@ test('formats numbers', () => {
   assert.equal(fmtTime(125), '2m 05s');
   assert.equal(fmtTime(3 * 3600 + 120), '3h 2m');
   assert.equal(fmtTime(90000), '1d 1h');
+  setNumberLocale('fr-FR'); assert.equal(fmtTime(90000), '1j 1h');
+  setNumberLocale('de-DE'); assert.equal(fmtTime(90000), '1T 1h'); assert.equal(fmtTime(125), '2m 05s');
+  setNumberLocale('en-US'); assert.equal(fmtTime(90000), '1d 1h');
   assert.equal(fmtPercent(0.0001), '<0.1%');
   assert.equal(fmtPercent(0.25), '25%');
+  assert.equal(fmtPercent(19.3), '1,930%');
+  assert.equal(fmtPercent(1.2), '120%');
+  assert.equal(fmtPercent(25000), '2.5M%');
 });
 
 test('every id is unique', () => {
@@ -249,6 +255,38 @@ test('save round trip and migration of missing fields', () => {
   assert.throws(() => importSave('not base64!!'));
 });
 
+test('save codes survive being pasted back from chat or email', () => {
+  const s = newState(1000);
+  s.stardust = 123456;
+  const code = exportSave(s);
+  const wrapped = code.match(/.{1,60}/g).join('\r\n');
+  const urlSafe = code.replace(/\+/g, '-').replace(/\//g, '_');
+  for (const pasted of [`  ${code}\n`, `"${code}"`, `\u201c${code}\u201d`, wrapped, `\u200b${code}\u200b`, code.replace(/=+$/, ''), urlSafe]) {
+    assert.deepEqual(importSave(pasted), s);
+  }
+});
+
+test('saved settings keep their types and fall back on bad values', () => {
+  const s = newState(1000);
+  const raw = JSON.parse(serialize(s));
+  raw.settings = { sound: 'yes', music: false, numberStyle: 'weird', lang: 'de', extra: 1 };
+  const back = deserialize(JSON.stringify(raw));
+  assert.equal(back.settings.sound, true, 'wrong type falls back to the default');
+  assert.equal(back.settings.music, false);
+  assert.equal(back.settings.numberStyle, 'short');
+  assert.equal(back.settings.lang, 'de');
+  assert.ok(!('extra' in back.settings));
+  assert.equal(back.settings.buyAmount, '1', 'older saves start on x1');
+  raw.settings = { buyAmount: 'max' };
+  assert.equal(deserialize(JSON.stringify(raw)).settings.buyAmount, 'max');
+  raw.settings = { buyAmount: '7' };
+  assert.equal(deserialize(JSON.stringify(raw)).settings.buyAmount, '1', 'unknown amount falls back to x1');
+  for (const bad of [null, 'x', 5]) {
+    raw.settings = bad;
+    assert.deepEqual(deserialize(JSON.stringify(raw)).settings, s.settings);
+  }
+});
+
 test('offline earnings are capped and reduced', () => {
   const s = newState(0);
   s.generators[1] = 10;
@@ -445,6 +483,13 @@ test('reminders cover storage, hyperdrive, probes and the daily drop, never too 
   assert.ok(list.every((r, i) => i === 0 || r.at >= list[i - 1].at), 'sorted by time');
   s.hyperEndsAt = now + 60000;
   assert.ok(!planReminders(s, computeDerived(s, now), now).some((r) => r.id === 2), 'skips events under 10 minutes away');
+  assert.ok(!list.some((r) => r.id === 5), 'no comeback nudge for a player who barely played');
+  s.playSeconds = 3600;
+  const gift = planReminders(s, computeDerived(s, now), now).find((r) => r.id === 5);
+  assert.ok(gift && gift.at >= now + 3 * 86400000 && new Date(gift.at).getHours() === 18, 'comeback nudge on the evening the gift is due');
+  assert.match(gift.body, /2 hours of free Hyperdrive/);
+  s.comebackAt = now - 86400000;
+  assert.ok(!planReminders(s, computeDerived(s, now), now).some((r) => r.id === 5), 'no nudge while the last gift is under a week old');
 });
 
 test('weekly contracts rotate by week, pay three tiers and award a permanent medal', async () => {
@@ -731,6 +776,131 @@ test('shop purchases grant once, the vault fills in real time, and the event pas
   assert.equal(back.event.pass, true);
 });
 
+test('older saves get battery saver off by default', () => {
+  const s = newState(0);
+  const raw = JSON.parse(serialize(s));
+  delete raw.settings.saver; delete raw.settings.saverAuto;
+  const back = deserialize(JSON.stringify(raw), 0);
+  assert.equal(back.settings.saver, false);
+  assert.equal(back.settings.saverAuto, false);
+  assert.equal(back.settings.sound, true);
+});
+
+test('lucky orbit streak: seven days in a row gives a golden spin, a missed day resets it', async () => {
+  const w = await import('../www/js/core/wheel.js');
+  const day = (n) => new Date(2026, 9, 1 + n, 12).getTime();
+  const s = newState(day(0));
+  s.generators[0] = 100;
+  const d = computeDerived(s, 0);
+  const half = () => 0.5;
+  for (let n = 0; n < 6; n++) {
+    assert.equal(w.goldenReady(s, day(n)), false, `day ${n + 1} is not golden`);
+    const r = w.spin(s, d, false, day(n), half);
+    assert.equal(r.golden, false);
+    assert.equal(r.streak, n + 1);
+  }
+  assert.equal(w.goldenReady(s, day(6)), true, 'day 7 is golden');
+  const plain = w.spin(newState(day(6)), d, false, day(6), () => 0).amount;
+  const r7 = w.spin(s, d, false, day(6), () => 0);
+  assert.equal(r7.golden, true);
+  assert.equal(r7.slice, 0);
+  assert.equal(r7.amount, plain * w.GOLDEN_MULT, 'golden prizes are doubled');
+  // Ad spins never count as golden.
+  assert.equal(w.spin(s, d, true, day(6), () => 0).golden, false);
+  // Skip a day: the streak starts again.
+  assert.equal(w.currentStreak(s, day(8)), 0);
+  assert.equal(w.spin(s, d, false, day(8), half).streak, 1);
+  // The golden wheel makes the jackpot far more likely.
+  let normal = 0, golden = 0;
+  for (let i = 0; i < 1000; i++) { const x = (i + 0.5) / 1000; if (w.pickSlice(() => x) === 7) normal++; if (w.pickSlice(() => x, true) === 7) golden++; }
+  assert.ok(golden >= normal * 4, `jackpot ${normal} -> ${golden}`);
+});
+
+test('a 28-day spin streak earns the Golden Halo once; ad spins and broken streaks do not', async () => {
+  const w = await import('../www/js/core/wheel.js');
+  const day = (n) => new Date(2026, 9, 1 + n, 12).getTime();
+  const s = newState(day(0));
+  const d = computeDerived(s, 0);
+  for (let n = 0; n < w.HALO_STREAK - 1; n++) {
+    assert.equal(w.spin(s, d, false, day(n), () => 0.5).halo, false);
+    w.spin(s, d, true, day(n), () => 0.5);
+  }
+  assert.equal(s.haloEarned, false, 'not before day 28');
+  const r = w.spin(s, d, false, day(w.HALO_STREAK - 1), () => 0.5);
+  assert.equal(r.halo, true);
+  assert.equal(r.golden, true, 'day 28 is also a Golden Orbit');
+  assert.ok(s.haloEarned && s.haloOn);
+  s.haloOn = false;
+  assert.equal(w.spin(s, d, false, day(w.HALO_STREAK), () => 0.5).halo, false, 'earned only once');
+  assert.equal(s.haloOn, false, 'turning it off sticks');
+  // A save from before the halo existed loads with it unearned.
+  const old = JSON.parse(serialize(newState(day(0))));
+  delete old.haloEarned; delete old.haloOn;
+  const back = deserialize(JSON.stringify(old));
+  assert.equal(back.haloEarned, false);
+  assert.equal(back.haloOn, false);
+});
+
+test('reduce motion is off by default and older saves load with it off', () => {
+  assert.equal(newState(0).settings.reduceMotion, false);
+  const old = JSON.parse(serialize(newState(0)));
+  delete old.settings.reduceMotion;
+  assert.equal(deserialize(JSON.stringify(old)).settings.reduceMotion, false);
+  const on = newState(0); on.settings.reduceMotion = true;
+  assert.equal(deserialize(serialize(on)).settings.reduceMotion, true);
+});
+
+test('every Shop product id is listed in the Play Console setup table in docs/RELEASE.md', async () => {
+  const { PRODUCTS } = await import('../www/js/data/store.js');
+  const { readFileSync } = await import('node:fs');
+  const doc = readFileSync(new URL('../docs/RELEASE.md', import.meta.url), 'utf8');
+  const missing = PRODUCTS.map((p) => p.id).filter((id) => !doc.includes('`' + id + '`'));
+  assert.deepEqual(missing, [], 'create these in Play Console too');
+});
+
+test('tier bands end exactly where each generator unlocks a new upgrade, and stop after the last', async () => {
+  const { tierBand, UPGRADES } = await import('../www/js/data/upgrades.js');
+  assert.deepEqual(tierBand(1, 12), { from: 5, to: 25 });
+  assert.deepEqual(tierBand(0, 3), { from: 1, to: 10 });
+  assert.equal(tierBand(4, 250), null);
+  for (let g = 0; g < GENERATORS.length; g++) {
+    const own = (n) => { const s = newState(0); s.generators[g] = n; return UPGRADES.filter((u) => u.unlock(s)).length; };
+    for (let n = 1; n <= 250; n++) {
+      const band = tierBand(g, n - 1);
+      const unlocks = own(n) > own(n - 1);
+      if (unlocks) assert.equal(band?.to, n, `generator ${g}: an upgrade unlocks at ${n} but the bar points at ${band?.to}`);
+    }
+    assert.equal(tierBand(g, 250), null);
+  }
+});
+
+test('rating prompt waits two days and an hour of play, then at most every 30 days, 3 times', async () => {
+  const r = await import('../www/js/core/rating.js');
+  const DAY = 86400000;
+  const T = new Date(2026, 9, 14, 12).getTime();
+  const s = newState(T);
+  s.playSeconds = 7200;
+  assert.equal(r.shouldAskRating(s, T + DAY), false, 'too soon after install');
+  s.playSeconds = 100;
+  assert.equal(r.shouldAskRating(s, T + 3 * DAY), false, 'too little play');
+  s.playSeconds = 7200;
+  assert.equal(r.shouldAskRating(s, T + 3 * DAY), true);
+  r.markRatingAsked(s, T + 3 * DAY);
+  assert.equal(r.shouldAskRating(s, T + 10 * DAY), false, '30-day gap');
+  for (let i = 1; i < 3; i++) { assert.ok(r.shouldAskRating(s, T + (3 + 31 * i) * DAY)); r.markRatingAsked(s, T + (3 + 31 * i) * DAY); }
+  assert.equal(r.shouldAskRating(s, T + 200 * DAY), false, 'three asks at most');
+  const t = newState(T); t.playSeconds = 7200; r.markRatingDone(t);
+  assert.equal(r.shouldAskRating(t, T + 5 * DAY), false, 'never after rating or opting out');
+});
+
+test('star pass seasons are numbered from launch week', async () => {
+  const pass = await import('../www/js/core/pass.js');
+  assert.equal(pass.seasonLabel(new Date(2026, 9, 14, 12).getTime()), 1, 'never below 1');
+  assert.equal(pass.seasonLabel(new Date(2026, 9, 20, 12).getTime()), 1);
+  const next = new Date(2026, 9, 20, 12).getTime() + pass.seasonTimeLeft(new Date(2026, 9, 20, 12).getTime()) + 3600000;
+  assert.equal(pass.seasonLabel(next), 2);
+});
+
 test('star pass counts XP from existing counters and pays both tracks', async () => {
   const pass = await import('../www/js/core/pass.js');
   const shop = await import('../www/js/core/shop.js');
@@ -878,4 +1048,626 @@ test('lucky orbit gives one free spin a day and two ad spins, and goods are sold
   assert.ok(collapse(s, d, T) >= 1);
   assert.equal(m.goods[0].held, 0);
   assert.ok(s.earnedAll > earnedBefore, 'profit counted');
+});
+
+test('saves survive a bad number, and the backup is used when the main save is unreadable', async () => {
+  const { repairNumbers, pickSave } = await import('../www/js/core/save.js');
+  const s = newState(0);
+  s.generators[0] = 5;
+  s.earnedAll = 1234;
+  s.stardust = NaN;
+  s.crystals = Infinity;
+  const fixed = repairNumbers(s, 0);
+  assert.deepEqual(fixed.sort(), ['crystals', 'stardust']);
+  assert.equal(s.stardust, 0);
+  assert.equal(s.earnedAll, 1234, 'good fields kept');
+  // A NaN written by JSON becomes null; the rest of the save still loads.
+  const raw = JSON.parse(serialize(s));
+  raw.stardust = null;
+  raw.darkMatter = null;
+  const back = deserialize(JSON.stringify(raw), 0);
+  assert.equal(back.stardust, 0);
+  assert.equal(back.darkMatter, 0);
+  assert.equal(back.earnedAll, 1234);
+  assert.equal(back.generators[0], 5);
+  // Main save corrupted: fall back to the backup.
+  const good = serialize(s);
+  assert.equal(pickSave('{"stardust": 1', good, 0).from, 'backup');
+  assert.equal(pickSave(good, null, 0).from, 'main');
+  assert.equal(pickSave('garbage', 'also garbage', 0), null);
+  assert.equal(pickSave(null, null, 0), null);
+});
+
+test('Spanish and Portuguese cover the same text with the same placeholders', async () => {
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  const holes = (s) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+  assert.deepEqual(Object.keys(ES).sort(), Object.keys(PT).sort());
+  for (const dict of [ES, PT]) {
+    for (const [en, tr] of Object.entries(dict)) {
+      assert.ok(tr.trim(), `empty translation for ${en}`);
+      assert.equal(holes(tr), holes(en), `placeholders differ for ${en}`);
+    }
+  }
+  for (const g of GENERATORS) assert.ok(ES[g.name] && PT[g.name] && ES[g.flavor] && PT[g.flavor], g.name);
+});
+
+test('language setting falls back to English and fills placeholders', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  assert.equal(i18n.resolveLang('es', 'en'), 'es');
+  assert.equal(i18n.resolveLang('auto', 'it'), 'en');
+  assert.equal(i18n.resolveLang('auto', 'de'), 'de');
+  assert.equal(i18n.resolveLang('it', 'fr'), 'fr', 'unknown setting falls back to the device');
+  assert.equal(i18n.resolveLang('xx', 'it'), 'en');
+  assert.equal(i18n.setLanguage('xx'), i18n.resolveLang('auto'));
+  assert.equal(i18n.resolveLang('auto', 'es'), 'es');
+  assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');
+  assert.equal(i18n.resolveLang('auto', 'fr'), 'fr');
+  assert.equal(i18n.resolveLang('en', 'es'), 'en');
+  i18n.setLanguage('pt');
+  assert.equal(i18n.t('{n} per second', { n: '5' }), '5 por segundo');
+  assert.equal(i18n.t('Not a real string'), 'Not a real string');
+  assert.ok(i18n.missingText().includes('Not a real string'));
+  i18n.setLanguage('en');
+  assert.equal(i18n.t('{n} per tap', { n: 2 }), '2 per tap');
+  assert.equal(newState().settings.lang, 'auto');
+});
+
+test('every upgrade and achievement has Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const items = [...UPGRADES, ...ACHIEVEMENTS];
+  i18n.setLanguage('en');
+  for (const x of items) {
+    assert.equal(i18n.tName(x), x.name);
+    assert.equal(i18n.tDesc(x), x.desc);
+  }
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const x of items) {
+      for (const text of [i18n.tName(x), i18n.tDesc(x)]) assert.ok(!/[{}]/.test(text), `${lang}: unfilled placeholder in ${text}`);
+    }
+    const added = i18n.missingText().filter((k) => !before.has(k));
+    assert.deepEqual(added, [], `${lang} is missing data text`);
+  }
+  i18n.setLanguage('en');
+});
+
+test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { ANOMALIES } = await import('../www/js/data/anomalies.js');
+  const { DESTINATIONS, RELICS } = await import('../www/js/data/expeditions.js');
+  const { NEWS } = await import('../www/js/data/news.js');
+  const texts = [
+    ...COSMIC.flatMap((c) => [c.name, c.desc]),
+    ...ANOMALIES.flatMap((a) => [a.name, a.rule, a.rewardText]),
+    ...[...DESTINATIONS, ...RELICS].flatMap((x) => [x.name, x.desc]),
+    ...NEWS.map((n) => n.text),
+  ];
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});
+
+test('wheel prizes and weekly contracts have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { SLICES } = await import('../www/js/core/wheel.js');
+  const { CONTRACTS } = await import('../www/js/core/contracts.js');
+  const texts = [...SLICES.map((w) => w.label), ...CONTRACTS.flatMap((c) => [c.name, c.goalText])];
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});
+
+test('garden spores, forge spells and market goods have Spanish and Portuguese text', async () => {
+  const i18n = await import('../www/js/i18n/index.js');
+  const { SEEDS } = await import('../www/js/core/garden.js');
+  const { SPELLS } = await import('../www/js/core/forge.js');
+  const { GOODS } = await import('../www/js/core/market.js');
+  const texts = [...SEEDS.map((x) => x.name), ...SPELLS.flatMap((x) => (x.id === 'smelt' ? [x.name] : [x.name, x.desc])), ...GOODS.map((x) => x.name)];
+  for (const lang of ['es', 'pt', 'fr', 'de']) {
+    i18n.setLanguage(lang);
+    const before = new Set(i18n.missingText());
+    for (const text of texts) i18n.t(text);
+    assert.deepEqual(i18n.missingText().filter((k) => !before.has(k)), [], `${lang} is missing text`);
+  }
+  i18n.setLanguage('en');
+});
+
+test('the welcome-back report lists what each system did while away', async () => {
+  const { awayReport } = await import('../www/js/core/away.js');
+  const g = await import('../www/js/core/garden.js');
+  const H = 3600000;
+  // A Tuesday, so no weekend event runs.
+  const t0 = Date.UTC(2026, 9, 13, 12);
+  const s = newState(t0);
+  const quiet = awayReport(s, t0);
+  assert.deepEqual([quiet.crystals, quiet.probes, quiet.plants, quiet.forgeFull, quiet.flux, quiet.marketPL, quiet.collapseHint], [0, 0, 0, false, 0, null, false]);
+
+  s.earnedAll = 2e9;
+  s.crystalNextAt = t0 + 1000;
+  s.genLevels[g.GARDEN_GEN] = 1;
+  assert.ok(g.plant(s, 0, 'moss', t0));
+  assert.ok(g.plant(s, 1, 'orchid', t0));
+  s.expeditions.push({ id: 'belt', returnsAt: t0 + H }, { id: 'belt', returnsAt: t0 + 99 * H });
+  const r = awayReport(s, t0 + 2 * H);
+  assert.equal(r.crystals, 1, 'one crystal banked');
+  assert.equal(s.crystals, 1);
+  assert.equal(r.probes, 1, 'only the probe that is back');
+  assert.equal(r.plants, 1, 'moss is ripe, the orchid is not');
+  assert.equal(awayReport(s, t0 + 2 * H).crystals, 0, 'crystals are only reported once');
+});
+
+test('a save with any field of the wrong type still loads and plays', async () => {
+  const { awayReport } = await import('../www/js/core/away.js');
+  const now = Date.UTC(2026, 9, 17, 12); // a Saturday, so the weekend event runs too
+  const s = newState(now - 3600e3);
+  s.earnedAll = 9e15; s.earnedRun = 4e14; s.stardust = 3e14; s.collapses = 2; s.darkMatter = 50;
+  s.generators = [100, 80, 60, 40, 30, 20, 10, 5, 3, 2, 1, 0, 0, 0];
+  s.genLevels = s.generators.map((n) => (n ? 2 : 0));
+  s.garden = [{ seed: 'moss', plantedAt: now - 7200e3 }, null];
+  s.expeditions = [{ id: 'belt', returnsAt: now - 1000 }];
+  s.buffs = [{ kind: 'rush', endsAt: 99, duration: 30 }];
+  awayReport(s, now - 3600e3);
+  const base = JSON.parse(serialize(s));
+  const paths = [];
+  const walk = (o, p) => { for (const [k, v] of Object.entries(o)) { paths.push([...p, k]); if (v && typeof v === 'object' && p.length < 2) walk(v, [...p, k]); } };
+  walk(base, []);
+  const failures = [];
+  for (const path of paths) {
+    for (const bad of [null, 'x', -1, {}, [], true, [null]]) {
+      const raw = structuredClone(base);
+      let o = raw;
+      for (const k of path.slice(0, -1)) o = o[k];
+      o[path.at(-1)] = bad;
+      try {
+        const st = deserialize(JSON.stringify(raw), now);
+        const d = computeDerived(st);
+        applyOffline(st, d, now);
+        awayReport(st, now);
+        tap(st, d);
+        tick(st, d, 1);
+        if (!['stardust', 'earnedAll', 'darkMatter', 'crystals'].every((k) => Number.isFinite(st[k]))) failures.push(`${path.join('.')}=${JSON.stringify(bad)}: not finite`);
+      } catch (e) {
+        if (!/save/i.test(e.message)) failures.push(`${path.join('.')}=${JSON.stringify(bad)}: ${e.message}`);
+      }
+    }
+  }
+  assert.deepEqual(failures, []);
+});
+
+test('buy all takes upgrades cheapest first and matches the preview count', () => {
+  const s = newState(0);
+  s.generators = s.generators.map(() => 30);
+  s.earnedRun = s.earnedAll = 1e15;
+  const d = computeDerived(s);
+  const ups = availableUpgrades(s);
+  assert.ok(ups.length >= 3);
+  s.stardust = upgradePrice(d, ups[0]) + upgradePrice(d, ups[1]) + upgradePrice(d, ups[2]) - 1;
+  const preview = affordableUpgradeCount(s, d);
+  assert.equal(preview, 2);
+  assert.equal(buyAllUpgrades(s, d), preview);
+  assert.ok(s.upgrades[ups[0].id] && s.upgrades[ups[1].id] && !s.upgrades[ups[2].id]);
+  assert.ok(s.stardust >= 0);
+  assert.equal(buyAllUpgrades(s, d), 0);
+  assert.equal(affordableUpgradeCount(s, { ...d, noUpgrades: true }), 0);
+});
+
+test('auto-researchers make the fabricators buy affordable upgrades too', async () => {
+  const { autoBuyStep } = await import('../www/js/core/autobuy.js');
+  const s = newState(0);
+  s.stardust = 1e6;
+  s.generators[0] = 10; s.generators[1] = 5;
+  s.cosmic.fabricators = true;
+  assert.ok(availableUpgrades(s).length > 0);
+  autoBuyStep(s, computeDerived(s, 0), 0);
+  assert.equal(Object.keys(s.upgrades).length, 0, 'fabricators alone leave upgrades alone');
+  s.cosmic.scholars = true;
+  const d = computeDerived(s, 0);
+  assert.ok(d.autoUpgrade);
+  const expected = affordableUpgradeCount(s, d);
+  assert.ok(expected > 0);
+  assert.equal(autoBuyStep(s, d, 0), expected);
+  assert.equal(Object.keys(s.upgrades).length, expected);
+  s.autoBuyOn = false; s.stardust = 1e12;
+  assert.equal(autoBuyStep(s, computeDerived(s, 0)), 0, 'the Auto switch turns both off');
+});
+
+test('the Next buy amount lands exactly on the next tier upgrade', async () => {
+  const { toNextTier, TIER_OWNED } = await import('../www/js/data/upgrades.js');
+  assert.equal(toNextTier(1, 0), 1);
+  assert.equal(toNextTier(1, 21), 4);
+  assert.equal(toNextTier(1, 25), 25);
+  assert.equal(toNextTier(0, 40), 10, 'drones use their own tiers');
+  assert.equal(toNextTier(1, TIER_OWNED[TIER_OWNED.length - 1]), 1, 'one at a time past the last tier');
+  for (let owned = 0; owned < 250; owned++) {
+    const after = owned + toNextTier(3, owned);
+    assert.ok(TIER_OWNED.includes(after), `${owned} -> ${after}`);
+  }
+});
+
+test('coming-up upgrades show the next locked tier of owned generators, closest first', async () => {
+  const { upcomingUpgrades } = await import('../www/js/core/economy.js');
+  const s = newState(0);
+  assert.deepEqual(upcomingUpgrades(s), []);
+  s.generators[0] = 12; s.generators[1] = 21; s.generators[2] = 2;
+  const soon = upcomingUpgrades(s);
+  assert.deepEqual(soon.map((u) => u.id), ['harvester_2', 'drone_3', 'lunar_1']);
+  assert.ok(soon.every((u) => !u.unlock(s)));
+  s.generators[1] = 25;
+  assert.ok(!upcomingUpgrades(s).some((u) => u.id === 'harvester_2'), 'unlocked ones move to Available');
+  assert.ok(upcomingUpgrades(s, 5).some((u) => u.id === 'harvester_3'));
+});
+
+test('collapse gain compares the Dark Matter bonus before and after', async () => {
+  const { collapseGain, darkMatterPct } = await import('../www/js/core/prestige.js');
+  const s = newState(0);
+  assert.equal(darkMatterPct(s), 0.02);
+  assert.equal(collapseGain(s), 1, 'nothing pending');
+  s.earnedAll = 1e10 * 1000; // 10 Dark Matter in total
+  assert.ok(Math.abs(collapseGain(s) - 1.2) < 1e-9);
+  s.darkMatter = 5;
+  assert.ok(Math.abs(collapseGain(s) - 1.2 / 1.1) < 1e-9);
+  s.cosmic.resonance = true; s.cosmic.resonance2 = true;
+  assert.ok(Math.abs(darkMatterPct(s) - 0.04) < 1e-12);
+});
+
+test('French and German cover the same text as Spanish, with the same placeholders', async () => {
+  const { ES } = await import('../www/js/i18n/es.js');
+  const holes = (s) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+  for (const file of ['fr', 'de']) {
+    const dict = Object.values(await import(`../www/js/i18n/${file}.js`))[0];
+    assert.deepEqual(Object.keys(dict).sort(), Object.keys(ES).sort(), file);
+    for (const [en, tr] of Object.entries(dict)) {
+      assert.ok(tr.trim(), `${file}: empty translation for ${en}`);
+      assert.equal(holes(tr), holes(en), `${file}: placeholders differ for ${en}`);
+    }
+  }
+});
+
+test('every reminder sentence has a Spanish and Portuguese translation', async () => {
+  const { planReminders, REMINDER_TEXT } = await import('../www/js/core/notify.js');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  for (const key of REMINDER_TEXT) {
+    assert.ok(ES[key], `es: ${key}`);
+    assert.ok(PT[key], `pt: ${key}`);
+  }
+  const now = new Date(2026, 9, 11, 9, 0, 0).getTime();
+  const s = newState(now);
+  s.generators[0] = 5; s.dailyStreak = 3; s.dailyLastDay = 0;
+  s.hyperEndsAt = now + 2 * 3600000;
+  s.expeditions = [{ id: 'x', startedAt: now, returnsAt: now + 3600000 }];
+  for (const r of planReminders(s, computeDerived(s, now), now)) {
+    assert.ok(REMINDER_TEXT.includes(r.title), r.title);
+    for (const p of r.parts) assert.ok(REMINDER_TEXT.includes(p.key), p.key);
+  }
+});
+
+test('no English sentence in the game logic or data is missing a translation', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  const missing = [];
+  for (const dir of ['src/core', 'src/data']) {
+    for (const f of readdirSync(dir)) {
+      const src = readFileSync(`${dir}/${f}`, 'utf8');
+      for (const line of src.split('\n')) {
+        if (/^\s*(\/\/|\*|import)|throw |Error\(|console\./.test(line)) continue;
+        for (const m of line.matchAll(/(?<![\w.(])'([A-Z][^'\n]{6,})'/g)) {
+          if (m[1].includes(' ') && !(ES[m[1]] && PT[m[1]])) missing.push(`${f}: ${m[1]}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(missing, []);
+});
+
+test('almost there lists the unearned achievements closest to done, and progress agrees with the check', () => {
+  const s = newState(0);
+  s.generators[0] = 45; s.tapsAll = 90;
+  checkAchievements(s, 0);
+  const close = closestAchievements(s, 0);
+  assert.equal(close.length, 3);
+  assert.equal(close[0].a.id, 'taps_1');
+  assert.equal(close[1].a.id, `own_${GENERATORS[0].id}_1`);
+  for (let i = 1; i < close.length; i++) assert.ok(close[i - 1].p >= close[i].p);
+  for (const { a } of close) assert.ok(!(a.id in s.achievements) && !a.hidden);
+  for (const a of ACHIEVEMENTS) {
+    const p = achievementProgress(a, s, 0);
+    if (p !== null) assert.equal(p >= 1, a.check(s, 0), a.id);
+  }
+});
+
+test('older saves count earned achievements as already seen, so the Trophies badge starts clear', () => {
+  const s = newState(0);
+  s.achievements = { earn_0: 1, taps_0: 2 };
+  const raw = JSON.parse(serialize(s));
+  delete raw.trophiesSeen;
+  assert.equal(deserialize(JSON.stringify(raw)).trophiesSeen, 2);
+  s.trophiesSeen = 1;
+  assert.equal(deserialize(serialize(s)).trophiesSeen, 1);
+});
+
+test('Play release notes fit the 500 character limit in every language', async () => {
+  const { readFileSync } = await import('node:fs');
+  const doc = readFileSync('docs/STORE.md', 'utf8');
+  const notes = [...doc.matchAll(/<([\w-]+)>\n([\s\S]*?)\n<\/\1>/g)];
+  assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'pt-BR']);
+  for (const m of notes) assert.ok(m[2].length <= 500, `${m[1]}: ${m[2].length}`);
+  for (const [file, tag] of [['docs/STORE-fr.md', 'fr-FR'], ['docs/STORE-de.md', 'de-DE']]) {
+    const m = readFileSync(file, 'utf8').match(new RegExp(`<${tag}>\\n([\\s\\S]*?)\\n</${tag}>`));
+    assert.ok(m, `${file} has ${tag} notes`);
+    assert.ok(m[1].length <= 500, `${tag}: ${m[1].length}`);
+  }
+});
+
+test('Portuguese writes decimals with a comma and thousands with a dot; English and Spanish keep the point', async () => {
+  const { setLanguage } = await import('../www/js/i18n/index.js');
+  const { fmtDec, fmtLong } = await import('../www/js/core/format.js');
+  try {
+    setLanguage('pt');
+    assert.equal(fmt(2500), '2,5K');
+    assert.equal(fmt(1.23e9), '1,23B');
+    assert.equal(fmtPercent(0.025), '2,5%');
+    assert.equal(fmtPercent(19.3), '1.930%');
+    assert.equal(fmtDec(3.25, 2), '3,25');
+    assert.equal(fmtLong(12345), '12.345');
+    setLanguage('es');
+    assert.equal(fmt(2500), '2.5K');
+    assert.equal(fmtPercent(0.025), '2.5%');
+  } finally {
+    setLanguage('en');
+  }
+  assert.equal(fmt(2500), '2.5K');
+  assert.equal(fmtLong(12345), '12,345');
+
+});
+
+test('Settings shows the same version Play gets from package.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')).version;
+  const shown = /export const VERSION = '([^']+)'/.exec(readFileSync('src/ui/menus.ts', 'utf8'))[1];
+  assert.equal(shown, pkg);
+});
+
+test('Stellar Echoes unlock with the full cosmic tree, double in price and survive a collapse', async () => {
+  const { buyEcho, echoCost, echoesUnlocked, ECHO_MULT } = await import('../www/js/core/economy.js');
+  const s = newState(0);
+  s.generators[0] = 10;
+  s.darkMatter = 1e6;
+  assert.equal(echoesUnlocked(s), false);
+  assert.equal(buyEcho(s), false);
+  for (const c of COSMIC) s.cosmic[c.id] = true;
+  const before = computeDerived(s).sps;
+  assert.equal(echoCost(0), 1000);
+  assert.equal(echoCost(3), 8000);
+  assert.ok(buyEcho(s) && buyEcho(s));
+  assert.equal(s.echoes, 2);
+  assert.equal(s.darkMatterSpent, 3000);
+  assert.ok(Math.abs(computeDerived(s).sps / before - ECHO_MULT ** 2) < 1e-9);
+  s.darkMatterSpent = s.darkMatter - 3999;
+  assert.equal(buyEcho(s), false, 'level 3 costs 4000');
+  collapse(s, computeDerived(s), 0);
+  assert.equal(s.echoes, 2);
+  const old = JSON.parse(serialize(s));
+  delete old.echoes;
+  assert.equal(deserialize(JSON.stringify(old)).echoes, 0);
+  old.echoes = 'x';
+  assert.equal(deserialize(JSON.stringify(old)).echoes, 0);
+});
+
+test('A comeback gift of Hyperdrive after 3 days away, at most once a week, only for real players', async () => {
+  const { comebackGift, awayReport } = await import('../www/js/core/away.js');
+  const now = Date.UTC(2026, 9, 18, 12);
+  const s = newState();
+  s.playSeconds = 3600;
+  assert.equal(comebackGift(s, 2 * 86400, now), 0, 'two days is not enough');
+  assert.equal(comebackGift(s, 3 * 86400, now), 120);
+  assert.equal(s.hyperEndsAt, now + 120 * 60000);
+  assert.equal(comebackGift(s, 4 * 86400, now + 5 * 86400000), 0, 'once a week');
+  const later = now + 8 * 86400000;
+  assert.equal(awayReport(s, later, 4 * 86400).giftMinutes, 120);
+  const fresh = newState();
+  fresh.playSeconds = 600;
+  assert.equal(comebackGift(fresh, 10 * 86400, now), 0, 'not for players who barely played');
+  const capped = newState();
+  capped.playSeconds = 3600;
+  capped.hyperEndsAt = now + 7.5 * 3600000;
+  assert.equal(comebackGift(capped, 5 * 86400, now), 30, 'stays within the 8 hour Hyperdrive cap');
+  assert.equal(capped.hyperEndsAt, now + 8 * 3600000);
+  const future = newState();
+  future.playSeconds = 3600;
+  future.comebackAt = now + 365 * 86400000;
+  assert.equal(comebackGift(future, 4 * 86400, now), 120, 'a gift stamped in the future does not block gifts');
+  const old = deserialize(JSON.stringify({ ...newState(), comebackAt: undefined }));
+  assert.equal(old.comebackAt, 0);
+});
+
+test("What's new lists only versions after the one a save last ran, and every line is translated", async () => {
+  const { unseenChanges, compareVersions } = await import('../www/js/core/changelog.js');
+  const { CHANGELOG } = await import('../www/js/data/changelog.js');
+  const { ES } = await import('../www/js/i18n/es.js');
+  const { PT } = await import('../www/js/i18n/pt.js');
+  const { FR } = await import('../www/js/i18n/fr.js');
+  const { DE } = await import('../www/js/i18n/de.js');
+  assert.ok(compareVersions('1.10.0', '1.9.3') > 0);
+  assert.equal(compareVersions('1.0', '1.0.0'), 0);
+  const log = [{ version: '1.2.0', items: ['b'] }, { version: '1.1.0', items: ['a'] }, { version: '1.3.0', items: ['c'] }];
+  assert.deepEqual(unseenChanges(log, '1.0.0', '1.2.0').map((e) => e.version), ['1.2.0', '1.1.0'], 'newest first, nothing from the future');
+  assert.deepEqual(unseenChanges(log, '1.2.0', '1.2.0'), [], 'already seen');
+  assert.deepEqual(unseenChanges(log, '', '1.3.0'), [], 'new players see nothing');
+  for (const e of CHANGELOG) for (const line of e.items) {
+    for (const [lang, dict] of Object.entries({ ES, PT, FR, DE })) assert.ok(dict[line], `translate into ${lang}: ${line}`);
+  }
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')).version;
+  for (const e of CHANGELOG) assert.ok(compareVersions(e.version, pkg) <= 0, `changelog entry ${e.version} is newer than this release (${pkg})`);
+  assert.equal(deserialize(JSON.stringify({ ...newState(), versionSeen: 7 })).versionSeen, '');
+});
+
+test('damaged saves load without negative balances or infinite production', () => {
+  const s = newState(1000);
+  s.generators[0] = 10;
+  const raw = JSON.parse(serialize(s));
+  Object.assign(raw, { darkMatter: -5, crystals: -5, dailyLastDay: -1, echoes: 1e308 });
+  const t = deserialize(JSON.stringify(raw), 1000);
+  assert.equal(t.darkMatter, 0);
+  assert.equal(t.crystals, 0);
+  assert.equal(t.dailyLastDay, -1);
+  const d = computeDerived(t, 1000);
+  assert.ok(Number.isFinite(d.sps) && Number.isFinite(d.tap));
+});
+
+test('collapses are remembered, newest first, up to ten', () => {
+  const s = newState(0);
+  for (let i = 0; i < 12; i++) {
+    s.earnedRun = 1e15 * (i + 1); s.earnedAll += s.earnedRun; s.time += 3600 * (i + 1);
+    collapse(s, computeDerived(s, 0), 0);
+  }
+  assert.equal(s.pastRuns.length, 10);
+  assert.equal(s.pastRuns[9].secs, 3600 * 3);
+  assert.ok(s.pastRuns.every((r) => r.dm >= 1));
+  assert.equal(s.pastRuns[0].secs, 3600 * 12);
+  const raw = JSON.parse(serialize(s));
+  raw.pastRuns = [{ dm: 5, secs: 60 }, { dm: 'x' }, null, { dm: -1, secs: 5 }];
+  assert.deepEqual(deserialize(JSON.stringify(raw), 0).pastRuns, [{ dm: 5, secs: 60 }]);
+});
+
+test('Dark Matter per hour for the collapse comparison', async () => {
+  const { darkMatterPerHour } = await import('../www/js/core/prestige.js');
+  const { fmtRateSmall } = await import('../www/js/core/format.js');
+  assert.equal(darkMatterPerHour(10, 1800), 20);
+  assert.equal(darkMatterPerHour(10, 0), 0);
+  setNumberLocale('en-US');
+  assert.equal(fmtRateSmall(6.14), '6.1');
+  assert.equal(fmtRateSmall(21950), '21.95K');
+});
+
+test('screen readers get big numbers in words', async () => {
+  const { fmtSpoken } = await import('../www/js/core/format.js');
+  setNumberLocale('en-US');
+  assert.equal(fmtSpoken(999), '999');
+  assert.equal(fmtSpoken(4.701e7), '47.01 million');
+  assert.equal(fmtSpoken(1.441e16), '14.41 quadrillion');
+  setNumberLocale('de-DE');
+  assert.equal(fmtSpoken(1.441e13), '14,41 Billionen');
+  assert.equal(fmtSpoken(3.2e21), '3,2 Trilliarden');
+  assert.equal(fmtSpoken(3e17), '300 Billiarden');
+  assert.equal(fmtSpoken(1e18), '1 Trillion');
+  setNumberLocale('fr-FR');
+  assert.equal(fmtSpoken(2.5e24), '2,5 quadrillions');
+  setNumberLocale('es-419');
+  assert.equal(fmtSpoken(1e18), '1 trillón');
+  assert.equal(fmtSpoken(4e21), '4 mil trillones');
+  setNumberLocale('pt-BR');
+  assert.equal(fmtSpoken(9e18), '9 quintilhões');
+  assert.equal(fmtSpoken(1e63), '1 vigintilhão');
+  setNumberStyle('scientific');
+  assert.equal(fmtSpoken(1.441e16), '1,44 vezes dez elevado a 16');
+  setNumberLocale('en-US');
+  assert.equal(fmtSpoken(1.441e16), '1.44 times ten to the 16');
+  setNumberStyle('short');
+  assert.equal(fmtSpoken(2e70), '2 times ten to the 70', 'past the last short suffix');
+});
+
+test('short numbers inside text are read in words', async () => {
+  const { spokenShortText } = await import('../www/js/core/format.js');
+  setNumberLocale('en-US');
+  assert.equal(spokenShortText('+4.95B Stardust'), '+4.95 billion Stardust');
+  assert.equal(spokenShortText('Bonus +200K% → +40M%'), 'Bonus +200 thousand% → +40 million%');
+  assert.equal(spokenShortText('5.4Qi and 10UDc'), '5.4 quintillion and 10 undecillion');
+  assert.equal(spokenShortText('Day 3 claimed'), null);
+  assert.equal(spokenShortText('No thanks'), null);
+  setNumberLocale('de-DE');
+  assert.equal(spokenShortText('2T 04h'), null);
+  setNumberStyle('scientific');
+  assert.equal(spokenShortText('+1,44e16 Sternenstaub'), '+1,44 mal zehn hoch 16 Sternenstaub');
+  setNumberLocale('en-US');
+  assert.equal(spokenShortText('+1.44e16 Stardust'), '+1.44 times ten to the 16 Stardust');
+  setNumberStyle('short');
+  setNumberLocale('de-DE');
+  assert.equal(spokenShortText('+12,4T Sternenstaub'), '+12,4 Billionen Sternenstaub');
+  setNumberLocale('en-US');
+});
+
+test('the collapse nudge waits for Dark Matter per hour to pass its peak', async () => {
+  const { pastPeak, sampleRunPeak, pendingDarkMatter, collapse } = await import('../www/js/core/prestige.js');
+  const s = newState(0);
+  s.collapses = 2; s.darkMatter = 40; s.time = 3600; s.runStartClock = 0;
+  s.earnedRun = 1e15; s.earnedAll = 1e18;
+  const p = pendingDarkMatter(s);
+  assert.ok(p >= 10, `pending ${p}`);
+  sampleRunPeak(s);
+  assert.equal(pastPeak(s), false, 'at the peak itself');
+  s.time = 3 * 3600; // same Dark Matter, three times as long: the rate fell
+  sampleRunPeak(s);
+  assert.equal(pastPeak(s), true);
+  s.anomaly = 'drought';
+  assert.equal(pastPeak(s), false, 'not during an anomaly');
+  s.anomaly = null;
+  s.collapses = 0;
+  assert.equal(pastPeak(s), false, 'not before the first collapse');
+  s.collapses = 2;
+  collapse(s, computeDerived(s), 0);
+  assert.equal(s.runPeakRate, 0, 'reset by a collapse');
+});
+
+test('old error reports expire after a week', async () => {
+  const store = {};
+  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; } };
+  const day = 24 * 3600 * 1000;
+  store['stardust-empire-errors'] = JSON.stringify([
+    { t: Date.now() - 8 * day, where: 'frame', msg: 'old bug', stack: '' },
+    { t: Date.now() - 1 * day, where: 'frame', msg: 'recent bug', stack: '' },
+  ]);
+  const { hasErrors, recordError } = await import('../www/js/ui/errors.js');
+  assert.equal(hasErrors(), true);
+  recordError('frame', new Error('new bug'));
+  const kept = JSON.parse(store['stardust-empire-errors']).map((x) => x.msg);
+  assert.deepEqual(kept, ['recent bug', 'new bug']);
+  delete globalThis.localStorage;
+});
+
+test('an error repeated every frame is written to storage once a minute at most', async () => {
+  const store = {}; let writes = 0;
+  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { writes++; store[k] = String(v); }, removeItem: (k) => { delete store[k]; } };
+  const { recordError, clearErrors } = await import('../www/js/ui/errors.js');
+  clearErrors();
+  for (let i = 0; i < 600; i++) recordError('frame', new Error('every frame'));
+  assert.equal(writes, 1);
+  assert.equal(JSON.parse(store['stardust-empire-errors']).length, 1);
+  delete globalThis.localStorage;
+});
+
+test('timers set under a clock that later went back do not stay locked', async () => {
+  const { fixClockJump } = await import('../www/js/core/clock.js');
+  const s = newState();
+  const now = Date.UTC(2026, 9, 24), month = 30 * 24 * 3600000, h = 3600000;
+  const later = now + month;
+  Object.assign(s, { runStartedAt: later, crystalNextAt: later + 20 * h, gardenFertilizeAt: later + 4 * h, forgeAdAt: later + 4 * h, vaultAt: later, forgeHeatAt: later, hyperEndsAt: later + h });
+  s.garden = [{ seed: 'x', plantedAt: later }, null];
+  s.expeditions = [{ id: 'x', startedAt: later, returnsAt: later + 2 * h }];
+  fixClockJump(s, now);
+  assert.equal(s.crystalNextAt, now + 20 * h);
+  assert.equal(s.gardenFertilizeAt, now + 4 * h);
+  assert.equal(s.forgeAdAt, now + 4 * h);
+  assert.equal(s.vaultAt, now);
+  assert.equal(s.runStartedAt, now);
+  assert.equal(s.forgeHeatAt, now);
+  assert.equal(s.hyperEndsAt, now);
+  assert.equal(s.garden[0].plantedAt, now);
+  assert.deepEqual([s.expeditions[0].startedAt, s.expeditions[0].returnsAt], [now, now + 2 * h]);
+  // A right clock changes nothing.
+  const before = JSON.stringify(s);
+  fixClockJump(s, now);
+  assert.equal(JSON.stringify(s), before);
 });

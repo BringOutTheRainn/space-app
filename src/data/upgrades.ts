@@ -3,6 +3,7 @@
 
 import { GENERATORS } from './generators.js';
 import type { GameState } from '../core/state.js';
+import type { Phrase } from '../i18n/index.js';
 
 export type Effect =
   | { k: 'gen'; gen: number; mult: number }
@@ -23,16 +24,37 @@ export interface UpgradeDef {
   id: string;
   name: string;
   desc: string;
+  /** Recipes for translating generated text. */
+  nameP?: Phrase;
+  descP?: Phrase;
   cost: number;
   group: UpgradeGroup;
   /** Icon key: a generator id, or 'tap', 'research', 'comet', 'synergy', 'astronomer'. */
   icon: string;
   tier: number;
   unlock: (s: GameState) => boolean;
+  /** For generator lines: the owned count that unlocks it, shown as "coming up". */
+  need?: { gen: number; owned: number };
   effects: Effect[];
 }
 
-const TIER_OWNED = [1, 5, 25, 50, 100, 150, 200, 250];
+export const TIER_OWNED = [1, 5, 25, 50, 100, 150, 200, 250];
+
+/** Mining Drones have their own line: two upgrades at 1, then 10 instead of 5. */
+export const DRONE_TIER_OWNED = [1, 10, 25, 50, 100, 150, 200, 250];
+
+/** The owned-count band a generator is in on its way to its next tier upgrade, or null past the last. */
+export function tierBand(gen: number, owned: number): { from: number; to: number } | null {
+  const tiers = gen === 0 ? DRONE_TIER_OWNED : TIER_OWNED;
+  const i = tiers.findIndex((n) => owned < n);
+  if (i < 0) return null;
+  return { from: i === 0 ? 0 : tiers[i - 1], to: tiers[i] };
+}
+/** How many to buy to reach the next tier upgrade (1 once every tier is reached). */
+export function toNextTier(gen: number, owned: number): number {
+  const band = tierBand(gen, owned);
+  return band ? band.to - owned : 1;
+}
 const TIER_COST = [10, 50, 500, 5e4, 5e6, 5e8, 5e11, 5e14];
 const TIER_PREFIX = ['Reinforced', 'Overclocked', 'Quantum', 'Hyperdense', 'Exotic', 'Singularity', 'Transcendent', 'Omega'];
 
@@ -66,7 +88,7 @@ function buildUpgrades(): UpgradeDef[] {
     [250, 1e14, 'Everywhere at Once', [{ k: 'droneFlatMult', mult: 20 }], 'Multiplies the Swarm Protocol bonus by 20.'],
   ];
   droneTiers.forEach(([n, cost, name, effects, desc], i) => {
-    list.push({ id: `drone_${i}`, name, desc, cost, group: 'generator', icon: 'drone', tier: i, unlock: owns(0, n), effects });
+    list.push({ id: `drone_${i}`, name, desc, cost, group: 'generator', icon: 'drone', tier: i, unlock: owns(0, n), need: { gen: 0, owned: n }, effects });
   });
 
   for (let g = 1; g < GENERATORS.length; g++) {
@@ -76,11 +98,14 @@ function buildUpgrades(): UpgradeDef[] {
         id: `${def.id}_${t}`,
         name: `${TIER_PREFIX[t]} ${def.name}`,
         desc: `${pluralName(g)} are twice as efficient.`,
+        nameP: [`${TIER_PREFIX[t]} {gen}`, { gen: def.name }],
+        descP: ['{plural} are twice as efficient.', { plural: pluralName(g) }],
         cost: def.baseCost * TIER_COST[t],
         group: 'generator',
         icon: def.id,
         tier: t,
         unlock: owns(g, n),
+        need: { gen: g, owned: n },
         effects: [{ k: 'gen', gen: g, mult: 2 }],
       });
     });
@@ -113,6 +138,7 @@ function buildUpgrades(): UpgradeDef[] {
       id: `research_${i}`,
       name,
       desc: `Stardust production +${Math.round(researchPct[i] * 100)}%.`,
+      descP: ['Stardust production +{n}%.', { n: Math.round(researchPct[i] * 100) }],
       cost,
       group: 'research',
       icon: 'research',
@@ -132,6 +158,8 @@ function buildUpgrades(): UpgradeDef[] {
       id: `syn_${ga.id}_${gb.id}`,
       name: `${ga.name.split(' ').pop()}-${gb.name.split(' ').pop()} Link`,
       desc: `${pluralName(a)} +5% per ${gb.name}. ${pluralName(b)} +0.1% per ${ga.name}.`,
+      nameP: ['{a}-{b} Link', { a: ga.name.split(' ').pop()!, b: gb.name.split(' ').pop()! }],
+      descP: ['{pa} +5% per {b}. {pb} +0.1% per {a}.', { pa: pluralName(a), b: gb.name, pb: pluralName(b), a: ga.name }],
       cost: (ga.baseCost * 10 + gb.baseCost) * 30,
       group: 'synergy',
       icon: 'synergy',
@@ -163,6 +191,7 @@ function buildUpgrades(): UpgradeDef[] {
       id: `astro_${i}`,
       name,
       desc: `Each achievement adds ${(astroPct[i] * 100).toFixed(2).replace(/0$/, '')}% Stardust production.`,
+      descP: ['Each achievement adds {n}% Stardust production.', { n: astroPct[i] * 100 }],
       cost: 9 * Math.pow(1000, i + 2),
       group: 'astronomer',
       icon: 'astronomer',

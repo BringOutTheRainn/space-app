@@ -36,6 +36,9 @@ export function haptic(kind: 'light' | 'medium' | 'heavy' = 'light'): void {
     (h.impact as (o: { style: string }) => Promise<void>)({ style: kind.toUpperCase() }).catch(() => undefined);
     return;
   }
+  // Browsers refuse (and log a warning) before the player's first tap.
+  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  if (ua && !ua.hasBeenActive) return;
   if (navigator.vibrate) navigator.vibrate(kind === 'light' ? 8 : kind === 'medium' ? 20 : 45);
 }
 
@@ -63,6 +66,48 @@ export function onPause(pause: () => void, resume: () => void): void {
   });
 }
 
+/** True when the Android build's Google Play in-app review plugin is present. */
+export function hasInAppReview(): boolean {
+  return typeof plugin('InAppReview')?.requestReview === 'function';
+}
+
+/**
+ * Google Play's in-app review card, shown over the game. Play decides whether it
+ * actually appears (it limits how often), and never says whether the player rated.
+ */
+export async function requestInAppReview(): Promise<boolean> {
+  const r = plugin('InAppReview');
+  if (!r || typeof r.requestReview !== 'function') return false;
+  try {
+    await (r.requestReview as () => Promise<void>)();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Opens the phone's share sheet with a line of text: Android's own sheet in the app,
+ * the Web Share API in a browser that has it. Resolves false when neither is there
+ * or the player backs out, so the caller can copy the text instead.
+ */
+export async function shareText(text: string, title: string): Promise<boolean> {
+  const p = plugin('ShareText');
+  try {
+    if (p && typeof p.share === 'function') {
+      await (p.share as (o: { text: string; title: string }) => Promise<void>)({ text, title });
+      return true;
+    }
+    if (typeof navigator.share === 'function') {
+      await navigator.share({ text, title });
+      return true;
+    }
+  } catch {
+    /* backed out, or not available */
+  }
+  return false;
+}
+
 export function hideSplash(): void {
   const s = plugin('SplashScreen');
   if (s && typeof s.hide === 'function') (s.hide as () => Promise<void>)().catch(() => undefined);
@@ -74,5 +119,26 @@ export async function copyText(text: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * A copy of the save in Android's app preferences (Capacitor Preferences).
+ * The WebView's localStorage can be cleared under storage pressure; this copy
+ * is not. Does nothing in a browser.
+ */
+export function nativeSaveWrite(key: string, value: string): void {
+  const p = plugin('Preferences');
+  if (p && typeof p.set === 'function') (p.set as (o: { key: string; value: string }) => Promise<void>)({ key, value }).catch(() => undefined);
+}
+
+export async function nativeSaveRead(key: string): Promise<string | null> {
+  const p = plugin('Preferences');
+  if (!p || typeof p.get !== 'function') return null;
+  try {
+    const r = await (p.get as (o: { key: string }) => Promise<{ value: string | null }>)({ key });
+    return r.value ?? null;
+  } catch {
+    return null;
   }
 }

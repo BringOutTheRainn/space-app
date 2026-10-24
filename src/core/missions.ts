@@ -3,7 +3,6 @@
 // (collapse or anomaly) starts a fresh set.
 
 import { GENERATORS } from '../data/generators.js';
-import { pluralName } from '../data/upgrades.js';
 import { earn, type Derived } from './economy.js';
 import type { GameState } from './state.js';
 
@@ -122,16 +121,4 @@ function replaceMission(s: GameState, d: Derived, i: number, rng: Rng): void {
   let next = makeMission(s, d, rng);
   for (let n = 0; n < 5 && next.kind === old.kind && next.gen === old.gen; n++) next = makeMission(s, d, rng);
   s.missions.splice(i, 0, next);
-}
-
-export function describeMission(m: Mission, fmt: (n: number) => string): string {
-  switch (m.kind) {
-    case 'own': {
-      const g = GENERATORS[m.gen ?? 0];
-      return m.target === 1 ? `Build your first ${g.name}` : `Own ${m.target} ${pluralName(m.gen ?? 0)}`;
-    }
-    case 'taps': return `Tap ${m.target} times`;
-    case 'comets': return m.target === 1 ? 'Catch a comet' : `Catch ${m.target} comets`;
-    case 'earn': return `Harvest ${fmt(m.target)} Stardust`;
-  }
 }

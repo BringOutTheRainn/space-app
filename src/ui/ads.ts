@@ -2,21 +2,24 @@
 // (@capacitor-community/admob). In a browser it shows a stand-in ad so every
 // placement can be tried without an ad account.
 
+import { t } from '../i18n/index.js';
 import { AD_CONFIG } from '../data/ads.js';
-import { esc, openModal, closeModal } from './dom.js';
+import { esc, openModal, closeModal, toast } from './dom.js';
 import { isNative } from './platform.js';
 import { suspendAudio, resumeAudio } from './audio.js';
 
 interface AdMobPlugin {
-  initialize(o: { initializeForTesting?: boolean }): Promise<void>;
-  requestConsentInfo?(): Promise<{ status: string; isConsentFormAvailable?: boolean }>;
+  initialize(o: { initializeForTesting?: boolean; maxAdContentRating?: 'General' | 'ParentalGuidance' | 'Teen' | 'MatureAudience' }): Promise<void>;
+  requestConsentInfo?(): Promise<{ status: string; isConsentFormAvailable?: boolean; privacyOptionsRequirementStatus?: string }>;
   showConsentForm?(): Promise<unknown>;
+  showPrivacyOptionsForm?(): Promise<unknown>;
   prepareRewardVideoAd(o: { adId: string; isTesting?: boolean }): Promise<unknown>;
   showRewardVideoAd(): Promise<{ type: string; amount: number } | undefined>;
   prepareInterstitial(o: { adId: string; isTesting?: boolean }): Promise<unknown>;
   showInterstitial(): Promise<void>;
   showBanner(o: { adId: string; adSize: string; position: string; margin?: number; isTesting?: boolean }): Promise<void>;
   removeBanner(): Promise<void>;
+  addListener?(event: string, cb: (info: { height?: number }) => void): unknown;
 }
 
 function admob(): AdMobPlugin | undefined {
@@ -34,6 +37,8 @@ let rewardedLoaded = false;
 let interstitialLoaded = false;
 
 let initing: Promise<void> | null = null;
+/** Players under GDPR must be able to change their ad consent later (Settings). */
+let privacyOptionsRequired = false;
 
 /** Starts the ad SDK once. Later callers share the same promise. */
 export function initAds(): Promise<void> {
@@ -49,15 +54,41 @@ async function startAds(): Promise<void> {
     return;
   }
   try {
-    await ad.initialize({ initializeForTesting: AD_CONFIG.testing });
+    // The Play listing targets 13 and over, so ads are capped at Teen content.
+    await ad.initialize({ initializeForTesting: AD_CONFIG.testing, maxAdContentRating: 'Teen' });
     // Ask for consent where the law requires it (EEA and UK).
     const info = await ad.requestConsentInfo?.();
     if (info && info.isConsentFormAvailable && info.status === 'REQUIRED') await ad.showConsentForm?.();
+    privacyOptionsRequired = await privacyOptionsNeeded(ad);
     ready = true;
     void preloadRewarded();
     void preloadInterstitial();
   } catch (e) {
     console.warn('Ads unavailable', e);
+  }
+}
+
+async function privacyOptionsNeeded(ad: AdMobPlugin): Promise<boolean> {
+  if (typeof ad.showPrivacyOptionsForm !== 'function') return false;
+  try {
+    const info = await ad.requestConsentInfo?.();
+    return info?.privacyOptionsRequirementStatus === 'REQUIRED';
+  } catch {
+    return false;
+  }
+}
+
+/** True when Settings should offer "Ad privacy choices" (EEA, UK and Switzerland). */
+export function adPrivacyOptionsAvailable(): boolean {
+  return privacyOptionsRequired;
+}
+
+/** Opens Google's form where players change or withdraw ad consent. */
+export async function showAdPrivacyOptions(): Promise<void> {
+  try {
+    await admob()?.showPrivacyOptionsForm?.();
+  } catch (e) {
+    console.warn('Privacy options unavailable', e);
   }
 }
 
@@ -83,6 +114,14 @@ async function preloadInterstitial(): Promise<void> {
   }
 }
 
+/** How long a tap on a rewarded button waits for an ad that is not loaded yet. */
+const LOAD_WAIT_MS = 6000;
+
+function noAd(): false {
+  toast(t('No ad is ready right now. Please try again in a minute.'), 'info');
+  return false;
+}
+
 /** Is a rewarded ad worth offering right now? */
 export function rewardedAvailable(): boolean {
   if (!AD_CONFIG.enabled) return false;
@@ -96,57 +135,88 @@ export function rewardedAvailable(): boolean {
  */
 export async function showRewarded(what: string): Promise<boolean> {
   if (!rewardedAvailable()) return false;
-  await initAds();
-  if (!ready) return false;
   const ad = admob();
-  if (isNative() && ad) {
-    if (!rewardedLoaded) await preloadRewarded();
-    if (!rewardedLoaded) return false;
+  const native = isNative() && !!ad;
+  // Starting the SDK and loading an ad can stall with no network, and no fill
+  // is common; wait a little, then say so rather than leave the button dead.
+  await Promise.race([
+    initAds().then(() => (ready && native && !rewardedLoaded ? preloadRewarded() : undefined)),
+    new Promise((r) => setTimeout(r, LOAD_WAIT_MS)),
+  ]);
+  if (!ready) return noAd();
+  if (native && ad) {
+    if (!rewardedLoaded) return noAd();
     rewardedLoaded = false;
     suspendAudio();
     try {
       const reward = await ad.showRewardVideoAd();
       return !!reward;
     } catch {
+      // Also how some plugin versions report an ad closed early, so no message.
       return false;
     } finally {
       resumeAudio();
       void preloadRewarded();
     }
   }
-  return webAd(`Rewarded ad: ${what}`, 5, true);
+  return webAd(t('Rewarded ad: {what}', { what }), 5, true);
 }
 
-/** Shows a full-screen ad if one is loaded. Never blocks the game for long. */
-export async function showInterstitial(): Promise<void> {
-  if (!AD_CONFIG.enabled || !ready) return;
+/** Shows a full-screen ad if one is loaded. Never blocks the game for long. Resolves true if one showed. */
+export async function showInterstitial(): Promise<boolean> {
+  if (!AD_CONFIG.enabled || !ready) return false;
   const ad = admob();
   if (isNative() && ad) {
-    if (!interstitialLoaded) return void preloadInterstitial();
+    if (!interstitialLoaded) {
+      void preloadInterstitial();
+      return false;
+    }
     interstitialLoaded = false;
     suspendAudio();
     try {
       await ad.showInterstitial();
+      return true;
     } catch {
-      /* no fill */
+      return false;
     } finally {
       resumeAudio();
       void preloadInterstitial();
     }
-    return;
   }
-  await webAd('Full-screen ad', 3, false);
+  await webAd(t('Full-screen ad'), 3, false);
+  return true;
+}
+
+let bannerListening = false;
+let bannerFailed = false;
+
+/** Room is made for the banner only once one is showing, at its real height. */
+function bannerSpace(px: number): void {
+  document.body.classList.toggle('has-banner', px > 0);
+  if (px > 0) document.body.style.setProperty('--banner-h', `${Math.round(px)}px`);
 }
 
 export async function setBanner(on: boolean): Promise<void> {
   const ad = admob();
-  document.body.classList.toggle('has-banner', on);
+  if (!on) bannerSpace(0);
   if (!isNative() || !ad) return;
+  if (!bannerListening && ad.addListener) {
+    bannerListening = true;
+    // Adaptive banners vary in height by phone; no fill leaves no gap.
+    void ad.addListener('bannerAdSizeChanged', (info) => { if (info?.height) bannerSpace(info.height); });
+    void ad.addListener('bannerAdFailedToLoad', () => {
+      bannerFailed = true;
+      bannerSpace(0);
+    });
+  }
   try {
-    if (on) await ad.showBanner({ adId: ids().banner, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: AD_CONFIG.testing });
-    else await ad.removeBanner();
+    if (on) {
+      bannerFailed = false;
+      await ad.showBanner({ adId: ids().banner, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: AD_CONFIG.testing });
+      if (!bannerFailed && !document.body.classList.contains('has-banner')) bannerSpace(60);
+    } else await ad.removeBanner();
   } catch {
-    /* banner is optional */
+    bannerSpace(0);
   }
 }
 
@@ -156,13 +226,13 @@ function webAd(label: string, seconds: number, rewarded: boolean): Promise<boole
     let left = seconds;
     let done = false;
     const el = openModal({
-      title: 'Ad',
+      title: t('Ad'),
       dismissable: false,
-      body: `<div class="fake-ad"><div class="fake-ad-tag">Stand-in ad</div><p>${esc(label)}</p>
-        <p class="dim">In the app a real ad plays here. This placeholder lets you try the flow in a browser.</p>
+      body: `<div class="fake-ad"><div class="fake-ad-tag">${t('Stand-in ad')}</div><p>${esc(label)}</p>
+        <p class="dim">${t('In the app a real ad plays here. This placeholder lets you try the flow in a browser.')}</p>
         <div class="fake-ad-count" id="ad-count">${left}</div></div>`,
       buttons: [{
-        label: rewarded ? 'Skip (no reward)' : 'Close',
+        label: rewarded ? t('Skip (no reward)') : t('Close'),
         onClick: () => {
           if (!done) {
             done = true;

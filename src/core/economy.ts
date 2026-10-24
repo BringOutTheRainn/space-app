@@ -38,6 +38,7 @@ export interface Derived {
   expSpeed: number;
   keepResearch: boolean;
   autoBuy: boolean;
+  autoUpgrade: boolean;
   hyper: boolean;
   /** Anomaly rules for this universe. */
   noTaps: boolean;
@@ -66,6 +67,8 @@ function upgradeEffects(s: GameState): Effect[] {
 export function relicLevel(s: GameState, id: string): number {
   return s.relics[id] ?? 0;
 }
+
+const cap = (x: number): number => (Number.isFinite(x) ? x : Number.MAX_VALUE);
 
 export function computeDerived(s: GameState, now = Date.now()): Derived {
   const n = GENERATORS.length;
@@ -109,6 +112,7 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
   let expeditionSlots = 1;
   let keepResearch = false;
   let autoBuy = false;
+  let autoUpgrade = false;
   for (const e of cosmicEffects(s)) {
     switch (e.k) {
       case 'offlineRate': offlineRate = Math.max(offlineRate, e.value); break;
@@ -126,6 +130,7 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
       case 'expeditionSlots': expeditionSlots = Math.max(expeditionSlots, e.value); break;
       case 'keepResearch': keepResearch = true; break;
       case 'autoBuy': autoBuy = true; break;
+      case 'autoUpgrade': autoUpgrade = true; break;
       case 'starter': break;
     }
   }
@@ -177,6 +182,7 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
 
   globalMult *= 1 + achPct * achievementCount(s);
   globalMult *= 1 + dmPct * s.darkMatter;
+  globalMult *= Math.pow(ECHO_MULT, s.echoes);
   globalMult *= astronomerMult;
   // Contract Medals: +5% each (MEDAL_PCT in contracts.ts).
   globalMult *= 1 + 0.05 * s.contractMedals;
@@ -208,15 +214,18 @@ export function computeDerived(s: GameState, now = Date.now()): Derived {
   }
   const hyper = s.hyperEndsAt > now;
   if (hyper) prodBuff *= HYPER_MULT;
-  const sps = baseSps * prodBuff;
+  // A hand-edited save can push the multipliers past what a double holds;
+  // cap the totals so stardust stays a real number instead of Infinity.
+  baseSps = cap(baseSps);
+  const sps = cap(baseSps * prodBuff);
   // Taps get the flat drone bonus and a share of production, but not the
   // global multiplier directly (it reaches them through the SPS share).
-  const tap = noTaps ? 0 : ((1 * tapMult + flat) * relicTap + sps * tapSps) * tapBuff;
+  const tap = noTaps ? 0 : cap(((1 * tapMult + flat) * relicTap + sps * tapSps) * tapBuff);
 
   return {
     genSps, baseSps, sps, tap, globalMult, prodBuff, tapBuff, cometFreq, cometStay, cometEffect, offlineRate: Math.min(offlineRate, 1.5),
     offlineCapHours, autoTap, genDiscount: Math.min(genDiscount, 0.5), upgDiscount: Math.min(upgDiscount, 0.5), blackComets, expeditions,
-    expeditionSlots, expSpeed, keepResearch, autoBuy, hyper, noTaps, noComets, noUpgrades, costGrowth, maxGen,
+    expeditionSlots, expSpeed, keepResearch, autoBuy, autoUpgrade, hyper, noTaps, noComets, noUpgrades, costGrowth, maxGen,
   };
 }
 
@@ -286,6 +295,46 @@ export function buyUpgrade(s: GameState, d: Derived, id: string): boolean {
   return true;
 }
 
+/**
+ * The next locked tier upgrade of each generator the player owns, closest to
+ * unlocking first (by the share of the way still to go).
+ */
+export function upcomingUpgrades(s: GameState, limit = 3): UpgradeDef[] {
+  const seen = new Set<number>();
+  const next: UpgradeDef[] = [];
+  for (const u of UPGRADES) {
+    if (!u.need || seen.has(u.need.gen) || s.upgrades[u.id] || u.unlock(s)) continue;
+    seen.add(u.need.gen);
+    if (s.generators[u.need.gen] > 0) next.push(u);
+  }
+  const left = (u: UpgradeDef) => 1 - s.generators[u.need!.gen] / u.need!.owned;
+  return next.sort((a, b) => left(a) - left(b) || a.cost - b.cost).slice(0, limit);
+}
+
+/** Upgrades affordable right now if bought cheapest first, without spending. */
+export function affordableUpgradeCount(s: GameState, d: Derived): number {
+  if (d.noUpgrades) return 0;
+  let left = s.stardust;
+  let n = 0;
+  for (const u of availableUpgrades(s)) {
+    const price = upgradePrice(d, u);
+    if (price > left) break;
+    left -= price;
+    n++;
+  }
+  return n;
+}
+
+/** Buys upgrades cheapest first until the next one is out of reach. Returns how many were bought. */
+export function buyAllUpgrades(s: GameState, d: Derived): number {
+  let n = 0;
+  for (;;) {
+    const next = availableUpgrades(s)[0];
+    if (!next || !buyUpgrade(s, d, next.id)) return n;
+    n++;
+  }
+}
+
 // ---------------------------------------------------------------- cosmic
 
 export function cosmicAvailable(s: GameState, id: string): boolean {
@@ -298,6 +347,27 @@ export function buyCosmic(s: GameState, id: string): boolean {
   if (!c || !cosmicAvailable(s, id) || darkMatterAvailable(s) < c.cost) return false;
   s.darkMatterSpent += c.cost;
   s.cosmic[id] = true;
+  return true;
+}
+
+// Stellar Echoes: once every cosmic upgrade is owned, Dark Matter still has a use.
+// Each level multiplies all production; the price doubles every level.
+export const ECHO_MULT = 1.25;
+export const ECHO_BASE_COST = 1000;
+
+export function echoesUnlocked(s: GameState): boolean {
+  return COSMIC.every((c) => s.cosmic[c.id]);
+}
+
+export function echoCost(level: number): number {
+  return ECHO_BASE_COST * Math.pow(2, level);
+}
+
+export function buyEcho(s: GameState): boolean {
+  const cost = echoCost(s.echoes);
+  if (!echoesUnlocked(s) || darkMatterAvailable(s) < cost) return false;
+  s.darkMatterSpent += cost;
+  s.echoes++;
   return true;
 }
 

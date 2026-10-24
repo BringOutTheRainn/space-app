@@ -6,3 +6,5 @@ www/js/
 *.apk
 *.aab
 .DS_Store
+/store/
+undefined_*.png

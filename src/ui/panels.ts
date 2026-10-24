@@ -1,25 +1,29 @@
 // The Upgrades, Trophies, Cosmos and Probes tabs.
 
+import { noteHappyMoment } from './rating.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from '../data/achievements.js';
 import { ANOMALIES, ANOMALY_BY_ID } from '../data/anomalies.js';
+import { closestAchievements } from '../core/achievements.js';
 import { abandonAnomaly, anomaliesUnlocked, enterAnomaly } from '../core/anomalies.js';
 import { COSMIC, COSMIC_BY_ID } from '../data/cosmic.js';
 import { DESTINATIONS, DESTINATION_BY_ID, RELICS } from '../data/expeditions.js';
+import { GENERATORS } from '../data/generators.js';
 import { UPGRADES, UPGRADE_BY_ID } from '../data/upgrades.js';
-import { availableUpgrades, buyCosmic, buyUpgrade, cosmicAvailable, upgradePrice } from '../core/economy.js';
+import { affordableUpgradeCount, availableUpgrades, upcomingUpgrades, buyAllUpgrades, buyCosmic, buyEcho, buyUpgrade, cosmicAvailable, ECHO_MULT, echoCost, echoesUnlocked, upgradePrice } from '../core/economy.js';
 import { collectExpeditions, expeditionDurationMs, expeditionReward, freeSlots, relicName, startExpedition } from '../core/expeditions.js';
-import { fmt, fmtPercent, fmtTime } from '../core/format.js';
+import { fmt, fmtDec, fmtPercent, fmtPercentSpoken, fmtRateSmall, fmtSpoken, fmtTime } from '../core/format.js';
 import { creditValue, heldValue } from '../core/market.js';
-import { canCollapse, collapse, DM_SCALE, earningsForNextDarkMatter, pendingDarkMatter } from '../core/prestige.js';
+import { canCollapse, collapse, collapseGain, darkMatterPct, darkMatterPerHour, DM_SCALE, earningsForNextDarkMatter, pastPeak, pendingDarkMatter } from '../core/prestige.js';
 import { achievementCount, darkMatterAvailable } from '../core/state.js';
 import { sfxAchievement, sfxCollapse, sfxDenied, sfxUpgrade } from './audio.js';
 import type { Ctx, Panel } from './ctx.js';
-import { $, confirmModal, esc, openModal, setText, toast, toggleClass } from './dom.js';
+import { $, confirmModal, esc, openModal, numHtml, pctHtml, setHidden, setSpoken, setText, spokenHtml, toast, toggleClass } from './dom.js';
 import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { showInterstitial } from './ads.js';
 import { interstitialAllowed } from '../core/ads.js';
 import { stageFor, STAGES } from './sky.js';
+import { t, tDesc, tName } from '../i18n/index.js';
 
 // ------------------------------------------------------------------ Upgrades
 
@@ -28,19 +32,39 @@ export class UpgradesPanel implements Panel {
   private list: HTMLElement;
   private owned: HTMLElement;
   private ownedTitle: HTMLElement;
+  private buyAll: HTMLButtonElement;
+  private next: HTMLElement;
+  private nextTitle: HTMLElement;
+  private nextKey = '';
 
   constructor(private root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `
-      <h3 class="section-title">Available</h3>
+      <div class="upg-head"><h3 class="section-title">${t('Available')}</h3><button class="btn btn-plain upg-all" data-buy-all hidden></button></div>
       <div class="upg-list" id="upg-list"></div>
-      <h3 class="section-title" id="upg-owned-title">Bought</h3>
+      <h3 class="section-title" id="upg-next-title" hidden>${t('Coming up')}</h3>
+      <div class="upg-list upg-next" id="upg-next"></div>
+      <h3 class="section-title" id="upg-owned-title">${t('Bought')}</h3>
       <div class="upg-owned" id="upg-owned"></div>`;
     this.list = $('#upg-list', root);
     this.owned = $('#upg-owned', root);
     this.ownedTitle = $('#upg-owned-title', root);
+    this.buyAll = $('[data-buy-all]', root) as HTMLButtonElement;
+    this.next = $('#upg-next', root);
+    this.nextTitle = $('#upg-next-title', root);
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      const buy = t.closest<HTMLElement>('[data-buy]');
+      const el = e.target as HTMLElement;
+      if (el.closest('[data-buy-all]')) {
+        const n = buyAllUpgrades(ctx.s, ctx.d);
+        if (n) {
+          sfxUpgrade();
+          haptic('medium');
+          ctx.recalc();
+          ctx.dirty();
+          toast(esc(t('Bought {n} upgrades', { n })));
+        } else sfxDenied();
+        return;
+      }
+      const buy = el.closest<HTMLElement>('[data-buy]');
       if (buy) {
         const u = UPGRADE_BY_ID[buy.dataset.buy!];
         if (buyUpgrade(ctx.s, ctx.d, u.id)) {
@@ -51,10 +75,10 @@ export class UpgradesPanel implements Panel {
         } else sfxDenied();
         return;
       }
-      const own = t.closest<HTMLElement>('[data-owned]');
+      const own = el.closest<HTMLElement>('[data-owned]');
       if (own) {
         const u = UPGRADE_BY_ID[own.dataset.owned!];
-        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(u.name)}</b><br>${esc(u.desc)}</div>`);
+        toast(`<div class="t-ico">${icon(u.icon)}</div><div><b>${esc(tName(u))}</b><br>${esc(tDesc(u))}</div>`);
       }
     });
   }
@@ -69,17 +93,37 @@ export class UpgradesPanel implements Panel {
         ? ups.map((u) => `
           <div class="upg-card" data-id="${u.id}">
             <div class="upg-ico">${icon(u.icon)}</div>
-            <div class="upg-text"><div class="upg-name">${esc(u.name)}</div><div class="upg-desc">${esc(u.desc)}</div></div>
-            <button class="btn btn-buy" data-buy="${u.id}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
+            <div class="upg-text"><div class="upg-name">${esc(tName(u))}</div><div class="upg-desc">${esc(tDesc(u))}</div></div>
+            <button class="btn btn-buy" data-buy="${u.id}" aria-label="${esc(t('Buy {name} for {price} Stardust', { name: tName(u), price: fmtSpoken(upgradePrice(d, u)) }))}"><span class="sd-dot"></span>${fmt(upgradePrice(d, u))}</button>
           </div>`).join('')
-        : `<p class="empty">${d.noUpgrades ? 'Upgrades cannot be bought in this anomaly.' : 'No upgrades right now. Buy more generators to unlock new ones.'}</p>`;
+        : `<p class="empty">${d.noUpgrades ? t('Upgrades cannot be bought in this anomaly.') : t('No upgrades right now. Buy more generators to unlock new ones.')}</p>`;
       const bought = UPGRADES.filter((u) => s.upgrades[u.id]);
-      setText(this.ownedTitle, `Bought (${bought.length} of ${UPGRADES.length})`);
-      this.owned.innerHTML = bought.map((u) => `<button class="owned-chip" data-owned="${u.id}" aria-label="${esc(u.name)}">${icon(u.icon)}</button>`).join('');
+      setText(this.ownedTitle, t('Bought ({n} of {total})', { n: bought.length, total: UPGRADES.length }));
+      this.owned.innerHTML = bought.map((u) => `<button class="owned-chip" data-owned="${u.id}" aria-label="${esc(tName(u))}">${icon(u.icon)}</button>`).join('');
     }
     this.list.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
       toggleClass(b, 'afford', upgradePrice(d, UPGRADE_BY_ID[b.dataset.buy!]) <= s.stardust);
     });
+    const soon = d.noUpgrades ? [] : upcomingUpgrades(s);
+    const nextKey = soon.map((u) => `${u.id}:${s.generators[u.need!.gen]}`).join(',');
+    if (nextKey !== this.nextKey) {
+      this.nextKey = nextKey;
+      setHidden(this.nextTitle, !soon.length);
+      this.next.innerHTML = soon.map((u) => {
+        const { gen, owned } = u.need!;
+        const have = s.generators[gen];
+        return `
+          <div class="upg-card upg-soon">
+            <div class="upg-ico">${icon(u.icon)}</div>
+            <div class="upg-text"><div class="upg-name">${esc(tName(u))}</div>
+              <div class="upg-desc">${esc(t('{gen}: {have} of {need}', { gen: t(GENERATORS[gen].name), have, need: owned }))}</div>
+              <div class="gen-tier" aria-hidden="true"><i style="width:${(100 * have) / owned}%"></i></div></div>
+          </div>`;
+      }).join('');
+    }
+    const n = affordableUpgradeCount(s, d);
+    setHidden(this.buyAll, n < 2);
+    if (n >= 2) setText(this.buyAll, t('Buy all ({n})', { n }));
   }
 }
 
@@ -89,33 +133,54 @@ export class TrophiesPanel implements Panel {
   private key = '';
   private grid: HTMLElement;
   private summary: HTMLElement;
+  private near: HTMLElement;
+  private nearTitle: HTMLElement;
+  private nearKey = '';
 
   constructor(private root: HTMLElement, ctx: Ctx) {
-    root.innerHTML = `<div class="trophy-summary" id="trophy-summary"></div><div class="trophy-grid" id="trophy-grid"></div>`;
+    root.innerHTML = `<div class="trophy-summary" id="trophy-summary"></div>
+      <h3 class="section-title" id="trophy-near-title" hidden>${t('Almost there')}</h3>
+      <div class="upg-list" id="trophy-near"></div>
+      <div class="trophy-grid" id="trophy-grid"></div>`;
     this.grid = $('#trophy-grid', root);
     this.summary = $('#trophy-summary', root);
+    this.near = $('#trophy-near', root);
+    this.nearTitle = $('#trophy-near-title', root);
     this.grid.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-ach]');
       if (!el) return;
       const a = ACHIEVEMENT_BY_ID[el.dataset.ach!];
       const got = a.id in ctx.s.achievements;
-      const name = got || !a.hidden ? a.name : '???';
-      const desc = got || !a.hidden ? a.desc : 'A secret achievement.';
+      const name = got || !a.hidden ? tName(a) : '???';
+      const desc = got || !a.hidden ? tDesc(a) : t('A secret achievement.');
       toast(`<div class="t-ico">${icon(got ? 'trophy' : 'lock')}</div><div><b>${esc(name)}</b>${got ? ' ✓' : ''}<br>${esc(desc)}</div>`, got ? 'trophy' : 'info');
     });
   }
 
   refresh(ctx: Ctx): void {
     const s = ctx.s;
+    const close = closestAchievements(s, ctx.d ? ctx.d.sps : 0);
+    const nearKey = close.map(({ a, p }) => `${a.id}:${Math.floor(p * 100)}`).join(',');
+    if (nearKey !== this.nearKey) {
+      this.nearKey = nearKey;
+      setHidden(this.nearTitle, !close.length);
+      this.near.innerHTML = close.map(({ a, p }) => `
+        <div class="upg-card upg-soon">
+          <div class="upg-ico">${icon('trophy')}</div>
+          <div class="upg-text"><div class="upg-name">${esc(tName(a))}</div>
+            <div class="upg-desc">${esc(tDesc(a))}</div>
+            <div class="gen-tier" role="progressbar" aria-label="${esc(tName(a))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.floor(p * 100)}"><i style="width:${(100 * p).toFixed(1)}%"></i></div></div>
+        </div>`).join('');
+    }
     const n = achievementCount(s);
     const key = String(n);
     if (key === this.key) return;
     this.key = key;
     const per = ctx.d ? achievementBonus(ctx) : 0.01;
-    this.summary.innerHTML = `<b>${n}</b> of ${ACHIEVEMENTS.length} achievements · <span class="good">+${fmtPercent(per * n)}</span> production`;
+    this.summary.innerHTML = t('<b>{n}</b> of {total} achievements · <span class="good">+{pct}</span> production', { n, total: ACHIEVEMENTS.length, pct: fmtPercent(per * n) });
     this.grid.innerHTML = ACHIEVEMENTS.map((a) => {
       const got = a.id in s.achievements;
-      return `<button class="trophy${got ? ' got' : ''}${a.hidden && !got ? ' secret' : ''}" data-ach="${a.id}" aria-label="${esc(got || !a.hidden ? a.name : 'Secret')}">${icon(got ? 'trophy' : 'lock')}</button>`;
+      return `<button class="trophy${got ? ' got' : ''}${a.hidden && !got ? ' secret' : ''}" data-ach="${a.id}" aria-label="${esc(got || !a.hidden ? tName(a) : t('Secret'))}">${icon(got ? 'trophy' : 'lock')}</button>`;
     }).join('');
   }
 }
@@ -132,19 +197,25 @@ export function cosmosUnlocked(ctx: Ctx): boolean {
   return ctx.s.earnedAll >= COSMOS_UNLOCK || ctx.s.collapses > 0;
 }
 
+function echoMultText(level: number): string {
+  const m = Math.pow(ECHO_MULT, level);
+  return m < 1000 ? fmtDec(m, 2) : fmt(m);
+}
+
 export class CosmosPanel implements Panel {
   private built = false;
   private treeKey = '';
 
   constructor(private root: HTMLElement, private ctx: Ctx) {
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('#btn-collapse')) this.askCollapse();
-      const node = t.closest<HTMLElement>('[data-cosmic]');
+      const el = e.target as HTMLElement;
+      if (el.closest('#btn-collapse')) this.askCollapse();
+      const node = el.closest<HTMLElement>('[data-cosmic]');
       if (node) this.showCosmic(node.dataset.cosmic!);
-      const enter = t.closest<HTMLElement>('[data-anomaly]');
+      const enter = el.closest<HTMLElement>('[data-anomaly]');
       if (enter) this.askAnomaly(enter.dataset.anomaly!);
-      if (t.closest('#btn-abandon')) this.askAbandon();
+      if (el.closest('#btn-abandon')) this.askAbandon();
+      if (el.closest('#btn-echo')) this.echo();
     });
   }
 
@@ -156,15 +227,19 @@ export class CosmosPanel implements Panel {
         <div><div class="dm-amount" id="dm-amount"></div><div class="dm-sub" id="dm-sub"></div></div>
       </div>
       <div class="collapse-card">
-        <div class="collapse-row"><span>Collapse now for</span><b id="dm-pending"></b></div>
+        <div class="collapse-row"><span>${t('Collapse now for')}</span><b id="dm-pending"></b></div>
+        <div class="collapse-gain" id="dm-gain"></div>
         <div class="bar"><div class="bar-fill" id="dm-bar"></div></div>
         <div class="collapse-note" id="dm-next"></div>
-        <button class="btn btn-cosmic btn-wide" id="btn-collapse">Collapse the Universe</button>
+        <div class="collapse-note" id="dm-rate" hidden></div>
+        <div class="collapse-note peak" id="dm-peak" hidden>${t('Past its best rate: a good time to collapse.')}</div>
+        <button class="btn btn-cosmic btn-wide" id="btn-collapse">${t('Collapse the Universe')}</button>
       </div>
       <div id="anomalies"></div>
-      <h3 class="section-title">Cosmic upgrades</h3>
-      <p class="hint-text">Bought with Dark Matter. Kept forever. Spending Dark Matter does not lower its production bonus.</p>
-      <div class="tree" id="tree"></div>`;
+      <h3 class="section-title">${t('Cosmic upgrades')}</h3>
+      <p class="hint-text">${t('Bought with Dark Matter. Kept forever. Spending Dark Matter does not lower its production bonus.')}</p>
+      <div class="tree" id="tree"></div>
+      <div id="echo"></div>`;
   }
 
   refresh(ctx: Ctx): void {
@@ -176,8 +251,8 @@ export class CosmosPanel implements Panel {
       this.root.innerHTML = `
         <div class="locked-card">
           <div class="locked-ico">${icon('darkMatter')}</div>
-          <h3>The Cosmos is sealed</h3>
-          <p>Earn ${fmt(COSMOS_UNLOCK)} Stardust in total to learn how to collapse the universe and harvest Dark Matter.</p>
+          <h3>${t('The Cosmos is sealed')}</h3>
+          <p>${t('Earn {n} Stardust in total to learn how to collapse the universe and harvest Dark Matter.', { n: fmt(COSMOS_UNLOCK) })}</p>
           <div class="bar"><div class="bar-fill" style="width:${(pct * 100).toFixed(1)}%"></div></div>
           <p class="dim">${fmt(s.earnedAll)} / ${fmt(COSMOS_UNLOCK)}</p>
         </div>`;
@@ -185,19 +260,46 @@ export class CosmosPanel implements Panel {
     }
     if (!this.built) this.build();
     const pending = pendingDarkMatter(s);
-    setText($('#dm-amount', this.root), `${fmt(s.darkMatter)} Dark Matter`);
-    const dmPct = (s.cosmic.resonance ? 0.03 : 0.02) + (s.cosmic.resonance2 ? 0.01 : 0);
-    setText($('#dm-sub', this.root), `${fmt(darkMatterAvailable(s))} to spend · +${fmtPercent(dmPct * s.darkMatter)} production`);
-    setText($('#dm-pending', this.root), `+${fmt(pending)} Dark Matter`);
+    // Each line twice: as shown, and with numbers in words for screen readers.
+    setSpoken($('#dm-amount', this.root), t('{n} Dark Matter', { n: fmt(s.darkMatter) }), () => t('{n} Dark Matter', { n: fmtSpoken(s.darkMatter) }));
+    const dmPct = darkMatterPct(s);
+    const subLine = (num: (n: number) => string, pct: (f: number) => string): string => t('{n} to spend · +{pct} production', { n: num(darkMatterAvailable(s)), pct: pct(dmPct * s.darkMatter) });
+    setSpoken($('#dm-sub', this.root), subLine(fmt, fmtPercent), () => subLine(fmtSpoken, fmtPercentSpoken));
+    setSpoken($('#dm-pending', this.root), t('+{n} Dark Matter', { n: fmt(pending) }), () => t('+{n} Dark Matter', { n: fmtSpoken(pending) }));
+    // What the collapse is worth: the production bonus before and after, and the multiplier.
+    const gain = collapseGain(s);
+    const gainEl = $('#dm-gain', this.root);
+    setHidden(gainEl, pending <= 0);
+    if (pending > 0) {
+      const gainLine = (pct: (f: number) => string): string => t('Bonus +{from} → +{to} (x{mult})', { from: pct(dmPct * s.darkMatter), to: pct(dmPct * (s.darkMatter + pending)), mult: fmtDec(gain, 2) });
+      setSpoken(gainEl, gainLine(fmtPercent), () => gainLine(fmtPercentSpoken));
+      toggleClass(gainEl, 'good', gain >= 2);
+    }
     const nextAt = earningsForNextDarkMatter(s);
     const prevTotal = Math.pow(Math.cbrt(nextAt / DM_SCALE) - 1, 3) * DM_SCALE;
     const frac = Math.max(0, Math.min(1, (s.earnedAll - prevTotal) / (nextAt - prevTotal)));
     ($('#dm-bar', this.root) as HTMLElement).style.width = `${(frac * 100).toFixed(1)}%`;
-    setText($('#dm-next', this.root), s.earnedAll < DM_SCALE
-      ? `Your first Dark Matter forms at ${fmt(DM_SCALE)} lifetime Stardust (${fmt(s.earnedAll)} so far).`
-      : `Next Dark Matter at ${fmt(nextAt)} lifetime Stardust.`);
+    const nextLine = (num: (n: number) => string): string => s.earnedAll < DM_SCALE
+      ? t('Your first Dark Matter forms at {n} lifetime Stardust ({have} so far).', { n: num(DM_SCALE), have: num(s.earnedAll) })
+      : t('Next Dark Matter at {n} lifetime Stardust.', { n: num(nextAt) });
+    setSpoken($('#dm-next', this.root), nextLine(fmt), () => nextLine(fmtSpoken));
+    // Compare this universe's Dark Matter per hour with the last one: collapsing near the peak is the efficient play.
+    const rateEl = $('#dm-rate', this.root) as HTMLElement;
+    const last = s.pastRuns[0];
+    const pendingNow = pendingDarkMatter(s);
+    setHidden(rateEl, !last || pendingNow < 1);
+    if (last && pendingNow >= 1) {
+      const rateLine = (num: (n: number) => string): string => t('This universe: {now} Dark Matter per hour. Last one: {last}.', {
+        now: num(darkMatterPerHour(pendingNow, s.time - s.runStartClock)),
+        last: num(darkMatterPerHour(last.dm, last.secs)),
+      });
+      setSpoken(rateEl, rateLine(fmtRateSmall), () => rateLine((n) => (n < 100 ? fmtRateSmall(n) : fmtSpoken(n))));
+    }
+    const peak = pastPeak(s);
+    setHidden($('#dm-peak', this.root), !peak);
     const btn = $('#btn-collapse', this.root) as HTMLButtonElement;
     btn.disabled = !canCollapse(s);
+    toggleClass(btn, 'ready', peak);
 
     const key = Object.keys(s.cosmic).join(',') + '|' + darkMatterAvailable(s) + '|' + s.anomaly + Object.keys(s.anomaliesDone).join(',');
     if (key !== this.treeKey) {
@@ -209,7 +311,7 @@ export class CosmosPanel implements Panel {
     const bar = this.root.querySelector<HTMLElement>('#anomaly-bar');
     if (a && bar) bar.style.width = `${Math.min(100, (Math.log10(Math.max(1, s.earnedRun)) / Math.log10(a.goal)) * 100).toFixed(1)}%`;
     const prog = this.root.querySelector<HTMLElement>('#anomaly-progress');
-    if (a && prog) setText(prog, `${fmt(s.earnedRun)} / ${fmt(a.goal)} Stardust`);
+    if (a && prog) setText(prog, t('{n} / {goal} Stardust', { n: fmt(s.earnedRun), goal: fmt(a.goal) }));
     void d;
   }
 
@@ -222,17 +324,17 @@ export class CosmosPanel implements Panel {
     }
     const done = Object.keys(s.anomaliesDone).length;
     root.innerHTML = `
-      <h3 class="section-title">Anomalies · ${done} of ${ANOMALIES.length}</h3>
-      <p class="hint-text">Twisted universes with one strange rule. Reach the goal inside one for a permanent reward. Entering collapses your universe and collects any pending Dark Matter.</p>
+      <h3 class="section-title">${t('Anomalies · {n} of {total}', { n: done, total: ANOMALIES.length })}</h3>
+      <p class="hint-text">${t('Twisted universes with one strange rule. Reach the goal inside one for a permanent reward. Entering collapses your universe and collects any pending Dark Matter.')}</p>
       <div class="anomalies">${ANOMALIES.map((a) => {
         const isDone = !!s.anomaliesDone[a.id];
         const active = s.anomaly === a.id;
         return `<div class="anomaly ${isDone ? 'done' : ''} ${active ? 'active' : ''}">
-          <div class="anomaly-top"><b>${esc(a.name)}</b><span class="anomaly-goal">${isDone ? 'Complete' : `Goal ${fmt(a.goal)}`}</span></div>
-          <div class="dim">${esc(a.rule)}</div>
-          <div class="anomaly-reward">${esc(a.rewardText)}</div>
-          ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">Leave</button></div>`
-            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''}>Enter</button>`}
+          <div class="anomaly-top"><b>${esc(t(a.name))}</b><span class="anomaly-goal">${isDone ? t('Complete') : spokenHtml(t('Goal {n}', { n: fmt(a.goal) }), t('Goal {n}', { n: fmtSpoken(a.goal) }))}</span></div>
+          <div class="dim">${esc(t(a.rule))}</div>
+          <div class="anomaly-reward">${esc(t(a.rewardText))}</div>
+          ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">${t('Leave')}</button></div>`
+            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''}>${t('Enter')}</button>`}
         </div>`;
       }).join('')}</div>`;
   }
@@ -241,18 +343,18 @@ export class CosmosPanel implements Panel {
     const ctx = this.ctx;
     const a = ANOMALY_BY_ID[id];
     const pending = pendingDarkMatter(ctx.s);
-    confirmModal(`Enter ${a.name}?`,
-      `<b>Rule:</b> ${esc(a.rule)}<br><b>Goal:</b> earn ${fmt(a.goal)} Stardust in this universe.<br><b>Reward:</b> ${esc(a.rewardText)}<br><br>Your current universe collapses${pending >= 1 ? ` and you collect <b class="dm">+${fmt(pending)} Dark Matter</b>` : ''}. You can leave the anomaly at any time.`,
-      'Enter', () => {
+    confirmModal(t('Enter {name}?', { name: t(a.name) }),
+      `${t('<b>Rule:</b> {rule}<br><b>Goal:</b> earn {goal} Stardust in this universe.<br><b>Reward:</b> {reward}', { rule: esc(t(a.rule)), goal: numHtml(a.goal), reward: esc(t(a.rewardText)) })}<br><br>${pending >= 1 ? t('Your current universe collapses and you collect <b class="dm">+{n} Dark Matter</b>.', { n: numHtml(pending) }) : t('Your current universe collapses.')} ${t('You can leave the anomaly at any time.')}`,
+      t('Enter'), () => {
         enterAnomaly(ctx.s, ctx.d, id);
         this.afterReset();
-        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(a.name)}</b><br>${esc(a.rule)}</div>`, 'comet', 5000);
+        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(t(a.name))}</b><br>${esc(t(a.rule))}</div>`, 'comet', 5000);
       });
   }
 
   private askAbandon(): void {
     const ctx = this.ctx;
-    confirmModal('Leave the anomaly?', 'Your universe collapses into a normal one. Progress towards this anomaly is lost, but pending Dark Matter is collected.', 'Leave', () => {
+    confirmModal(t('Leave the anomaly?'), t('Your universe collapses into a normal one. Progress towards this anomaly is lost, but pending Dark Matter is collected.'), t('Leave'), () => {
       abandonAnomaly(ctx.s, ctx.d);
       this.afterReset();
     }, true);
@@ -291,14 +393,46 @@ export class CosmosPanel implements Panel {
       const open = cosmicAvailable(s, c.id);
       const afford = open && darkMatterAvailable(s) >= c.cost;
       const cls = owned ? 'owned' : open ? (afford ? 'open afford' : 'open') : 'closed';
-      return `<button class="node ${cls}" data-cosmic="${c.id}" style="left:${(c.x + 0.5) * cell}%;top:${c.y * rowH}px" aria-label="${esc(c.name)}">
+      return `<button class="node ${cls}" data-cosmic="${c.id}" style="left:${(c.x + 0.5) * cell}%;top:${c.y * rowH}px" aria-label="${esc(t(c.name))}">
         <span class="node-dot">${icon(owned ? 'darkMatter' : open ? 'darkMatter' : 'lock')}</span>
-        <span class="node-name">${esc(c.name)}</span>
+        <span class="node-name">${esc(t(c.name))}</span>
         ${owned ? '' : `<span class="node-cost">${fmt(c.cost)}</span>`}
       </button>`;
     }).join('');
     $('#tree', this.root).innerHTML = `<svg class="tree-lines" width="100%" height="${rows * rowH}">${lines}</svg>${nodes}`;
     ($('#tree', this.root) as HTMLElement).style.height = `${rows * rowH}px`;
+    this.renderEcho(ctx);
+  }
+
+  private renderEcho(ctx: Ctx): void {
+    const s = ctx.s;
+    const owned = COSMIC.filter((c) => s.cosmic[c.id]).length;
+    const unlocked = echoesUnlocked(s);
+    const cost = echoCost(s.echoes);
+    $('#echo', this.root).innerHTML = `
+      <h3 class="section-title">${s.echoes ? t('Stellar Echoes · level {n}', { n: s.echoes }) : t('Stellar Echoes')}</h3>
+      <div class="anomaly echo-card ${unlocked ? '' : 'locked'}">
+        <div class="dim">${t('Each echo multiplies all production by x{mult}, forever. The price doubles each time.', { mult: fmtDec(ECHO_MULT, 2) })}</div>
+        ${s.echoes ? `<div class="anomaly-reward">${t('Now x{mult} production', { mult: echoMultText(s.echoes) })}</div>` : ''}
+        ${unlocked
+          ? `<button class="btn btn-cosmic" id="btn-echo" aria-label="${esc(t('Echo for {n} Dark Matter', { n: fmtSpoken(cost) }))}" ${darkMatterAvailable(s) >= cost ? '' : 'disabled'}>${t('Echo for {n} Dark Matter', { n: fmt(cost) })}</button>`
+          : `<div class="dim small">${t('Unlocks when every cosmic upgrade is owned ({n} of {total}).', { n: owned, total: COSMIC.length })}</div>`}
+      </div>`;
+  }
+
+  private echo(): void {
+    const ctx = this.ctx;
+    if (!buyEcho(ctx.s)) {
+      sfxDenied();
+      return;
+    }
+    sfxUpgrade();
+    haptic('medium');
+    ctx.recalc();
+    ctx.dirty();
+    ctx.save();
+    this.treeKey = '';
+    this.refresh(ctx);
   }
 
   private showCosmic(id: string): void {
@@ -306,24 +440,27 @@ export class CosmosPanel implements Panel {
     const c = COSMIC_BY_ID[id];
     const owned = !!ctx.s.cosmic[id];
     const open = cosmicAvailable(ctx.s, id);
-    const needs = c.requires.filter((r) => !ctx.s.cosmic[r]).map((r) => COSMIC_BY_ID[r].name);
-    const body = `<div class="cosmic-detail"><div class="big-ico">${icon('darkMatter')}</div><p>${esc(c.desc)}</p>
-      <p class="dim">${owned ? 'Owned.' : `Costs ${fmt(c.cost)} Dark Matter. You have ${fmt(darkMatterAvailable(ctx.s))}.`}</p>
-      ${needs.length ? `<p class="dim">Needs: ${needs.map(esc).join(', ')}</p>` : ''}</div>`;
+    const needs = c.requires.filter((r) => !ctx.s.cosmic[r]).map((r) => t(COSMIC_BY_ID[r].name));
+    const body = `<div class="cosmic-detail"><div class="big-ico">${icon('darkMatter')}</div><p>${esc(t(c.desc))}</p>
+      <p class="dim">${owned ? t('Owned.') : t('Costs {cost} Dark Matter. You have {have}.', { cost: fmt(c.cost), have: fmt(darkMatterAvailable(ctx.s)) })}</p>
+      ${needs.length ? `<p class="dim">${t('Needs: {list}', { list: needs.map(esc).join(', ') })}</p>` : ''}</div>`;
     openModal({
-      title: c.name,
+      title: t(c.name),
       body,
-      buttons: owned || !open ? [{ label: 'Close', kind: 'primary' }] : [
-        { label: 'Close', kind: 'plain' },
+      buttons: owned || !open ? [{ label: t('Close'), kind: 'primary' }] : [
+        { label: t('Close'), kind: 'plain' },
         {
-          label: `Buy for ${fmt(c.cost)}`, kind: 'primary', onClick: () => {
+          label: t('Buy for {n}', { n: fmt(c.cost) }), kind: 'primary', onClick: () => {
             if (buyCosmic(ctx.s, id)) {
               sfxUpgrade();
               haptic('medium');
               ctx.recalc();
               ctx.dirty();
               ctx.save();
-              toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(c.name)}</b><br>${esc(c.desc)}</div>`, 'good');
+              toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${esc(t(c.name))}</b><br>${esc(t(c.desc))}</div>`, 'good');
+              if (echoesUnlocked(ctx.s)) {
+                toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('Stellar Echoes unlocked')}</b><br>${t('The tree is complete. Spend Dark Matter on Echoes below it.')}</div>`, 'comet', 6000);
+              }
             } else {
               sfxDenied();
               return false;
@@ -341,9 +478,9 @@ export class CosmosPanel implements Panel {
     if (pending < 1) return;
     const goods = heldValue(ctx.s);
     confirmModal(
-      'Collapse the Universe?',
-      `Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.${goods > 0 ? ` Your Warp Exchange goods are sold first, for about ${fmt(goods * creditValue(ctx.d))} Stardust; any profit adds to your Dark Matter.` : ''}<br><br>You will gain <b class="dm">+${fmt(pending)} Dark Matter</b>, for <b>+${fmtPercent(pending * 0.02)}</b> production or more, forever.`,
-      'Collapse',
+      t('Collapse the Universe?'),
+      `${t('Everything in this universe collapses: Stardust, generators and upgrades. You keep achievements, Dark Matter and Cosmic upgrades.')}${goods > 0 ? ' ' + t('Your Warp Exchange goods are sold first, for about {n} Stardust; any profit adds to your Dark Matter.', { n: numHtml(goods * creditValue(ctx.d)) }) : ''}<br><br>${t('You will gain <b class="dm">+{n} Dark Matter</b>, for <b>+{pct}</b> production or more, forever.', { n: numHtml(pending), pct: pctHtml(pending * 0.02) })}`,
+      t('Collapse'),
       () => {
         const gained = collapse(ctx.s, ctx.d);
         sfxCollapse();
@@ -356,7 +493,8 @@ export class CosmosPanel implements Panel {
         ctx.sky.setStage(stageFor(0));
         ctx.showTab('build');
         breakAd(ctx);
-        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>A new universe begins</b><br>+${fmt(gained)} Dark Matter</div>`, 'good', 5000);
+        noteHappyMoment(12000);
+        toast(`<div class="t-ico">${icon('darkMatter')}</div><div><b>${t('A new universe begins')}</b><br>${t('+{n} Dark Matter', { n: numHtml(gained) })}</div>`, 'good', 5000);
       },
     );
   }
@@ -369,8 +507,8 @@ export class ProbesPanel implements Panel {
 
   constructor(private root: HTMLElement, private ctx: Ctx) {
     root.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      const go = t.closest<HTMLElement>('[data-launch]');
+      const el = e.target as HTMLElement;
+      const go = el.closest<HTMLElement>('[data-launch]');
       if (go) {
         if (startExpedition(ctx.s, ctx.d, go.dataset.launch!)) {
           sfxUpgrade();
@@ -379,7 +517,7 @@ export class ProbesPanel implements Panel {
           this.key = '';
         } else sfxDenied();
       }
-      if (t.closest('#btn-collect')) this.collect();
+      if (el.closest('#btn-collect')) this.collect();
     });
   }
 
@@ -391,8 +529,8 @@ export class ProbesPanel implements Panel {
     ctx.save();
     sfxAchievement();
     haptic('medium');
-    const lines = results.map((r) => `<li><b>${esc(DESTINATION_BY_ID[r.destId].name)}</b>: +${fmt(r.stardust)} Stardust${r.relic ? `<br><span class="relic-get">${icon('relic')} ${esc(relicName(r.relic))} (level ${r.relicLevel})</span>` : ''}</li>`).join('');
-    openModal({ title: 'Probes are back', body: `<ul class="result-list">${lines}</ul>` });
+    const lines = results.map((r) => `<li><b>${esc(t(DESTINATION_BY_ID[r.destId].name))}</b>: ${t('+{n} Stardust', { n: fmt(r.stardust) })}${r.relic ? `<br><span class="relic-get">${icon('relic')} ${esc(t('{relic} (level {n})', { relic: t(relicName(r.relic)), n: r.relicLevel }))}</span>` : ''}</li>`).join('');
+    openModal({ title: t('Probes are back'), body: `<ul class="result-list">${lines}</ul>` });
     this.key = '';
   }
 
@@ -404,22 +542,22 @@ export class ProbesPanel implements Panel {
       this.key = key;
       const slots = freeSlots(s, d);
       this.root.innerHTML = `
-        <div class="probe-head"><div class="probe-ico">${icon('probe')}</div><div><b>Expeditions</b><br><span class="dim">${d.expeditionSlots} probe${d.expeditionSlots > 1 ? 's' : ''} · rewards scale with your production</span></div></div>
+        <div class="probe-head"><div class="probe-ico">${icon('probe')}</div><div><b>${t('Expeditions')}</b><br><span class="dim">${d.expeditionSlots > 1 ? t('{n} probes · rewards scale with your production', { n: d.expeditionSlots }) : t('1 probe · rewards scale with your production')}</span></div></div>
         <div id="probe-active">${s.expeditions.map((e, i) => `
-          <div class="probe-run"><div class="probe-run-top"><b>${esc(DESTINATION_BY_ID[e.id]?.name ?? e.id)}</b><span class="probe-left" data-i="${i}"></span></div>
+          <div class="probe-run"><div class="probe-run-top"><b>${esc(t(DESTINATION_BY_ID[e.id]?.name ?? e.id))}</b><span class="probe-left" data-i="${i}"></span></div>
           <div class="bar"><div class="bar-fill" data-bar="${i}"></div></div></div>`).join('')}</div>
-        <button class="btn btn-primary btn-wide" id="btn-collect" hidden>Collect returned probes</button>
-        <h3 class="section-title">Destinations</h3>
+        <button class="btn btn-primary btn-wide" id="btn-collect" hidden>${t('Collect returned probes')}</button>
+        <h3 class="section-title">${t('Destinations')}</h3>
         ${DESTINATIONS.map((dest) => `
           <div class="dest">
-            <div class="dest-text"><b>${esc(dest.name)}</b><br><span class="dim">${esc(dest.desc)}</span><br>
-            <span class="dest-meta">${fmtTime(expeditionDurationMs(d, dest) / 1000)} · ~${fmt(expeditionReward(d, dest))} Stardust · ${Math.round(dest.relicChance * 100)}% Relic</span></div>
-            <button class="btn btn-buy ${slots > 0 ? 'afford' : ''}" data-launch="${dest.id}" ${slots > 0 ? '' : 'disabled'}>Launch</button>
+            <div class="dest-text"><b>${esc(t(dest.name))}</b><br><span class="dim">${esc(t(dest.desc))}</span><br>
+            <span class="dest-meta">${t('{time} · ~{n} Stardust · {pct}% Relic', { time: fmtTime(expeditionDurationMs(d, dest) / 1000), n: fmt(expeditionReward(d, dest)), pct: Math.round(dest.relicChance * 100) })}</span></div>
+            <button class="btn btn-buy ${slots > 0 ? 'afford' : ''}" data-launch="${dest.id}" ${slots > 0 ? '' : 'disabled'}>${t('Launch')}</button>
           </div>`).join('')}
-        <h3 class="section-title">Relics</h3>
+        <h3 class="section-title">${t('Relics')}</h3>
         <div class="relics">${RELICS.map((r) => {
           const lvl = s.relics[r.id] ?? 0;
-          return `<div class="relic ${lvl ? 'got' : ''}"><div class="relic-ico">${icon(lvl ? 'relic' : 'lock')}</div><div><b>${lvl ? esc(r.name) : 'Unknown relic'}</b> ${lvl ? `<span class="dim">Lv ${lvl}/${r.maxLevel}</span>` : ''}<br><span class="dim">${lvl ? esc(r.desc) : 'Found on expeditions.'}</span></div></div>`;
+          return `<div class="relic ${lvl ? 'got' : ''}"><div class="relic-ico">${icon(lvl ? 'relic' : 'lock')}</div><div><b>${lvl ? esc(t(r.name)) : t('Unknown relic')}</b> ${lvl ? `<span class="dim">${t('Lv {n}/{max}', { n: lvl, max: r.maxLevel })}</span>` : ''}<br><span class="dim">${lvl ? esc(t(r.desc)) : t('Found on expeditions.')}</span></div></div>`;
         }).join('')}</div>`;
     }
     let ready = false;
@@ -428,21 +566,25 @@ export class ProbesPanel implements Panel {
       const frac = Math.min(1, (now - e.startedAt) / Math.max(1, e.returnsAt - e.startedAt));
       const label = this.root.querySelector<HTMLElement>(`.probe-left[data-i="${i}"]`);
       const bar = this.root.querySelector<HTMLElement>(`[data-bar="${i}"]`);
-      if (label) setText(label, left > 0 ? fmtTime(left) : 'Returned!');
+      if (label) setText(label, left > 0 ? fmtTime(left) : t('Returned!'));
       if (bar) bar.style.width = `${(frac * 100).toFixed(1)}%`;
       if (left <= 0) ready = true;
     });
-    ($('#btn-collect', this.root) as HTMLButtonElement).hidden = !ready;
+    setHidden(($('#btn-collect', this.root) as HTMLButtonElement), !ready);
   }
 }
 
 /** A full-screen ad at a natural break, after the collapse animation. */
 function breakAd(ctx: Ctx): void {
   if (!interstitialAllowed(ctx.s)) return;
-  ctx.s.lastInterstitialAt = Date.now();
-  setTimeout(() => void showInterstitial(), 1800);
+  // The gap counts from an ad actually shown, so no fill does not cost the next break.
+  setTimeout(() => void showInterstitial().then((shown) => {
+    if (!shown) return;
+    ctx.s.lastInterstitialAt = Date.now();
+    ctx.save();
+  }), 1800);
 }
 
 export function stageName(earned: number): string {
-  return STAGES[stageFor(earned)].name;
+  return t(STAGES[stageFor(earned)].name);
 }
