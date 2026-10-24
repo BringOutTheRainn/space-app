@@ -1257,6 +1257,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 151. Start-up time unchanged on a slow phone.** Runs 121 to 150 added start-up work (the boot-failure scripts in index.html, reading the phone's language first, the clock fix, the save checks). Time from opening the page to the game running, with the CPU slowed 6x, six loads each, two rounds: this build 1,356 and 1,315 ms median, the build from 30 commits earlier 1,205 and 1,313 ms. The difference is within the run-to-run spread (about 1.0 to 1.7 s), so no change was needed.
 
+**Run 152. Tap target sweep in the late game.** Run 31's sweep (anything under 44 px without an invisible hit extender) ran on an early-game save, so the Garden, Forge, Warp Exchange and auto-buy windows were never in it, and many windows have changed since. Run on a late-game save at 360 px across every tab and window, including those four: nothing new under 44 px. The only hits are the seven known Settings checkboxes, which sit inside full-width toggle rows that are the real targets. No code changes were needed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
