@@ -1249,6 +1249,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 147. "What's new" checked in French and German.** The test that every "What's new" line is translated only looked at Spanish and Portuguese, written before French and German were added, so the first update could show French and German players English lines. It now checks all four languages and fails naming the missing one (tried with an untranslated line). `docs/RELEASE.md` now says to translate into all four, and its store listing section asks cj to fill in the Play contact email, since the crash screen and Settings now point players to it (run 146).
 
+**Run 148. Untranslated text fails the tests.** `tools/i18n-keys.mjs` lists English text (game data and every literal passed to `t()`) that a language lacks, but it only ran by hand, so a string added after launch could ship in English to Spanish, Portuguese, French and German players. `npm test`, which CI runs, now ends with it and fails when any of the four languages misses a string (all 869 are there today). Checked by adding an untranslated string: the run failed and listed it for each language.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

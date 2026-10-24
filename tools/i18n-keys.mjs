@@ -36,3 +36,7 @@ for (const [lang, dict] of [['es', ES], ['pt', PT], ['fr', FR], ['de', DE]]) {
   console.log(`${lang}: ${miss.length} missing of ${keys.size}`);
   if (process.argv.includes('--list')) for (const k of miss) console.log('  ' + JSON.stringify(k));
 }
+// `npm test` runs this too, so a new string without its translations fails the build.
+let total = 0;
+for (const dict of [ES, PT, FR, DE]) total += [...keys].filter((k) => !(k in dict)).length;
+if (total) process.exitCode = 1;

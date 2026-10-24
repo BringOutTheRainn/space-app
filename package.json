@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json --watch",
-    "test": "npm run build && node --test tests/*.test.js",
+    "test": "npm run build && node --test tests/*.test.js && node tools/i18n-keys.mjs --list",
     "serve": "npx http-server www -p 8080 -c-1",
     "sim": "npm run build && node tools/simulate.mjs",
     "screens": "npm run build && node tools/screens.mjs screens",
