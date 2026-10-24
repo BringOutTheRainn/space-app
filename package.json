@@ -18,18 +18,18 @@
     "preflight": "node tools/preflight.mjs"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0",
-    "typescript": "^5.6.0"
+    "@capacitor/cli": "7.6.9",
+    "typescript": "5.9.3"
   },
   "dependencies": {
-    "@capacitor-community/admob": "^7.0.0",
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/app": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
-    "@capacitor/haptics": "^7.0.0",
-    "@capacitor/local-notifications": "^7.0.0",
-    "@capacitor/preferences": "^7.0.0",
-    "@capacitor/splash-screen": "^7.0.0",
-    "cordova-plugin-purchase": "^13.10.0"
+    "@capacitor-community/admob": "7.2.0",
+    "@capacitor/android": "7.6.9",
+    "@capacitor/app": "7.1.2",
+    "@capacitor/core": "7.6.9",
+    "@capacitor/haptics": "7.0.5",
+    "@capacitor/local-notifications": "7.0.7",
+    "@capacitor/preferences": "7.0.4",
+    "@capacitor/splash-screen": "7.0.5",
+    "cordova-plugin-purchase": "13.19.1"
   }
 }
