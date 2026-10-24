@@ -1243,6 +1243,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 144. Clock fix covers the universe timer and weekend events.** Run 143 missed three stamps. The start of the current universe (Stats' "This universe started", how long a universe lasted in Recent universes, and the Dark Matter per hour the collapse hint uses) sat in the future after the clock went back, so Stats read "0s ago" for as long as the clock had moved. The weekend event's last tick did too, which froze event Flux. The game's own start date is fixed the same way. Checked in the test and in the game: Stats now counts up from the reload.
 
+**Run 145. One version number for updates.** The Play build takes its version name from `package.json`, while the game shows `VERSION` from `src/ui/menus.ts` in Settings, in error reports and to decide when to show "What's new". Bumping only one for the first update would label error reports with the wrong version and could skip "What's new". A test now fails when the two differ or a changelog entry is newer than the release, and the README's table lists the three places to touch for an update. Checked by bumping `package.json` alone: the test failed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

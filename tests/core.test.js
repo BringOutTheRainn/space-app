@@ -1666,3 +1666,13 @@ test('timers set under a clock that later went back do not stay locked', async (
   fixClockJump(s, now);
   assert.equal(JSON.stringify(s), before);
 });
+
+test('the in-game version matches package.json, which names the Play build', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+  const menus = readFileSync(new URL('../src/ui/menus.ts', import.meta.url), 'utf8');
+  assert.equal(menus.match(/export const VERSION = '([^']+)'/)?.[1], pkg);
+  const { CHANGELOG } = await import('../www/js/data/changelog.js');
+  const num = (v) => v.split('.').map(Number).reduce((a, x) => a * 1000 + x, 0);
+  for (const e of CHANGELOG) assert.ok(num(e.version) <= num(pkg), `changelog entry ${e.version} is newer than ${pkg}`);
+});
