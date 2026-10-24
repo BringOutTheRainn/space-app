@@ -1642,3 +1642,26 @@ test('an error repeated every frame is written to storage once a minute at most'
   assert.equal(JSON.parse(store['stardust-empire-errors']).length, 1);
   delete globalThis.localStorage;
 });
+
+test('timers set under a clock that later went back do not stay locked', async () => {
+  const { fixClockJump } = await import('../www/js/core/clock.js');
+  const s = newState();
+  const now = Date.UTC(2026, 9, 24), month = 30 * 24 * 3600000, h = 3600000;
+  const later = now + month;
+  Object.assign(s, { crystalNextAt: later + 20 * h, gardenFertilizeAt: later + 4 * h, forgeAdAt: later + 4 * h, vaultAt: later, forgeHeatAt: later, hyperEndsAt: later + h });
+  s.garden = [{ seed: 'x', plantedAt: later }, null];
+  s.expeditions = [{ id: 'x', startedAt: later, returnsAt: later + 2 * h }];
+  fixClockJump(s, now);
+  assert.equal(s.crystalNextAt, now + 20 * h);
+  assert.equal(s.gardenFertilizeAt, now + 4 * h);
+  assert.equal(s.forgeAdAt, now + 4 * h);
+  assert.equal(s.vaultAt, now);
+  assert.equal(s.forgeHeatAt, now);
+  assert.equal(s.hyperEndsAt, now);
+  assert.equal(s.garden[0].plantedAt, now);
+  assert.deepEqual([s.expeditions[0].startedAt, s.expeditions[0].returnsAt], [now, now + 2 * h]);
+  // A right clock changes nothing.
+  const before = JSON.stringify(s);
+  fixClockJump(s, now);
+  assert.equal(JSON.stringify(s), before);
+});

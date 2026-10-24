@@ -2,6 +2,7 @@
 
 import { GENERATORS } from '../data/generators.js';
 import { earn, HYPER_MULT, type Derived } from './economy.js';
+import { fixClockJump } from './clock.js';
 import { EVENT_GENS } from './event.js';
 import { seedById, type Plot } from './garden.js';
 import { GOODS, HISTORY } from './market.js';
@@ -178,6 +179,7 @@ export interface OfflineResult {
  * comet boosts expire.
  */
 export function applyOffline(s: GameState, d: Derived, now = Date.now()): OfflineResult {
+  fixClockJump(s, now);
   const seconds = Math.max(0, (now - s.lastSeen) / 1000);
   const from = s.lastSeen;
   s.lastSeen = now;
