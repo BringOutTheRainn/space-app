@@ -34,6 +34,8 @@ export function recordError(where: string, err: unknown): void {
   const msg = e.message.slice(0, 300);
   // The same error every frame would flood the log; keep one copy per message.
   const same = list.find((x) => x.msg === msg && x.where === where);
+  // An error in every frame would otherwise rewrite storage 60 times a second.
+  if (same && Date.now() - same.t < 60_000) return;
   if (same) same.t = Date.now();
   else list.push({ t: Date.now(), where, msg, stack: (e.stack ?? '').split('\n').slice(0, 4).join('\n') });
   while (list.length > MAX_ERRORS) list.shift();

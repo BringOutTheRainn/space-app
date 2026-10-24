@@ -1237,6 +1237,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 141. Old error reports expire.** Once the game caught an error, Settings showed a Problems section ("The game caught an error...") with a Copy error report button, and nothing ever cleared it: a player hit by a bug that a later update fixed would see the warning forever. Saved errors older than seven days are now dropped when the log is read, so the section goes away a week after the last error. A new test covers it (it fails on the old code), and in the game Settings shows Problems for a one-day-old error and not for an eight-day-old one.
 
+**Run 142. A repeating error no longer hammers storage.** If something broke in every frame, the game kept running (as designed) but rewrote the saved error log to storage on every frame, about 60 times a second, which costs battery and stutters a slow phone that is already in trouble. A repeat of an error already logged is now written at most once a minute. In the game, three seconds of an error in every frame wrote the log 180 times before and once now; the game kept running and showed its one warning toast. A new test covers it.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

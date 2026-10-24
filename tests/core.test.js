@@ -1631,3 +1631,14 @@ test('old error reports expire after a week', async () => {
   assert.deepEqual(kept, ['recent bug', 'new bug']);
   delete globalThis.localStorage;
 });
+
+test('an error repeated every frame is written to storage once a minute at most', async () => {
+  const store = {}; let writes = 0;
+  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { writes++; store[k] = String(v); }, removeItem: (k) => { delete store[k]; } };
+  const { recordError, clearErrors } = await import('../www/js/ui/errors.js');
+  clearErrors();
+  for (let i = 0; i < 600; i++) recordError('frame', new Error('every frame'));
+  assert.equal(writes, 1);
+  assert.equal(JSON.parse(store['stardust-empire-errors']).length, 1);
+  delete globalThis.localStorage;
+});
