@@ -1283,6 +1283,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 164. Pull request description rewritten for merging.** PR #1's description still described its first commit (raising the Android target to API 36), although the branch now holds the whole launch sprint, 169 commits. It now says what the branch adds in plain groups (Play requirements, save safety, stability, game systems, ads and purchases, accessibility, store assets, build), lists what cj must do before merging (AdMob IDs, test mode off, the `ADMOB_APP_ID` variable), and points to `docs/RELEASE.md`. The title is now "Stardust Empire launch build for Google Play". No code changed.
 
+**Run 165. README explains translations.** Since run 148, any new text players see fails the tests until it has Spanish, Portuguese, French and German lines, but the README's "To do this, edit" table did not say so, so adding a headline or generator looked like a one-file change. The README now says where the translations go (`src/i18n/*.ts`, and `*-data.ts` for game data) and that `npm test` lists what is missing. Checked by adding an untranslated headline, which failed two tests that named it.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

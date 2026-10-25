@@ -64,6 +64,10 @@ tests/         Rule tests
 | Change the app icon | `www/icon.svg` and `resources/icon-foreground.svg`, then `npm run icons` |
 | Release an update | See `docs/RELEASE.md`, Later releases |
 
+The game is in English, Spanish, Portuguese, French and German. Any new text players see also needs
+a line in `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (game data such as generator, upgrade and
+achievement names goes in the matching `*-data.ts` files). `npm test` lists anything still missing.
+
 Saves live in local storage under `stardust-empire-save`, are versioned, and migrate through
 `MIGRATIONS` in `src/core/save.ts`. Players can copy and load a save code from Settings.
 
