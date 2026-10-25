@@ -1295,6 +1295,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 170. A full generator card on small phones.** On a 320x568 screen late in the game, the Garden, Forge and Market buttons pushed the first generator card under the tab bar, so no card could be read without scrolling. Below 600 px tall the sky now takes 32% (at least 176 px) and the minigame buttons are 8 px shorter, so the first card ends above the tabs. Taller phones are unchanged; the fit and contrast checks still pass.
 
+**Run 171. Minigame buttons on a phone held sideways.** In landscape the Build list gets half the screen, so the Garden, Forge and Market buttons were about as narrow as on a small phone, but kept the wide layout and cut every subtitle to a few letters ("Plots e..."). Landscape phones from 560 to 859 px wide now use the stacked small-phone layout, and below 700 px the icons are dropped. All five languages fit at 640x360, 740x360 and 854x400. The fit check also runs at 640x360 now.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

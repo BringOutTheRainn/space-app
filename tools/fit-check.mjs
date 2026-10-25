@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-// Text fit check: every tab and window, late game, in all five languages on 320 and 360 px phones.
+// Text fit check: every tab and window, late game, in all five languages on 320 and 360 px phones and a phone held sideways (640x360).
 // Reports text cut off by its box and English left in a translated screen; exits 1 if any.
 // Text shortened with an ellipsis on purpose is listed only with --ellipsis.
 // Serve www/ on port 8766 first (npx http-server www -p 8766), then: node tools/fit-check.mjs [--ellipsis]
@@ -8,7 +8,7 @@ let pw;
 try { pw = require('playwright'); } catch { pw = require('/opt/node22/lib/node_modules/playwright'); }
 const SHOW_ELLIPSIS = process.argv.includes('--ellipsis');
 const LANGS = ['en', 'es', 'pt', 'fr', 'de'];
-const WIDTHS = [[320, 568], [360, 640]];
+const WIDTHS = [[320, 568], [360, 640], [640, 360]];
 const WINDOWS = ['openStats', 'openSettings', 'openHyperdrive', 'openCrystals', 'openGarden', 'openEvent', 'openForge',
   'openMarket', 'openPass', 'openMissions', 'openDaily', 'openShop', 'showRatingPrompt'];
 // Common English words; finding one on a translated screen means a string was missed.
