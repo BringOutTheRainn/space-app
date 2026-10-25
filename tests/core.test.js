@@ -40,6 +40,11 @@ test('formats numbers', () => {
   setNumberLocale('fr-FR'); assert.equal(fmtTime(90000), '1j 1h');
   setNumberLocale('de-DE'); assert.equal(fmtTime(90000), '1T 1h'); assert.equal(fmtTime(125), '2m 05s');
   setNumberLocale('en-US'); assert.equal(fmtTime(90000), '1d 1h');
+  // The decimal mark comes from the region: Spain writes 3,02B, Latin America 3.02B.
+  setNumberLocale('es-ES'); assert.equal(fmt(3.02e9), '3,02B');
+  setNumberLocale('es-419'); assert.equal(fmt(3.02e9), '3.02B');
+  setNumberLocale('de-CH'); assert.equal(fmt(3.02e9), '3.02B');
+  setNumberLocale('en-US');
   assert.equal(fmtPercent(0.0001), '<0.1%');
   assert.equal(fmtPercent(0.25), '25%');
   assert.equal(fmtPercent(19.3), '1,930%');
@@ -1114,6 +1119,14 @@ test('language setting falls back to English and fills placeholders', async () =
   assert.equal(i18n.resolveLang('auto', 'de'), 'de');
   assert.equal(i18n.resolveLang('it', 'fr'), 'fr', 'unknown setting falls back to the device');
   assert.equal(i18n.resolveLang('xx', 'it'), 'en');
+  // The first of the phone's languages the game has wins, not only the first one listed.
+  assert.equal(i18n.deviceLang(['ca-ES', 'es-ES']), 'es');
+  assert.equal(i18n.deviceLang(['it-IT', 'en-GB', 'de-DE']), 'en');
+  assert.equal(i18n.deviceLang([]), 'en');
+  // Numbers follow the phone's region when it speaks the game's language.
+  assert.equal(i18n.numberLocale('es', ['es-ES']), 'es-ES');
+  assert.equal(i18n.numberLocale('es', ['ca-ES', 'es-MX']), 'es-MX');
+  assert.equal(i18n.numberLocale('fr', ['en-US']), 'fr-FR');
   assert.equal(i18n.setLanguage('xx'), i18n.resolveLang('auto'));
   assert.equal(i18n.resolveLang('auto', 'es'), 'es');
   assert.equal(i18n.resolveLang('auto', 'pt'), 'pt');

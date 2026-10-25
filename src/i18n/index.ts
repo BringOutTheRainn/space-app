@@ -20,12 +20,38 @@ const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR', 
 const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT, fr: FR, de: DE };
 
 let lang: Lang = 'en';
+let numLocale = 'en-US';
 let dict: Record<string, string> | null = null;
 const missing = new Set<string>();
 
-export function deviceLang(): Lang {
-  const code = (typeof navigator === 'undefined' ? 'en' : navigator.language || 'en').slice(0, 2).toLowerCase();
-  return code === 'es' || code === 'pt' || code === 'fr' || code === 'de' ? code : 'en';
+/** The phone's preferred languages in order (a phone set to Catalan, then Spanish, lists both). */
+function deviceLocales(): string[] {
+  if (typeof navigator === 'undefined') return [];
+  const list = navigator.languages?.length ? navigator.languages : [navigator.language];
+  return list.filter((x): x is string => typeof x === 'string' && x.length >= 2);
+}
+
+/** The first of the phone's languages that the game has, or English. */
+export function deviceLang(locales: readonly string[] = deviceLocales()): Lang {
+  for (const tag of locales) {
+    const code = tag.slice(0, 2).toLowerCase();
+    if (code === 'en' || (AUTO_LANGS as string[]).includes(code)) return code as Lang;
+  }
+  return 'en';
+}
+
+/** Numbers follow the phone's own region when it speaks the game's language (Spain writes 3,02B,
+ *  Latin America 3.02B); otherwise the language's usual region. */
+export function numberLocale(game: Lang, locales: readonly string[] = deviceLocales()): string {
+  const own = locales.find((tag) => tag.slice(0, 2).toLowerCase() === game);
+  if (own) {
+    try {
+      return Intl.NumberFormat.supportedLocalesOf([own]).length ? own : LOCALES[game];
+    } catch {
+      return LOCALES[game];
+    }
+  }
+  return LOCALES[game];
 }
 
 export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): Lang {
@@ -37,7 +63,8 @@ export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): 
 export function setLanguage(setting: LangSetting): Lang {
   lang = resolveLang(setting);
   dict = DICTS[lang];
-  setNumberLocale(LOCALES[lang]);
+  numLocale = numberLocale(lang);
+  setNumberLocale(numLocale);
   if (typeof document !== 'undefined') document.documentElement.lang = lang;
   return lang;
 }
@@ -70,7 +97,7 @@ export type Phrase = [string, Record<string, PhraseArg>];
 export function phrase([tpl, vars]: Phrase): string {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(vars)) {
-    out[k] = typeof v === 'string' ? t(v) : typeof v === 'number' ? v.toLocaleString(LOCALES[lang]) : fmt(v.big);
+    out[k] = typeof v === 'string' ? t(v) : typeof v === 'number' ? v.toLocaleString(numLocale) : fmt(v.big);
   }
   return t(tpl, out);
 }

@@ -1317,6 +1317,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 182. app-ads.txt without a website.** The release guide said to put app-ads.txt on the developer website, but a personal account may not have one. It now gives the free route: a BringOutTheRainn.github.io repository with the one AdMob line, GitHub Pages turned on, and that address as the Play Console website. Also checked: the page holds about 2.4k elements on a heavy late-game save, and the hidden tabs cost no style work, so nothing needed trimming.
 
+**Run 183. Language and number style from the phone.** Only the phone's first language was checked, so a phone set to Catalan then Spanish got English; the game now takes the first of the phone's languages it has. Numbers used one region per language (Latin American Spanish, Brazilian Portuguese), so players in Spain and Portugal saw 3.02B where they write 3,02B. Numbers now follow the phone's own region when it speaks the game's language, and the decimal mark comes from that region (Swiss German keeps 3.02B). Checked in the browser with es-ES, es-MX, de-CH, pt-PT and it-IT; tests cover the language order and the marks.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

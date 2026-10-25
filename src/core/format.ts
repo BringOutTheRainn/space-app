@@ -12,7 +12,7 @@ export function setNumberStyle(s: NumberStyle): void {
   style = s;
 }
 
-// Brazil, France and Germany write 2,5 for two and a half.
+// Most of Europe and Brazil write 2,5 for two and a half; the locale itself says which mark it uses.
 let locale = 'en-US';
 let comma = false;
 // Hours, minutes and seconds are the same symbols everywhere; the day is "j" (jour) in French and
@@ -22,7 +22,11 @@ let dayUnit = 'd';
 export function setNumberLocale(tag: string): void {
   locale = tag;
   spokenFmt = sciFmt = null;
-  comma = tag.startsWith('pt') || tag.startsWith('fr') || tag.startsWith('de');
+  try {
+    comma = new Intl.NumberFormat(tag).format(1.5).includes(',');
+  } catch {
+    comma = tag.startsWith('pt') || tag.startsWith('fr') || tag.startsWith('de');
+  }
   dayUnit = tag.startsWith('fr') ? 'j' : tag.startsWith('de') ? 'T' : 'd';
 }
 
