@@ -1301,6 +1301,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 173. Whole descriptions on the Build tab.** After run 172, the only Build-tab text still shortened at 320x568 was the description on a generator not bought yet ("Every shortcut in spacetime, and a few...") and the "Buy the one above to discover" hint in French and German. The card subtitle may now take two lines too, so a new player reads the whole first description. The fit check with --ellipsis now lists nothing on the Build tab at 320x568, 360x640 or 640x360 in any language, and the first card on a 568 px phone still ends above the tabs.
 
+**Run 174. Store screenshots retaken.** After the layout fixes in runs 170 to 173, the 40 phone screenshots (8 per language) were taken again with tools/store-shots.mjs and copied into the store folder (en at the top, es-419, pt-BR, fr-FR and de-DE in their folders). No page errors; the Portuguese shot now shows "Colheitadeira de Asteroides" whole. The tablet shots were left as they were, since the tablet layout did not change.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
