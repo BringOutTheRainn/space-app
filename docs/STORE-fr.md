@@ -1,9 +1,10 @@
 # Google Play listing: French
 
 Add this in Play Console under **Grow > Store presence > Main store listing > Manage translations > Add
-your own translations**, as **French (France) – fr-FR**. Play shows it to French speakers everywhere
-(France, Belgium, Switzerland, Canada and Africa) unless you add a separate fr-CA listing. The whole
-game is translated: phones set to French start in French, and players can switch in Settings.
+your own translations**, as **French (France) – fr-FR**. Play lists French (Canada) fr-CA as a separate
+language and documents only the fallback to the default (English) page, so also add fr-CA with the
+same text and screenshots; the release notes have a block for it. The whole game is translated:
+phones set to French start in French, and players can switch in Settings.
 
 **Phone screenshots.** Regenerate with `npm run build && node tools/store-shots.mjs <dir> fr` and upload
 them under the French translation's Graphics section. The icon and feature graphic have no text, so the
@@ -72,4 +73,14 @@ Bienvenue dans Stardust Empire !
 • Jouable hors ligne, en français, anglais, espagnol, portugais et allemand
 Merci de jouer ! Donnez-nous votre avis.
 </fr-FR>
+<fr-CA>
+Bienvenue dans Stardust Empire !
+• Touchez votre astéroïde et faites-en un trou noir
+• 14 générateurs, plus de 150 améliorations et plus de 150 succès
+• Attrapez des comètes pour des Ruées et des Butins chanceux
+• Effondrez l'univers pour de la Matière noire et des améliorations permanentes
+• Expéditions, Bourse de distorsion, Jardin de la Nébuleuse et événements du week-end
+• Jouable hors ligne, en français, anglais, espagnol, portugais et allemand
+Merci de jouer ! Donnez-nous votre avis.
+</fr-CA>
 ```

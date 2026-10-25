@@ -1319,6 +1319,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 183. Language and number style from the phone.** Only the phone's first language was checked, so a phone set to Catalan then Spanish got English; the game now takes the first of the phone's languages it has. Numbers used one region per language (Latin American Spanish, Brazilian Portuguese), so players in Spain and Portugal saw 3.02B where they write 3,02B. Numbers now follow the phone's own region when it speaks the game's language, and the decimal mark comes from that region (Swiss German keeps 3.02B). Checked in the browser with es-ES, es-MX, de-CH, pt-PT and it-IT; tests cover the language order and the marks.
 
+**Run 184. Regional Play listings.** Play Console lists Spanish (Spain) es-ES, Spanish (US) es-US, Portuguese (Portugal) pt-PT and French (Canada) fr-CA as separate languages from es-419, pt-BR and fr-FR, and Google documents only the fallback to the default English page. The store guides now say to add those four with the same text and screenshots, the release notes have a block for each (tests check all nine fit 500 characters and count the game's real content), and the French guide no longer claims Play shows fr-FR to Canada. Copies in the store folder were refreshed. Settings and number input needed nothing after run 183.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

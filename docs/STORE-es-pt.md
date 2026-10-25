@@ -5,6 +5,14 @@ your own translations**, as **Spanish (Latin America) – es-419** and **Portugu
 The whole game is translated: phones set to Spanish or Portuguese start in that language, and players
 can switch in Settings.
 
+**Spain, the US and Portugal.** Play Console treats Spanish (Spain) es-ES, Spanish (United States)
+es-US and Portuguese (Portugal) pt-PT as separate languages. Google documents only the fallback to
+the default (English) page, so players there may see English unless those are added too. Add them
+with the same text and screenshots: the Spanish below avoids
+regional words, and Portuguese readers in Portugal read the Brazilian text without trouble. The game
+itself already plays in Spanish or Portuguese on those phones and writes numbers the local way
+(3,02B in Spain and Portugal). The release notes have blocks for all three.
+
 **Phone screenshots.** Each language has its own set of 8 (1080 x 1920, same order as English), with
 translated captions and the game itself in that language: `store/es-419/01_tap.png` … `08_missions.png`
 and `store/pt-BR/01_tap.png` … `08_missions.png` in the project files. Upload them under each

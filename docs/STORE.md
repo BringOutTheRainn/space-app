@@ -113,6 +113,8 @@ tablets when they are uploaded. Spanish, Portuguese, French and German versions 
 
 Paste into **Release notes** when creating the release (closed test and production). Play limits
 each language to 500 characters; these are 439 to 500, and tests check them. Keep the language tags.
+Play asks for notes only in the languages the listing has; es-ES, es-US and pt-PT repeat es-419 and
+pt-BR for the regional listings described in `docs/STORE-es-pt.md`.
 
 ```
 <en-US>
@@ -135,6 +137,26 @@ Thanks for playing! Tell us what you think in a review.
 • Funciona sin conexión, en español, inglés, portugués, francés y alemán
 ¡Gracias por jugar! Cuéntanos qué opinas en una reseña.
 </es-419>
+<es-ES>
+¡Bienvenido a Stardust Empire!
+• Toca tu asteroide y conviértelo en un agujero negro
+• 14 generadores, más de 150 mejoras y más de 150 logros
+• Atrapa cometas para ganar Ráfagas de Polvo Estelar y Botines de la suerte
+• Colapsa el universo por Materia Oscura y mejoras permanentes
+• Expediciones, el Intercambio Warp, el Jardín de la Nebulosa y eventos de fin de semana
+• Funciona sin conexión, en español, inglés, portugués, francés y alemán
+¡Gracias por jugar! Cuéntanos qué opinas en una reseña.
+</es-ES>
+<es-US>
+¡Bienvenido a Stardust Empire!
+• Toca tu asteroide y conviértelo en un agujero negro
+• 14 generadores, más de 150 mejoras y más de 150 logros
+• Atrapa cometas para ganar Ráfagas de Polvo Estelar y Botines de la suerte
+• Colapsa el universo por Materia Oscura y mejoras permanentes
+• Expediciones, el Intercambio Warp, el Jardín de la Nebulosa y eventos de fin de semana
+• Funciona sin conexión, en español, inglés, portugués, francés y alemán
+¡Gracias por jugar! Cuéntanos qué opinas en una reseña.
+</es-US>
 <pt-BR>
 Bem-vindo ao Stardust Empire!
 • Toque no seu asteroide e transforme-o em um buraco negro
@@ -145,6 +167,16 @@ Bem-vindo ao Stardust Empire!
 • Funciona offline, em português, inglês, espanhol, francês e alemão
 Obrigado por jogar! Conte o que achou em uma avaliação.
 </pt-BR>
+<pt-PT>
+Bem-vindo ao Stardust Empire!
+• Toque no seu asteroide e transforme-o em um buraco negro
+• 14 geradores, mais de 150 melhorias e mais de 150 conquistas
+• Pegue cometas para ganhar Rajadas de Poeira Estelar e Saques da sorte
+• Colapse o universo para ganhar Matéria Escura e melhorias permanentes
+• Expedições, a Bolsa de Dobra, o Jardim da Nebulosa e eventos de fim de semana
+• Funciona offline, em português, inglês, espanhol, francês e alemão
+Obrigado por jogar! Conte o que achou em uma avaliação.
+</pt-PT>
 ```
 
 ## Closed test (required for new personal accounts)

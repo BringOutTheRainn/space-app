@@ -1429,9 +1429,9 @@ test('Play release notes fit the 500 character limit in every language', async (
   const { readFileSync } = await import('node:fs');
   const doc = readFileSync('docs/STORE.md', 'utf8');
   const notes = [...doc.matchAll(/<([\w-]+)>\n([\s\S]*?)\n<\/\1>/g)];
-  assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'pt-BR']);
+  assert.deepEqual(notes.map((m) => m[1]), ['en-US', 'es-419', 'es-ES', 'es-US', 'pt-BR', 'pt-PT']);
   for (const m of notes) assert.ok(m[2].length <= 500, `${m[1]}: ${m[2].length}`);
-  for (const [file, tag] of [['docs/STORE-fr.md', 'fr-FR'], ['docs/STORE-de.md', 'de-DE']]) {
+  for (const [file, tag] of [['docs/STORE-fr.md', 'fr-FR'], ['docs/STORE-fr.md', 'fr-CA'], ['docs/STORE-de.md', 'de-DE']]) {
     const m = readFileSync(file, 'utf8').match(new RegExp(`<${tag}>\\n([\\s\\S]*?)\\n</${tag}>`));
     assert.ok(m, `${file} has ${tag} notes`);
     assert.ok(m[1].length <= 500, `${tag}: ${m[1].length}`);
@@ -1730,7 +1730,7 @@ test('Play release notes count the generators, upgrades and achievements the gam
       }
     }
   }
-  assert.deepEqual(langs.sort(), ['de-DE', 'en-US', 'es-419', 'fr-FR', 'pt-BR']);
+  assert.deepEqual(langs.sort(), ['de-DE', 'en-US', 'es-419', 'es-ES', 'es-US', 'fr-CA', 'fr-FR', 'pt-BR', 'pt-PT']);
   // The full descriptions make the same claims.
   for (const f of ['STORE.md', 'STORE-es-pt.md', 'STORE-fr.md', 'STORE-de.md']) {
     const doc = readFileSync(`docs/${f}`, 'utf8');
