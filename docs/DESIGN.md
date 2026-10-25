@@ -1287,6 +1287,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 166. Text fit check kept in the repo.** Clipped-text and leftover-English scans had been one-off scripts outside the repo. `tools/fit-check.mjs` now opens every tab and window in a late-game save in all five languages at 320 and 360 px, and fails on text cut off without an ellipsis, English words on a translated screen, or page errors. Today's result is clean. On 320 px phones some labels are shortened with "..." by design (generator flavour lines, a few Garden, Forge and Market subtitles, and long generator names in French and Spanish); `--ellipsis` lists them. Checked by turning the minigame subtitles' ellipsis into a hard cut, which the tool reported. README and the release steps in docs/RELEASE.md now mention it, and the package note in RELEASE.md moved below the numbered steps.
 
+**Run 167. Random-tap release check kept in the repo.** The random-tap test behind every release check since run 97 was also a one-off script. `tools/monkey.mjs` now taps random visible controls (never reset or import) 300 times in six sessions: a new game in English, Portuguese and German and a late-game save in Spanish, French and English. It fails on a page error, a negative or non-finite total, or a save that does not reload. Today all six passed (18 to 26 kinds of control each, about two minutes). Checked by making Settings throw, which five of the six sessions caught. README and the release steps list it.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

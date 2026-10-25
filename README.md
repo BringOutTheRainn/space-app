@@ -39,6 +39,7 @@ npm test                          # builds, then runs tests/*.test.js with Node'
 node tools/simulate.mjs 12 3      # a greedy bot plays 12 hours at 3 taps/s and prints milestones
 npm run screens                   # headless Chromium screenshots at phone size into screens/
 node tools/fit-check.mjs          # with www/ served on port 8766: cut-off text or leftover English, 5 languages
+node tools/monkey.mjs             # with www/ served on port 8766: random taps in 5 languages, new and late game
 node tools/contrast-check.mjs     # with www/ served on port 8766: text contrast on every tab and window
 ```
 

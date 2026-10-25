@@ -130,6 +130,7 @@ For each update after the first:
 3. Write the Play "What's new" release notes from the same lines (500 characters per language).
 4. If you changed screens or text, serve the game (`npx http-server www -p 8766`) and run
    `node tools/fit-check.mjs` (text cut off or left in English, in all five languages) and
-   `node tools/contrast-check.mjs` (text too faint to read).
+   `node tools/contrast-check.mjs` (text too faint to read). Before every release also run `node tools/monkey.mjs`, which taps
+   random buttons in all five languages and fails on any error or a save that does not reload.
 
 The game's packages are pinned to exact versions in `package.json`, and `package-lock.json` fixes everything they depend on, so every build (CI runs `npm ci`) uses the same Capacitor, AdMob and billing code. To move to newer ones, change the numbers on purpose, run `npm install` to update the lockfile, then check the Android build and test ads and purchases on a phone before releasing.
