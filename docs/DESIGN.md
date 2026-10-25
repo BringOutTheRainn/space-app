@@ -1313,6 +1313,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 179. Text cut after two lines.** The fit check now also sees text clamped to a few lines that still ends in "..." (it only looked for one-line cuts before). It found the Wormhole Network description cut at two lines in French and German on a 320 px phone, and at 130% Android text three generator names ("Sifón de Gigante Gaseoso") and that description in every language. Descriptions may take three lines (four with large text), and with large text a name may take three. With --ellipsis, nothing on any screen is shortened at normal or 130% text, at 320x568, 360x640 or 640x360, in all five languages.
 
+**Run 181. Performance check, 160 runs after run 18.** With a heavy late-game save (all 14 generator types, about 6.9k DOM nodes), every tab holds 60 fps at full speed, with 1.1 to 1.5 ms of script and under 0.2 ms of style work a frame (run 18 measured about 2 ms), and the heap stays at 4 to 5 MB. With the CPU slowed 4x, tabs run at 29 to 38 fps in a headless browser that paints in software. Battery saver halves script work at full speed (Build tab: 97 to 47 ms a second). No code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
