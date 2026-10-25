@@ -1739,3 +1739,32 @@ test('packages are pinned to exact versions that match the lockfile', async () =
     assert.equal(lock.packages[`node_modules/${name}`]?.version, want, `${name} in package-lock.json`);
   }
 });
+
+test('daily, weekly and weekend timers follow local midnight across a clock change', async () => {
+  const { contractTimeLeft } = await import('../www/js/core/contracts.js');
+  const { eventTimeLeft, eventActive } = await import('../www/js/core/event.js');
+  const { seasonTimeLeft } = await import('../www/js/core/pass.js');
+  const before = process.env.TZ;
+  process.env.TZ = 'Europe/London';
+  try {
+    const h = (ms) => ms / 3.6e6;
+    // Clocks go back at 02:00 BST on Sunday 25 October 2026, so that Sunday lasts 25 hours.
+    const sun = Date.parse('2026-10-24T23:30:00Z'); // 00:30 BST Sunday
+    assert.equal(new Date(sun).getDay(), 0);
+    assert.equal(h(contractTimeLeft(sun)), 24.5);
+    assert.ok(eventActive(sun));
+    assert.equal(h(eventTimeLeft(sun)), 24.5);
+    const mon = Date.parse('2026-10-26T00:00:00Z'); // midnight GMT Monday
+    assert.equal(dayNumber(mon) - dayNumber(sun), 1);
+    assert.equal(dayNumber(mon - 1) , dayNumber(sun));
+    assert.ok(!eventActive(mon));
+    assert.equal(h(contractTimeLeft(mon)), 7 * 24);
+    assert.equal(seasonTimeLeft(sun) - seasonTimeLeft(mon), mon - sun);
+    // Clocks go forward at 01:00 GMT on Sunday 29 March 2026, so that Sunday lasts 23 hours.
+    const spring = Date.parse('2026-03-29T00:30:00Z'); // 00:30 GMT Sunday
+    assert.equal(h(contractTimeLeft(spring)), 22.5);
+    assert.equal(dayNumber(Date.parse('2026-03-29T23:00:00Z')) - dayNumber(spring), 1); // midnight BST Monday
+  } finally {
+    if (before === undefined) delete process.env.TZ; else process.env.TZ = before;
+  }
+});

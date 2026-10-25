@@ -1279,6 +1279,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 162. Play product table checked against the Shop.** docs/RELEASE.md tells cj which in-app products to create in Play Console. A test already checked every Shop id is in that table. A new test also checks each row's type and price: a consumable created as one-time in Play Console could never be bought twice, and a different price would confuse players. The prices in docs/STORE.md's content answers are checked too. Everything matched. Checked by marking Crystal Cluster as one-time in the table, which failed the test.
 
+**Run 163. Timers checked across the clock change.** Clocks went back in the UK and EU this morning (Sunday 25 October), so today lasts 25 hours there, and they go forward on the last Sunday of March. The daily reward, wheel, weekly contract, weekend event and Star Pass timers all count to local midnight with calendar dates, not fixed 24-hour steps, and a London-time check showed every countdown correct on both days (24.5 hours from 00:30 on this Sunday to Monday, 22.5 hours on the spring Sunday). A new test locks this in. Checked by making the day counter use a fixed offset, which failed the test.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
