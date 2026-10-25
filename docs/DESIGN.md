@@ -1321,6 +1321,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 184. Regional Play listings.** Play Console lists Spanish (Spain) es-ES, Spanish (US) es-US, Portuguese (Portugal) pt-PT and French (Canada) fr-CA as separate languages from es-419, pt-BR and fr-FR, and Google documents only the fallback to the default English page. The store guides now say to add those four with the same text and screenshots, the release notes have a block for each (tests check all nine fit 500 characters and count the game's real content), and the French guide no longer claims Play shows fr-FR to Canada. Copies in the store folder were refreshed. Settings and number input needed nothing after run 183.
 
+**Run 185. Full checks after runs 176 to 184.** The release check passes all six checks, including the new 130% text pass: random taps in five languages, text fit at normal and 130% text, contrast, 40 damaged saves with 0 errors, and the soak (heap 3.3 MB, no errors). It took about 17 minutes. The pacing simulation is unchanged at 3 taps a second: first Dark Matter at 1h 24m, the Cosmos tab at 2h 5m. No code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
