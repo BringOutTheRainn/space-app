@@ -1299,6 +1299,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 172. Full generator names in every language.** Listing every "..." at 640x360 showed long translated generator names cut short, and the same happened on 320 and 360 px portrait phones: "Colheitadeira de Ast...", "Rede de Buracos de Min...", "Sifón de Gigante Gas...". A name may now take a second line (balanced, at most two), so only those cards grow a little. No name is cut in any language at 320x568, 360x640 or 640x360, the first card on a 568 px phone still ends above the tabs, and the fit and contrast checks pass.
 
+**Run 173. Whole descriptions on the Build tab.** After run 172, the only Build-tab text still shortened at 320x568 was the description on a generator not bought yet ("Every shortcut in spacetime, and a few...") and the "Buy the one above to discover" hint in French and German. The card subtitle may now take two lines too, so a new player reads the whole first description. The fit check with --ellipsis now lists nothing on the Build tab at 320x568, 360x640 or 640x360 in any language, and the first card on a 568 px phone still ends above the tabs.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
