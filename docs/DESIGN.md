@@ -1297,6 +1297,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 171. Minigame buttons on a phone held sideways.** In landscape the Build list gets half the screen, so the Garden, Forge and Market buttons were about as narrow as on a small phone, but kept the wide layout and cut every subtitle to a few letters ("Plots e..."). Landscape phones from 560 to 859 px wide now use the stacked small-phone layout, and below 700 px the icons are dropped. All five languages fit at 640x360, 740x360 and 854x400. The fit check also runs at 640x360 now.
 
+**Run 172. Full generator names in every language.** Listing every "..." at 640x360 showed long translated generator names cut short, and the same happened on 320 and 360 px portrait phones: "Colheitadeira de Ast...", "Rede de Buracos de Min...", "Sifón de Gigante Gas...". A name may now take a second line (balanced, at most two), so only those cards grow a little. No name is cut in any language at 320x568, 360x640 or 640x360, the first card on a 568 px phone still ends above the tabs, and the fit and contrast checks pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

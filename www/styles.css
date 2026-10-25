@@ -391,7 +391,10 @@ body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
 .gen-ico { width: 50px; height: 50px; flex: none; border-radius: 12px; background: rgba(0, 0, 0, .25); padding: 3px; }
 .gen.mystery .gen-ico { filter: brightness(0) drop-shadow(0 0 1px #5a6292); }
 .gen-main { flex: 1; min-width: 0; }
-.gen-name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Long translated names ("Colheitadeira de Asteroides") were cut to "Colheitadeira de Ast..." on
+   phones, so a name may take a second line; only those cards grow. */
+.gen-name { font-weight: 700; font-size: 16px; line-height: 1.2; overflow: hidden; overflow-wrap: anywhere; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
 .gen-price { font-weight: 700; font-size: 14px; color: var(--red); display: flex; align-items: center; font-variant-numeric: tabular-nums; }
 .gen.afford .gen-price { color: var(--green); }
 .gen-price .q { color: var(--dim); font-weight: 600; margin-left: 4px; }
