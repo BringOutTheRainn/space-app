@@ -406,9 +406,13 @@ body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
 .gen.afford .gen-price { color: var(--green); }
 .gen-price .q { color: var(--dim); font-weight: 600; margin-left: 4px; }
 /* The description on a card not bought yet, and "Buy the one above to discover" in French and
-   German, ran past one line on phones; two lines show them whole. Stats stay on one line. */
+   German, ran past one line on phones; up to three lines show them whole (the longest, the
+   Wormhole Network's in French and German, needs three on a 320 px phone). */
 .gen-sub { color: var(--dim); font-size: 12px; line-height: 1.3; overflow: hidden;
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+/* Large Android text: "Sifón de Gigante Gaseoso" needs three lines, the French description four. */
+.big-text .gen-name { -webkit-line-clamp: 3; line-clamp: 3; }
+.big-text .gen-sub { -webkit-line-clamp: 4; line-clamp: 4; }
 .gen-owned { font-size: 30px; font-weight: 800; color: rgba(233, 237, 255, .5); font-variant-numeric: tabular-nums; }
 
 /* ------------------------------------------------------------------ upgrades */

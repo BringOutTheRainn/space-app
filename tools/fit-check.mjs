@@ -43,10 +43,13 @@ for (const lang of LANGS) for (const [width, height] of WIDTHS) {
       const out = [];
       for (const e of document.querySelectorAll('body *')) {
         if (!e.offsetParent || e.children.length > 1 || e.closest('.news,.ticker,#news,.sr-only')) continue;
-        if (getComputedStyle(e).overflow === 'visible') continue;
-        if (e.scrollWidth <= e.clientWidth + 2) continue;
-        // A trailing "..." is a deliberate one-line layout; text cut with no ellipsis is a bug.
-        if (getComputedStyle(e).textOverflow === 'ellipsis') { if (showEllipsis) out.push('shortened: ' + e.textContent.trim().slice(0, 70)); }
+        const cs = getComputedStyle(e);
+        if (cs.overflow === 'visible') continue;
+        // Text clamped to two lines (generator names, subtitles) ends in "..." when a third is needed.
+        const clamped = cs.webkitLineClamp !== 'none' && e.scrollHeight > e.clientHeight + 2;
+        if (e.scrollWidth <= e.clientWidth + 2 && !clamped) continue;
+        // A trailing "..." is a deliberate shortened layout; text cut with no ellipsis is a bug.
+        if (cs.textOverflow === 'ellipsis' || clamped) { if (showEllipsis) out.push('shortened: ' + e.textContent.trim().slice(0, 70)); }
         else out.push('cut off: ' + e.textContent.trim().slice(0, 70));
       }
       if (!english) {

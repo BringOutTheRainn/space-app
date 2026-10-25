@@ -1311,6 +1311,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 178. Fit check at 130% text.** tools/fit-check.mjs takes --zoom=1.3: it scales every font size in the stylesheet by 1.3, as Android's font size setting does (the app follows it to 130%), and sets .big-text. Every tab, 13 windows and the welcome-back window fit in all five languages at 320x568, 360x640 and 640x360. The release check runs this pass too (now about 16 minutes).
 
+**Run 179. Text cut after two lines.** The fit check now also sees text clamped to a few lines that still ends in "..." (it only looked for one-line cuts before). It found the Wormhole Network description cut at two lines in French and German on a 320 px phone, and at 130% Android text three generator names ("Sifón de Gigante Gaseoso") and that description in every language. Descriptions may take three lines (four with large text), and with large text a name may take three. With --ellipsis, nothing on any screen is shortened at normal or 130% text, at 320x568, 360x640 or 640x360, in all five languages.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
