@@ -21,6 +21,7 @@ await new Promise((ok, fail) => server.once('error', fail).listen(8766, '127.0.0
 const CHECKS = [
   ['Random taps in every language', 'tools/monkey.mjs'],
   ['Text fits, no leftover English', 'tools/fit-check.mjs'],
+  ['Text fits with Android text at 130%', 'tools/fit-check.mjs', '--zoom=1.3'],
   ['Text contrast', 'tools/contrast-check.mjs'],
   ['Damaged saves', 'tools/ui-save-fuzz.mjs', '40'],
   ['Windows left open and 300 toasts', 'tools/soak.mjs'],

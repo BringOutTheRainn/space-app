@@ -38,8 +38,8 @@ needs a signing key in the repository secrets; see [docs/RELEASE.md](docs/RELEAS
 npm test                          # builds, then runs tests/*.test.js with Node's test runner
 node tools/simulate.mjs 12 3      # a greedy bot plays 12 hours at 3 taps/s and prints milestones
 npm run screens                   # headless Chromium screenshots at phone size into screens/
-npm run release-check             # every browser check below in one go, about 12 minutes
-node tools/fit-check.mjs          # with www/ served on port 8766: cut-off text or leftover English, 5 languages
+npm run release-check             # every browser check below in one go, about 16 minutes
+node tools/fit-check.mjs          # with www/ served on port 8766: cut-off text or leftover English, 5 languages (--zoom=1.3 for large Android text)
 node tools/monkey.mjs             # with www/ served on port 8766: random taps in 5 languages, new and late game
 node tools/contrast-check.mjs     # with www/ served on port 8766: text contrast on every tab and window
 ```

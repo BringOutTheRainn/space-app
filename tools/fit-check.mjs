@@ -3,10 +3,13 @@ const require = createRequire(import.meta.url);
 // Text fit check: every tab and window, late game, in all five languages on 320 and 360 px phones and a phone held sideways (640x360).
 // Reports text cut off by its box and English left in a translated screen; exits 1 if any.
 // Text shortened with an ellipsis on purpose is listed only with --ellipsis.
-// Serve www/ on port 8766 first (npx http-server www -p 8766), then: node tools/fit-check.mjs [--ellipsis]
+// --zoom=1.3 repeats it with every font size in the stylesheet scaled by 1.3, as Android's font size
+// setting does (the app follows it up to 130%), and the .big-text class that main.ts sets then.
+// Serve www/ on port 8766 first (npx http-server www -p 8766), then: node tools/fit-check.mjs [--ellipsis] [--zoom=1.3]
 let pw;
 try { pw = require('playwright'); } catch { pw = require('/opt/node22/lib/node_modules/playwright'); }
 const SHOW_ELLIPSIS = process.argv.includes('--ellipsis');
+const ZOOM = Number(process.argv.find((a) => a.startsWith('--zoom='))?.slice(7) ?? 1);
 const LANGS = ['en', 'es', 'pt', 'fr', 'de'];
 const WIDTHS = [[320, 568], [360, 640], [640, 360]];
 const WINDOWS = ['openStats', 'openSettings', 'openHyperdrive', 'openCrystals', 'openGarden', 'openEvent', 'openForge',
@@ -26,6 +29,15 @@ for (const lang of LANGS) for (const [width, height] of WIDTHS) {
     ctx.recalc(); ctx.save(); }, lang);
   await p.reload(); await p.waitForTimeout(1500); await close();
   await p.addStyleTag({ content: '.toasts{display:none!important}' });
+  if (ZOOM !== 1) await p.evaluate((k) => {
+    const scale = (rules) => { for (const r of rules) {
+      if (r.cssRules) scale(r.cssRules);
+      const fs = r.style?.fontSize; if (fs?.endsWith('px')) r.style.fontSize = parseFloat(fs) * k + 'px';
+    } };
+    for (const sheet of document.styleSheets) scale(sheet.cssRules);
+    document.documentElement.style.fontSize = 16 * k + 'px';
+    document.documentElement.classList.add('big-text');
+  }, ZOOM);
   const report = async (where) => {
     const found = await p.evaluate(({ src, english, showEllipsis }) => {
       const out = [];
@@ -45,7 +57,7 @@ for (const lang of LANGS) for (const [width, height] of WIDTHS) {
       }
       return [...new Set(out)];
     }, { src: ENG.source, english: lang === 'en', showEllipsis: SHOW_ELLIPSIS });
-    for (const f of found) { if (!f.startsWith('shortened')) problems++; console.log(`${lang} ${width}px ${where}: ${f}`); }
+    for (const f of found) { if (!f.startsWith('shortened')) problems++; console.log(`${lang} ${width}px${ZOOM !== 1 ? ' x' + ZOOM : ''} ${where}: ${f}`); }
   };
   for (const tab of await p.$$eval('[data-tab]:not([hidden])', (els) => els.map((e) => e.dataset.tab))) {
     await p.click(`[data-tab="${tab}"]`); await p.waitForTimeout(300); await report('tab ' + tab);

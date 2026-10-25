@@ -1309,6 +1309,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 177. Tutorial bubble width.** The hint bubble was centred with left: 50% and a transform, which let it grow only to half the sky's width, so "An upgrade is ready. Tap it in the strip above your generators." wrapped into four lines, and at 130% Android text it climbed out of the top of the sky (the gap left in run 176). It is now centred by equal insets: 64 px from each side so the corner buttons stay clear (three lines at 320 px), and nearly the full width with large text (.big-text), where the German hint now fits inside the sky on a 320x568 phone.
 
+**Run 178. Fit check at 130% text.** tools/fit-check.mjs takes --zoom=1.3: it scales every font size in the stylesheet by 1.3, as Android's font size setting does (the app follows it to 130%), and sets .big-text. Every tab, 13 windows and the welcome-back window fit in all five languages at 320x568, 360x640 and 640x360. The release check runs this pass too (now about 16 minutes).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -128,7 +128,7 @@ For each update after the first:
    notice, and add each line to `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (a test fails until all
    four are there). Players who update see these once in a "What's new" window; new players never do.
 3. Write the Play "What's new" release notes from the same lines (500 characters per language).
-4. Run `npm run release-check` (about 12 minutes; the first time, install the browser it drives with
+4. Run `npm run release-check` (about 16 minutes; the first time, install the browser it drives with
    `npm install --no-save playwright` and `npx playwright install chromium`). It taps random buttons in all five languages, looks for text
    that is cut off, left in English or too faint, loads 40 damaged saves and leaves windows open, then
    prints pass or FAIL for each. Fix anything that fails before uploading.
