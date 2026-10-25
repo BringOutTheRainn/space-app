@@ -1303,6 +1303,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 174. Store screenshots retaken.** After the layout fixes in runs 170 to 173, the 40 phone screenshots (8 per language) were taken again with tools/store-shots.mjs and copied into the store folder (en at the top, es-419, pt-BR, fr-FR and de-DE in their folders). No page errors; the Portuguese shot now shows "Colheitadeira de Asteroides" whole. The tablet shots were left as they were, since the tablet layout did not change.
 
+**Run 175. Release check after the layout runs.** The full release check passed on the build with runs 170 to 173 in it: random taps 6 of 6 sessions in five languages, every text fits at 320x568, 360x640 and 640x360, contrast clean, 40 damaged saves with 0 errors, and the soak at 6.5k nodes and 3.2 MB heap with no errors. No code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
