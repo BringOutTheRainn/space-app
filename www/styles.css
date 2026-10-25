@@ -971,6 +971,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .upg-strip { padding-bottom: 6px; margin-bottom: 2px; }
 }
 
+/* Phones about 568 to 600 px tall (iPhone SE size): once the Garden, Forge and Market buttons
+   appear, the first generator card ended under the tab bar. A slightly shorter sky and tighter
+   minigame buttons give back the room, so one full card shows above the tabs. */
+@media (max-height: 600px) and (orientation: portrait) {
+  .sky-wrap { flex-basis: 32%; min-height: 176px; }
+  .mini-row { margin-bottom: 6px; }
+  .mini { padding-top: 4px; padding-bottom: 4px; }
+}
+
 /* Very short narrow windows: a phone in split-screen (412 x 300 to 412 x 520). The 220 px sky
    minimum used to push the tab bar off the screen, so the sky and top bar shrink here. */
 @media (max-height: 520px) and (max-width: 559px) {

@@ -1293,6 +1293,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 169. Minigame card labels fit on 320 px phones.** Run 166's fit check listed the Garden, Forge and Market subtitles on the Build tab ending in "..." on 320 px phones in Spanish, Portuguese and French ("Parcelles vi...", "60/60 de ch...", "Precios esta..."). Under a card already titled Garden, Forge or Market, shorter words say the same: Vacío / Vazio / Vide for an empty garden, Calor 60/60 / Chaleur 60/60 for heat, and Estable / Estável / Stable for steady prices. A 320 x 568 check in all five languages now shows every Garden and Forge subtitle in full and the Market one in its resting state. The "{good} cheap" line can still end in "..." for long names such as Antimatière; making the card taller to fit it would push the generator list down on the smallest phones, so it stays shortened. English and German were already short enough.
 
+**Run 170. A full generator card on small phones.** On a 320x568 screen late in the game, the Garden, Forge and Market buttons pushed the first generator card under the tab bar, so no card could be read without scrolling. Below 600 px tall the sky now takes 32% (at least 176 px) and the minigame buttons are 8 px shorter, so the first card ends above the tabs. Taller phones are unchanged; the fit and contrast checks still pass.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
