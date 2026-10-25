@@ -56,6 +56,12 @@ export function errorReport(version: string): string {
   return lines.join('\n');
 }
 
+/** Removes the stored copy only; the report still shows this session's errors. */
+export function dropStoredErrors(): void {
+  load();
+  localStorage.removeItem(ERROR_KEY);
+}
+
 export function clearErrors(): void {
   memory = [];
   try {

@@ -1323,6 +1323,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 185. Full checks after runs 176 to 184.** The release check passes all six checks, including the new 130% text pass: random taps in five languages, text fit at normal and 130% text, contrast, 40 damaged saves with 0 errors, and the soak (heap 3.3 MB, no errors). It took about 17 minutes. The pacing simulation is unchanged at 3 taps a second: first Dark Matter at 1h 24m, the Cosmos tab at 2h 5m. No code changed.
 
+**Run 186. Saving keeps working when storage is full.** Before, a full browser or WebView storage stopped the save and showed the warning, even when old unreadable save copies and the error log were taking the space. Now the main save frees space in order (old unreadable copies, then the stored error log, then the backup) and tries again after each step, and a failed backup no longer marks saving as broken. Checked in Playwright with storage capped at 60,000 characters and filled by two old copies: the save went through with no warning and progress survived a reload.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -36,7 +36,7 @@ import { AD_CONFIG } from './data/ads.js';
 import { CosmosPanel, cosmosUnlocked, ProbesPanel, TrophiesPanel, UpgradesPanel } from './ui/panels.js';
 import { copyText, haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite, onBackButton, onPause } from './ui/platform.js';
 import { Sky, STAGES, stageFor } from './ui/sky.js';
-import { errorReport, installErrorHandlers, recordError } from './ui/errors.js';
+import { dropStoredErrors, errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 import { maybeAskRating } from './ui/rating.js';
 import { setLanguage, t, tDesc, tName } from './i18n/index.js';
 
@@ -93,6 +93,36 @@ function readStorage(key: string): string | null {
 
 /** How many unreadable saves to keep (the newest) for support. */
 const KEEP_BROKEN = 3;
+
+/**
+ * Writes the main save. When storage is full, frees what can go (old unreadable
+ * saves, the error log, then the backup) and tries again, so progress keeps saving.
+ */
+function writeMainSave(text: string): void {
+  try {
+    localStorage.setItem(SAVE_KEY, text);
+    return;
+  } catch {
+    /* fall through and make room */
+  }
+  const steps: (() => void)[] = [
+    () => {
+      for (const k of Object.keys(localStorage)) if (k.startsWith(SAVE_KEY + '-broken-')) localStorage.removeItem(k);
+    },
+    dropStoredErrors,
+    () => localStorage.removeItem(BACKUP_KEY),
+  ];
+  for (const free of steps) {
+    try {
+      free();
+      localStorage.setItem(SAVE_KEY, text);
+      return;
+    } catch {
+      /* try the next step */
+    }
+  }
+  localStorage.setItem(SAVE_KEY, text);
+}
 
 function loadState(): { state: GameState; found: boolean } {
   const main = readStorage(SAVE_KEY);
@@ -175,12 +205,16 @@ function start(): void {
       }
       const text = serialize(ctx.s);
       try {
-        localStorage.setItem(SAVE_KEY, text);
-        if (now - lastBackupAt >= BACKUP_EVERY_MS) {
-          localStorage.setItem(BACKUP_KEY, text);
-          lastBackupAt = now;
-        }
+        writeMainSave(text);
         ctx.saveFailing = false;
+        if (now - lastBackupAt >= BACKUP_EVERY_MS) {
+          lastBackupAt = now;
+          try {
+            localStorage.setItem(BACKUP_KEY, text);
+          } catch {
+            // The main save went through; a missing backup is not worth a warning.
+          }
+        }
       } catch (e) {
         console.warn('Save failed', e);
         ctx.saveFailing = !isNative();
