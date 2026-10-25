@@ -253,6 +253,7 @@ function start(): void {
     if (AD_CONFIG.banner && !ctx.s.noAds) void setBanner(true);
   });
   document.addEventListener('pointerdown', unlockAudio, { once: true });
+  markLargeText();
   // Block pinch-zoom and double-tap zoom on iOS Safari.
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   document.addEventListener('dblclick', (e) => e.preventDefault());
@@ -685,4 +686,21 @@ function cometText(r: CometResult): [string, string] {
     case 'bighaul': return [t('Dark Bounty!'), gain];
     case 'well': return [t('Gravity Well...'), t('Production halved for {s}s', { s: r.secs })];
   }
+}
+
+/** Android's font size setting zooms every line of WebView text (the app follows it up to 130%)
+ *  while boxes keep their size. Text drawn on a canvas is not zoomed, so comparing the two
+ *  widths shows the zoom; with large text the CSS gives tight spots more room (.big-text). */
+function markLargeText(): void {
+  const probe = document.createElement('span');
+  probe.textContent = 'MMMMMMMMMM';
+  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:20px monospace';
+  document.body.append(probe);
+  const drawn = document.createElement('canvas').getContext('2d');
+  if (drawn) {
+    drawn.font = '20px monospace';
+    const zoom = probe.getBoundingClientRect().width / drawn.measureText(probe.textContent).width;
+    document.documentElement.classList.toggle('big-text', zoom > 1.1);
+  }
+  probe.remove();
 }

@@ -1305,6 +1305,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 175. Release check after the layout runs.** The full release check passed on the build with runs 170 to 173 in it: random taps 6 of 6 sessions in five languages, every text fits at 320x568, 360x640 and 640x360, contrast clean, 40 damaged saves with 0 errors, and the soak at 6.5k nodes and 3.2 MB heap with no errors. No code changed.
 
+**Run 176. Android's larger font sizes.** The app follows Android's font size setting up to 130% (MainActivity caps it). At 130% on 320 and 360 px phones, the "per second" line and the Garden, Forge and Market subtitles ended in "..." in most languages, and "Mercado" no longer fit beside its icon. The per-second line and the minigame subtitles now wrap to a second line when needed, and main.ts compares on-screen text with canvas text to spot zoomed text, then hides the minigame icons (.big-text) so the titles have room. Normal-size text is unchanged (the check reads 1.0 at 1x, 2x and 3x screens). Still tight at 130% on a 320x568 phone: the tutorial bubble can spill past the top of the sky.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
