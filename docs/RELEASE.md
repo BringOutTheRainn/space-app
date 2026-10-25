@@ -71,7 +71,16 @@ The build ships with Google's **test** ad IDs, so it is safe to install and try.
 3. In GitHub, Settings, Secrets and variables, Actions, **Variables**, add `ADMOB_APP_ID` with the app ID
    (`ca-app-pub-…~…`). CI writes it into the Android manifest.
 4. Put the three unit IDs (`ca-app-pub-…/…`) in `src/data/ads.ts` and set `testing: false`.
-5. Add `app-ads.txt` to the developer website listed in Play Console.
+5. Add `app-ads.txt` to the developer website listed in Play Console. AdMob checks it to confirm the ads
+   in the app are really yours; without it, it warns and may hold back some ad demand. With no website,
+   a free GitHub Pages site works:
+   - Create a public repository named exactly `BringOutTheRainn.github.io`.
+   - Add a file `app-ads.txt` at its top level containing one line, with your publisher ID from AdMob
+     (Settings, Account information): `google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0`
+   - In that repository's Settings, Pages, publish from the `main` branch. After a few minutes
+     https://bringouttherainn.github.io/app-ads.txt shows the line.
+   - Put `https://bringouttherainn.github.io` as the website in Play Console (Store presence, Store
+     settings). AdMob finds the file within a day or two (Apps, app-ads.txt shows its status).
 
 Placements: Hyperdrive (rewarded, x2 production for 2 h, stacks to 8 h, runs offline); x2 offline
 earnings; x2 daily drop; a break ad after collapsing or entering an anomaly (at most once per 8

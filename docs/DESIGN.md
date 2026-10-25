@@ -1315,6 +1315,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 181. Performance check, 160 runs after run 18.** With a heavy late-game save (all 14 generator types, about 6.9k DOM nodes), every tab holds 60 fps at full speed, with 1.1 to 1.5 ms of script and under 0.2 ms of style work a frame (run 18 measured about 2 ms), and the heap stays at 4 to 5 MB. With the CPU slowed 4x, tabs run at 29 to 38 fps in a headless browser that paints in software. Battery saver halves script work at full speed (Build tab: 97 to 47 ms a second). No code changed.
 
+**Run 182. app-ads.txt without a website.** The release guide said to put app-ads.txt on the developer website, but a personal account may not have one. It now gives the free route: a BringOutTheRainn.github.io repository with the one AdMob line, GitHub Pages turned on, and that address as the Play Console website. Also checked: the page holds about 2.4k elements on a heavy late-game save, and the hidden tabs cost no style work, so nothing needed trimming.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
