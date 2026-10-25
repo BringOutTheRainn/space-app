@@ -1285,6 +1285,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 165. README explains translations.** Since run 148, any new text players see fails the tests until it has Spanish, Portuguese, French and German lines, but the README's "To do this, edit" table did not say so, so adding a headline or generator looked like a one-file change. The README now says where the translations go (`src/i18n/*.ts`, and `*-data.ts` for game data) and that `npm test` lists what is missing. Checked by adding an untranslated headline, which failed two tests that named it.
 
+**Run 166. Text fit check kept in the repo.** Clipped-text and leftover-English scans had been one-off scripts outside the repo. `tools/fit-check.mjs` now opens every tab and window in a late-game save in all five languages at 320 and 360 px, and fails on text cut off without an ellipsis, English words on a translated screen, or page errors. Today's result is clean. On 320 px phones some labels are shortened with "..." by design (generator flavour lines, a few Garden, Forge and Market subtitles, and long generator names in French and Spanish); `--ellipsis` lists them. Checked by turning the minigame subtitles' ellipsis into a hard cut, which the tool reported. README and the release steps in docs/RELEASE.md now mention it, and the package note in RELEASE.md moved below the numbered steps.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
