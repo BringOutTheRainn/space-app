@@ -1,5 +1,5 @@
 // Runs every browser check before a release against a fresh build, serving www/ itself on port
-// 8766. Usage: npm run release-check  (needs Playwright with Chromium: npx playwright install chromium)
+// 8766. Usage: npm run release-check  (first time: npm install --no-save playwright && npx playwright install chromium)
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
