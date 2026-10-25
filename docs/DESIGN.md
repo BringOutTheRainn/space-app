@@ -1281,6 +1281,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 163. Timers checked across the clock change.** Clocks went back in the UK and EU this morning (Sunday 25 October), so today lasts 25 hours there, and they go forward on the last Sunday of March. The daily reward, wheel, weekly contract, weekend event and Star Pass timers all count to local midnight with calendar dates, not fixed 24-hour steps, and a London-time check showed every countdown correct on both days (24.5 hours from 00:30 on this Sunday to Monday, 22.5 hours on the spring Sunday). A new test locks this in. Checked by making the day counter use a fixed offset, which failed the test.
 
+**Run 164. Pull request description rewritten for merging.** PR #1's description still described its first commit (raising the Android target to API 36), although the branch now holds the whole launch sprint, 169 commits. It now says what the branch adds in plain groups (Play requirements, save safety, stability, game systems, ads and purchases, accessibility, store assets, build), lists what cj must do before merging (AdMob IDs, test mode off, the `ADMOB_APP_ID` variable), and points to `docs/RELEASE.md`. The title is now "Stardust Empire launch build for Google Play". No code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
