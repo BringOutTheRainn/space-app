@@ -1289,6 +1289,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 167. Random-tap release check kept in the repo.** The random-tap test behind every release check since run 97 was also a one-off script. `tools/monkey.mjs` now taps random visible controls (never reset or import) 300 times in six sessions: a new game in English, Portuguese and German and a late-game save in Spanish, French and English. It fails on a page error, a negative or non-finite total, or a save that does not reload. Today all six passed (18 to 26 kinds of control each, about two minutes). Checked by making Settings throw, which five of the six sessions caught. README and the release steps list it.
 
+**Run 168. One command for the release check.** `npm run release-check` builds the game, serves `www/` itself on port 8766 (no extra server package), and runs the random-tap, text-fit, contrast, damaged-save and soak checks one after another, then prints pass or FAIL for each. The contrast, damaged-save and soak tools now set a failing exit code instead of only printing. The first version ran each check with a blocking call, which froze its own web server so every check timed out; checks now run asynchronously. Today's full run passed all five in 11 minutes 38 seconds (40 damaged saves with no errors; after the soak, 6.5k nodes and a 3.2 MB heap, as in run 150). docs/RELEASE.md step 4 now says to run it before each upload.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

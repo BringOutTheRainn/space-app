@@ -128,9 +128,9 @@ For each update after the first:
    notice, and add each line to `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (a test fails until all
    four are there). Players who update see these once in a "What's new" window; new players never do.
 3. Write the Play "What's new" release notes from the same lines (500 characters per language).
-4. If you changed screens or text, serve the game (`npx http-server www -p 8766`) and run
-   `node tools/fit-check.mjs` (text cut off or left in English, in all five languages) and
-   `node tools/contrast-check.mjs` (text too faint to read). Before every release also run `node tools/monkey.mjs`, which taps
-   random buttons in all five languages and fails on any error or a save that does not reload.
+4. Run `npm run release-check` (about 12 minutes; needs Playwright's Chromium once:
+   `npx playwright install chromium`). It taps random buttons in all five languages, looks for text
+   that is cut off, left in English or too faint, loads 40 damaged saves and leaves windows open, then
+   prints pass or FAIL for each. Fix anything that fails before uploading.
 
 The game's packages are pinned to exact versions in `package.json`, and `package-lock.json` fixes everything they depend on, so every build (CI runs `npm ci`) uses the same Capacitor, AdMob and billing code. To move to newer ones, change the numbers on purpose, run `npm install` to update the lockfile, then check the Android build and test ads and purchases on a phone before releasing.

@@ -15,7 +15,8 @@
     "icons": "node tools/make_icons.mjs",
     "android": "npm run build && bash tools/android.sh",
     "i18n": "npm run build && node tools/i18n-keys.mjs --list",
-    "preflight": "node tools/preflight.mjs"
+    "preflight": "node tools/preflight.mjs",
+    "release-check": "npm run build && node tools/release-check.mjs"
   },
   "devDependencies": {
     "@capacitor/cli": "7.6.9",

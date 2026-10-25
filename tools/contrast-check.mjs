@@ -36,7 +36,8 @@ const scan = (label) => p.evaluate((label) => {
   }
   return [label, [...out].map(([k, v]) => `${k} "${v}"`)];
 }, label);
-const pr = (r) => { if (r[1].length) { console.log('==', r[0]); r[1].forEach((x) => console.log('  ', x)); } };
+let lowContrast = 0;
+const pr = (r) => { if (r[1].length) { lowContrast += r[1].length; console.log('==', r[0]); r[1].forEach((x) => console.log('  ', x)); } };
 const close = async () => { for (let i=0;i<5 && await p.locator('.modal-x').count();i++){await p.locator('.modal-x').last().click();await p.waitForTimeout(300);} };
 await close();
 await p.evaluate(() => { const { ctx } = window.__game; const s = ctx.s; s.darkMatter = 140; s.collapses = 2; s.cosmic = { glow: true, seed: true, magnet: true, fingers: true, kit: true, cache: true, bay: true }; s.relics = { shard: 3, core: 1 }; s.crystals = 3; s.genLevels = s.generators.map((n) => n ? 2 : 0); ctx.recalc(); ctx.save(); });
@@ -68,3 +69,5 @@ pr(await scan('crash screen'));
 await p.evaluate(() => { document.body.innerHTML = '<div id="app"><div class="boot old-webview" role="alert">Stardust Empire could not start. Please close the game and open it again.</div></div>'; });
 pr(await scan('start failure'));
 await b.close();
+console.log(lowContrast ? `${lowContrast} low-contrast text style(s)` : 'All text meets the contrast minimum.');
+process.exitCode = lowContrast ? 1 : 0;

@@ -31,3 +31,4 @@ await cdp.send('HeapProfiler.collectGarbage');
 console.log('after toasts', await metrics(), 'toast nodes', await p.evaluate(() => document.getElementById('toasts').getElementsByTagName('*').length));
 console.log(errs.join(';') || 'no errors');
 await b.close();
+process.exitCode = errs.length ? 1 : 0;

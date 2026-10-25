@@ -42,3 +42,4 @@ for (let i = 0; i < N; i++) {
 }
 console.log(`${N} damaged saves in the browser, ${broken} with errors`);
 await b.close();
+process.exitCode = broken ? 1 : 0;
