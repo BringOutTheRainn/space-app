@@ -242,8 +242,11 @@ svg.ico { width: 100%; height: 100%; display: block; }
 body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
 
 .hint {
-  position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%);
-  max-width: 88%;
+  /* Centred by equal insets, not left: 50% and a transform: that only let the bubble grow to half
+     the sky's width, so a short hint wrapped into four lines and, with large text, climbed out of
+     the top of the sky. The 64 px insets keep the corner buttons clear; with large Android text
+     (.big-text) the bubble may use nearly the full width instead. */
+  position: absolute; left: 64px; right: 64px; bottom: 58px; margin-inline: auto; width: fit-content;
   padding: 8px 14px;
   border-radius: 999px;
   /* Nearly opaque: the bubble sits over the asteroid, and tap sparks drawn on the canvas below
@@ -255,6 +258,7 @@ body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
   pointer-events: none;
   animation: hint-pulse 1.8s ease-in-out infinite;
 }
+.big-text .hint { left: 4%; right: 4%; }
 @keyframes hint-pulse { 50% { box-shadow: 0 0 18px rgba(94, 240, 255, .45); } }
 
 .ticker {

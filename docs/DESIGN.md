@@ -1307,6 +1307,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 176. Android's larger font sizes.** The app follows Android's font size setting up to 130% (MainActivity caps it). At 130% on 320 and 360 px phones, the "per second" line and the Garden, Forge and Market subtitles ended in "..." in most languages, and "Mercado" no longer fit beside its icon. The per-second line and the minigame subtitles now wrap to a second line when needed, and main.ts compares on-screen text with canvas text to spot zoomed text, then hides the minigame icons (.big-text) so the titles have room. Normal-size text is unchanged (the check reads 1.0 at 1x, 2x and 3x screens). Still tight at 130% on a 320x568 phone: the tutorial bubble can spill past the top of the sky.
 
+**Run 177. Tutorial bubble width.** The hint bubble was centred with left: 50% and a transform, which let it grow only to half the sky's width, so "An upgrade is ready. Tap it in the strip above your generators." wrapped into four lines, and at 130% Android text it climbed out of the top of the sky (the gap left in run 176). It is now centred by equal insets: 64 px from each side so the corner buttons stay clear (three lines at 320 px), and nearly the full width with large text (.big-text), where the German hint now fits inside the sky on a 320x568 phone.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
