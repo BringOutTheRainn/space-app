@@ -45,7 +45,9 @@ export function resumeAudio(): void {
 
 function blip(freq: number, dur: number, type: OscillatorType, vol: number, slideTo?: number, delay = 0): void {
   if (!soundOn) return;
-  const c = ensure();
+  // Only the first tap creates the audio context (unlockAudio); a sound before it could not play,
+  // and creating one early makes the WebView log a warning for every attempt.
+  const c = ctx;
   if (!c || !master || c.state !== 'running') return;
   const t = c.currentTime + delay;
   const osc = c.createOscillator();
@@ -97,7 +99,7 @@ export function sfxCollapse(): void {
 }
 
 function startMusic(): void {
-  const c = ensure();
+  const c = ctx;
   if (!c || !master || musicGain) return;
   musicGain = c.createGain();
   musicGain.gain.value = 0;
