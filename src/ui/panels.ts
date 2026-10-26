@@ -22,7 +22,7 @@ import { icon } from './icons.js';
 import { haptic } from './platform.js';
 import { showInterstitial } from './ads.js';
 import { interstitialAllowed } from '../core/ads.js';
-import { stageFor, STAGES } from './sky.js';
+import { stageFor } from './sky.js';
 import { t, tDesc, tName } from '../i18n/index.js';
 
 // ------------------------------------------------------------------ Upgrades
@@ -37,7 +37,7 @@ export class UpgradesPanel implements Panel {
   private nextTitle: HTMLElement;
   private nextKey = '';
 
-  constructor(private root: HTMLElement, ctx: Ctx) {
+  constructor(root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `
       <div class="upg-head"><h3 class="section-title">${t('Available')}</h3><button class="btn btn-plain upg-all" data-buy-all hidden></button></div>
       <div class="upg-list" id="upg-list"></div>
@@ -137,7 +137,7 @@ export class TrophiesPanel implements Panel {
   private nearTitle: HTMLElement;
   private nearKey = '';
 
-  constructor(private root: HTMLElement, ctx: Ctx) {
+  constructor(root: HTMLElement, ctx: Ctx) {
     root.innerHTML = `<div class="trophy-summary" id="trophy-summary"></div>
       <h3 class="section-title" id="trophy-near-title" hidden>${t('Almost there')}</h3>
       <div class="upg-list" id="trophy-near"></div>
@@ -585,6 +585,3 @@ function breakAd(ctx: Ctx): void {
   }), 1800);
 }
 
-export function stageName(earned: number): string {
-  return t(STAGES[stageFor(earned)].name);
-}

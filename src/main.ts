@@ -11,7 +11,7 @@ import { freeSpinReady } from './core/wheel.js';
 import { availableUpgrades, BUFF_MULT, computeDerived, tap, tick, upgradePrice, type Derived } from './core/economy.js';
 import { fmt, fmtRate, fmtSpoken, fmtTime } from './core/format.js';
 import { canCollapse, pastPeak, sampleRunPeak } from './core/prestige.js';
-import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, deserialize, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
+import { applyOffline, BACKUP_EVERY_MS, BACKUP_KEY, pickSave, repairNumbers, SAVE_KEY, serialize } from './core/save.js';
 import { achievementCount, newState, type GameState } from './core/state.js';
 import { resumeAudio, sfxAchievement, sfxComet, sfxTap, suspendAudio, unlockAudio } from './ui/audio.js';
 import { BuildPanel } from './ui/build.js';

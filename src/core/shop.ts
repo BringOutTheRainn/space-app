@@ -1,7 +1,7 @@
 // What each purchase does to the game. Kept free of any store code so it can
 // be tested and so the browser build can grant test purchases.
 
-import { PRODUCT_BY_ID, SKINS } from '../data/store.js';
+import { PRODUCT_BY_ID } from '../data/store.js';
 import { crystalsUnlocked } from './crystals.js';
 import { earn, type Derived } from './economy.js';
 import { currentEvent } from './event.js';
@@ -119,10 +119,6 @@ export function grant(s: GameState, d: Derived, id: string, now = Date.now()): G
     return { text: `${p.name} unlocked and applied.` };
   }
   return { text: `${p.name} unlocked.` };
-}
-
-export function skinFilter(s: GameState): string {
-  return SKINS.find((k) => k.id === s.skin)?.filter ?? 'none';
 }
 
 export function setSkin(s: GameState, id: string): boolean {

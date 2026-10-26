@@ -9,10 +9,6 @@ export function boostMult(now = Date.now()): number {
   return eventActive(now) ? 2 : 1;
 }
 
-export function hyperActive(s: GameState, now = Date.now()): boolean {
-  return s.hyperEndsAt > now;
-}
-
 export function hyperRemainingMs(s: GameState, now = Date.now()): number {
   return Math.max(0, s.hyperEndsAt - now);
 }
