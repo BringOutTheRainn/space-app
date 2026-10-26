@@ -1353,6 +1353,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 200. Focus check for the remaining windows.** Run 199 skipped the Garden, Forge, Market, daily gift and Quasar Crystals windows because that save had not unlocked them. On a save that has, each was opened with the keyboard: focus moved into the window, and Escape closed it and put focus back on the button that opened it. No changes were needed.
 
+**Run 201. Release check with all seven checks.** Runs 190 to 200 changed how the game reads to screen readers, when audio starts and what the random-tap check counts as a failure, so the full release check ran again. All seven checks passed: random taps in every language (now also failing on console warnings), text fit at normal size and at 130%, contrast, screen reader names, damaged saves, and windows left open with 300 toasts (heap 3.0 MB).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
