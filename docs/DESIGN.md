@@ -1355,6 +1355,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 201. Release check with all seven checks.** Runs 190 to 200 changed how the game reads to screen readers, when audio starts and what the random-tap check counts as a failure, so the full release check ran again. All seven checks passed: random taps in every language (now also failing on console warnings), text fit at normal size and at 130%, contrast, screen reader names, damaged saves, and windows left open with 300 toasts (heap 3.0 MB).
 
+**Run 202. Shortcut buttons read well.** Run 200's focus check printed the Garden, Forge and Market buttons' text run together ("GardenPlots empty"). This run looked at the browser's accessibility tree to see what TalkBack would actually read. It is "Garden Plots empty", "Forge 60/60 heat" and "Market Prices steady", with the space in place. The top bar and the buttons around the sky read well too: "Stardust: 300 trillion 84.98 million per second", Shop, Stats, Settings, "Celestial body. Tap to harvest Stardust.", Daily reward, Missions with its count, and "Hyperdrive, Spin free". No changes were needed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
