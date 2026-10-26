@@ -896,9 +896,9 @@ export function openMarket(ctx: Ctx, onChange: () => void): void {
         <div class="good-foot">
           <span class="good-held">${g.held} / ${hold}${g.held ? ` · ${t('paid {n}', { n: fmtDec(g.avg) })}` : ''}${g.held ? ` · <b class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)}</b>` : ''}</span>
           <span class="good-btns">
-            <button class="chip" data-buy="${i}" data-n="10" ${canBuy ? '' : 'disabled'}>+10</button>
-            <button class="chip" data-buy="${i}" data-n="max" ${canBuy ? '' : 'disabled'}>${t('Max')}</button>
-            <button class="chip" data-sell="${i}" ${g.held ? '' : 'disabled'}>${t('Sell')}</button>
+            <button class="chip" data-buy="${i}" data-n="10" ${canBuy ? '' : 'disabled'} aria-label="${esc(t('Buy 10 {good}', { good: t(def.name) }))}">+10</button>
+            <button class="chip" data-buy="${i}" data-n="max" ${canBuy ? '' : 'disabled'} aria-label="${esc(t('Buy as much {good} as you can', { good: t(def.name) }))}">${t('Max')}</button>
+            <button class="chip" data-sell="${i}" ${g.held ? '' : 'disabled'} aria-label="${esc(t('Sell all {good}', { good: t(def.name) }))}">${t('Sell')}</button>
           </span>
         </div>
       </div>`;
