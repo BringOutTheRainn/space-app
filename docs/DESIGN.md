@@ -1363,6 +1363,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 205. Dead code removed, and the compiler now rejects it.** Four functions nothing called (`stageName`, `fmtBuffPct`, `skinFilter`, `hyperActive`) and three unused imports were removed, and two panels no longer keep a field they never read. `tsconfig.json` now sets `noUnusedLocals`, so the build fails if unused code comes back. The game behaves exactly as before. All 87 tests pass, and the screen reader and translation check across all five languages passed on a clean rebuild.
 
+**Run 206. Release check after runs 203 to 205.** All seven checks passed on the cleaned-up code: random taps in every language, text fit at normal size and at 130%, contrast, screen reader names and translations in all five languages, 40 damaged saves with no errors, and the soak with windows left open and 300 toasts. The heap peaked at 3.2 MB and settled back to 3.0 MB.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
