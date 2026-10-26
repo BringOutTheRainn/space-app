@@ -38,7 +38,7 @@ import { copyText, haptic, hideSplash, isNative, nativeSaveRead, nativeSaveWrite
 import { Sky, STAGES, stageFor } from './ui/sky.js';
 import { dropStoredErrors, errorReport, installErrorHandlers, recordError } from './ui/errors.js';
 import { maybeAskRating } from './ui/rating.js';
-import { setLanguage, t, tDesc, tName } from './i18n/index.js';
+import { loadLanguage, setLanguage, t, tDesc, tName } from './i18n/index.js';
 
 const TABS = [
   { id: 'build', label: 'Build', icon: 'build' },
@@ -143,8 +143,9 @@ function loadState(): { state: GameState; found: boolean } {
   return { state: picked?.state ?? newState(), found: !!picked };
 }
 
-function start(): void {
+async function start(): Promise<void> {
   const { state, found } = loadState();
+  await loadLanguage(state.settings.lang);
   setLanguage(state.settings.lang);
   installIcons();
   layout();
@@ -687,14 +688,13 @@ function start(): void {
   };
 }
 
-// The phone's language until the save is read, so a crash this early is still explained in it.
-setLanguage('auto');
 installErrorHandlers();
-try {
-  start();
-} catch (e) {
+start().catch(async (e: unknown) => {
   // Startup failed: show what happened instead of a blank screen. The save is untouched.
   recordError('start', e);
+  // Explained in the phone's language, as the save may be what failed to load.
+  await loadLanguage('auto');
+  setLanguage('auto');
   hideSplash();
   document.body.innerHTML = `<div class="crash" role="alert"><h2>${t('Stardust Empire could not start')}</h2>
     <p>${t('Your progress is still saved on this phone. Please close the game and open it again. If this keeps happening, copy the report below and send it to the developer.')} ${t("The developer's email address is on the game's Google Play page.")}</p>
@@ -707,7 +707,7 @@ try {
     if (await copyText(box.value)) btn.textContent = t('Error report copied');
     else { box.focus(); box.select(); }
   });
-}
+});
 
 /** A caught comet's title and detail line in the player's language. */
 function cometText(r: CometResult): [string, string] {

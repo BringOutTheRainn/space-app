@@ -1327,6 +1327,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 187. Buyable generators no longer rely on colour alone.** A card you can afford showed its price in green and one you cannot in red. Simulating red-green colour blindness (deuteranopia and protanopia) turns both into yellow, told apart only by brightness. A buyable card now also gets a green bar down its left edge, a shape cue that survives any colour vision. Upgrade chips (greyed out until buyable) and Cosmos nodes (glow when buyable) already had non-colour cues. Checked in Playwright with a deuteranopia filter over the whole page.
 
+**Run 188. Only the player's language loads at start.** Every start fetched and parsed all four translations (about 280 KB, 38% of the game's script) though a player sees one. Translations now load on demand: the game waits for the save's language before drawing, English loads none, and a translation that cannot be read leaves the game in English instead of failing. Changing language in Settings already restarts the page, so nothing else changed. On a 6x slowed CPU, script time at start fell from 543 to 242 ms in English and 622 to 294 ms in Portuguese; the first screen shows about 170 ms sooner. Checked in Playwright with Portuguese, German and English phones and a switch to French.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

@@ -1,10 +1,6 @@
 // Translations. Text is looked up by its English wording, so untranslated text
 // simply stays in English. Placeholders are written {name} and filled from vars.
 
-import { ES } from './es.js';
-import { PT } from './pt.js';
-import { FR } from './fr.js';
-import { DE } from './de.js';
 import { fmt, setNumberLocale } from '../core/format.js';
 
 export type Lang = 'en' | 'es' | 'pt' | 'fr' | 'de';
@@ -17,7 +13,18 @@ export const AUTO_LANGS: Lang[] = ['es', 'pt', 'fr', 'de'];
 
 const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-419', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE' };
 
-const DICTS: Record<Lang, Record<string, string> | null> = { en: null, es: ES, pt: PT, fr: FR, de: DE };
+type Dict = Record<string, string>;
+
+// Each translation is about 70 KB of script, so only the player's language is fetched and parsed
+// at start; a low-end phone otherwise spent part of its startup on four languages it never shows.
+const LOADERS: Record<Lang, (() => Promise<Dict>) | null> = {
+  en: null,
+  es: () => import('./es.js').then((m) => m.ES),
+  pt: () => import('./pt.js').then((m) => m.PT),
+  fr: () => import('./fr.js').then((m) => m.FR),
+  de: () => import('./de.js').then((m) => m.DE),
+};
+const loaded: Partial<Record<Lang, Dict>> = {};
 
 let lang: Lang = 'en';
 let numLocale = 'en-US';
@@ -56,13 +63,27 @@ export function numberLocale(game: Lang, locales: readonly string[] = deviceLoca
 
 export function resolveLang(setting: LangSetting, device: Lang = deviceLang()): Lang {
   // A save from a newer version (or an edited one) may name a language this build lacks.
-  if (setting !== 'auto' && setting in DICTS) return setting;
+  if (setting !== 'auto' && setting in LOADERS) return setting;
   return AUTO_LANGS.includes(device) ? device : 'en';
 }
 
+/** Fetches the translation setLanguage will need. If it cannot be read, the game stays in English. */
+export async function loadLanguage(setting: LangSetting): Promise<void> {
+  const l = resolveLang(setting);
+  const load = LOADERS[l];
+  if (!load || loaded[l]) return;
+  try {
+    loaded[l] = await load();
+  } catch (e) {
+    console.warn('Translation could not be loaded', l, e);
+  }
+}
+
+/** Switches language; call loadLanguage first, or the text stays in English. */
 export function setLanguage(setting: LangSetting): Lang {
   lang = resolveLang(setting);
-  dict = DICTS[lang];
+  dict = loaded[lang] ?? null;
+  if (!dict) lang = 'en';
   numLocale = numberLocale(lang);
   setNumberLocale(numLocale);
   if (typeof document !== 'undefined') document.documentElement.lang = lang;

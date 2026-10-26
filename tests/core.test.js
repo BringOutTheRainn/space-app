@@ -17,6 +17,12 @@ import { COSMIC } from '../www/js/data/cosmic.js';
 
 const seq = (...vals) => { let i = 0; return () => vals[i++ % vals.length]; };
 
+
+/** Translations load on demand in the game; tests switch freely, so load them all. */
+function loadAll(i18n) {
+  return Promise.all(['es', 'pt', 'fr', 'de'].map((l) => i18n.loadLanguage(l)));
+}
+
 test('formats numbers', () => {
   setNumberStyle('short');
   assert.equal(fmt(0), '0');
@@ -1114,6 +1120,7 @@ test('Spanish and Portuguese cover the same text with the same placeholders', as
 
 test('language setting falls back to English and fills placeholders', async () => {
   const i18n = await import('../www/js/i18n/index.js');
+  await loadAll(i18n);
   assert.equal(i18n.resolveLang('es', 'en'), 'es');
   assert.equal(i18n.resolveLang('auto', 'it'), 'en');
   assert.equal(i18n.resolveLang('auto', 'de'), 'de');
@@ -1143,6 +1150,7 @@ test('language setting falls back to English and fills placeholders', async () =
 
 test('every upgrade and achievement has Spanish and Portuguese text', async () => {
   const i18n = await import('../www/js/i18n/index.js');
+  await loadAll(i18n);
   const items = [...UPGRADES, ...ACHIEVEMENTS];
   i18n.setLanguage('en');
   for (const x of items) {
@@ -1163,6 +1171,7 @@ test('every upgrade and achievement has Spanish and Portuguese text', async () =
 
 test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese text', async () => {
   const i18n = await import('../www/js/i18n/index.js');
+  await loadAll(i18n);
   const { ANOMALIES } = await import('../www/js/data/anomalies.js');
   const { DESTINATIONS, RELICS } = await import('../www/js/data/expeditions.js');
   const { NEWS } = await import('../www/js/data/news.js');
@@ -1183,6 +1192,7 @@ test('cosmic upgrades, anomalies, probes and news have Spanish and Portuguese te
 
 test('wheel prizes and weekly contracts have Spanish and Portuguese text', async () => {
   const i18n = await import('../www/js/i18n/index.js');
+  await loadAll(i18n);
   const { SLICES } = await import('../www/js/core/wheel.js');
   const { CONTRACTS } = await import('../www/js/core/contracts.js');
   const texts = [...SLICES.map((w) => w.label), ...CONTRACTS.flatMap((c) => [c.name, c.goalText])];
@@ -1197,6 +1207,7 @@ test('wheel prizes and weekly contracts have Spanish and Portuguese text', async
 
 test('garden spores, forge spells and market goods have Spanish and Portuguese text', async () => {
   const i18n = await import('../www/js/i18n/index.js');
+  await loadAll(i18n);
   const { SEEDS } = await import('../www/js/core/garden.js');
   const { SPELLS } = await import('../www/js/core/forge.js');
   const { GOODS } = await import('../www/js/core/market.js');
@@ -1439,7 +1450,8 @@ test('Play release notes fit the 500 character limit in every language', async (
 });
 
 test('Portuguese writes decimals with a comma and thousands with a dot; English and Spanish keep the point', async () => {
-  const { setLanguage } = await import('../www/js/i18n/index.js');
+  const { setLanguage, loadLanguage } = await import('../www/js/i18n/index.js');
+  await loadAll({ loadLanguage });
   const { fmtDec, fmtLong } = await import('../www/js/core/format.js');
   try {
     setLanguage('pt');
@@ -1779,5 +1791,19 @@ test('daily, weekly and weekend timers follow local midnight across a clock chan
     assert.equal(dayNumber(Date.parse('2026-03-29T23:00:00Z')) - dayNumber(spring), 1); // midnight BST Monday
   } finally {
     if (before === undefined) delete process.env.TZ; else process.env.TZ = before;
+  }
+});
+
+test('a language is only used once its translation has loaded', async () => {
+  // A fresh copy of the module, so no earlier test has loaded French into it.
+  const i18n = await import('../www/js/i18n/index.js?fresh');
+  try {
+    assert.equal(i18n.setLanguage('fr'), 'en');
+    assert.equal(i18n.t('Settings'), 'Settings');
+    await i18n.loadLanguage('fr');
+    assert.equal(i18n.setLanguage('fr'), 'fr');
+    assert.equal(i18n.t('Settings'), 'Réglages');
+  } finally {
+    i18n.setLanguage('en');
   }
 });
