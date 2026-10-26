@@ -9,10 +9,19 @@ import type { Plot } from './garden.js';
 import type { EventState } from './event.js';
 import type { PassState } from './pass.js';
 import type { MarketState } from './market.js';
+import type { LangSetting } from '../i18n/index.js';
 
 export const SAVE_VERSION = 1;
 
 export type BuffKind = 'rush' | 'supernova' | 'well' | 'horizon' | 'frenzy';
+
+/** One finished universe, newest first in GameState.pastRuns. */
+export interface PastRun {
+  /** Dark Matter the collapse gave. */
+  dm: number;
+  /** Seconds the universe lasted on the game clock (offline time included). */
+  secs: number;
+}
 
 export interface Buff {
   kind: BuffKind;
@@ -27,9 +36,24 @@ export interface Settings {
   vibration: boolean;
   numberStyle: NumberStyle;
   particles: boolean;
+  /** Calmer sky and no flashes, on top of the system's reduce-motion setting. */
+  reduceMotion: boolean;
   /** Reminder notifications, on the phone only. Off until the player opts in. */
   notifications: boolean;
+  /** Battery saver: 30 fps and a sharper-but-cheaper sky for slow or hot phones. */
+  saver: boolean;
+  /** True once the game has offered or switched on battery saver by itself. */
+  saverAuto: boolean;
+  /** True once the player has set battery saver themselves; the game then leaves it alone. */
+  saverManual: boolean;
+  /** 'auto' follows the phone's language where the game is fully translated. */
+  lang: LangSetting;
+  /** The Build tab's last buy amount (x1, x10, x100, Next or Max), kept between sessions. */
+  buyAmount: BuyAmountSetting;
 }
+
+export type BuyAmountSetting = '1' | '10' | '100' | 'next' | 'max';
+export const BUY_AMOUNTS: BuyAmountSetting[] = ['1', '10', '100', 'next', 'max'];
 
 export interface Expedition {
   id: string;
@@ -49,6 +73,8 @@ export interface GameState {
   tapEarnedAll: number;
   tapsRun: number;
   tapsAll: number;
+  /** Achievements earned when the Trophies tab was last opened, for its badge. */
+  trophiesSeen: number;
   generators: number[];
   upgrades: Record<string, true>;
   achievements: Record<string, number>;
@@ -56,7 +82,15 @@ export interface GameState {
   /** Total Dark Matter ever earned; drives the production bonus. */
   darkMatter: number;
   darkMatterSpent: number;
+  /** Stellar Echo levels: a repeatable Dark Matter upgrade once the tree is complete. */
+  echoes: number;
+  /** Real-time ms of the last comeback gift (free Hyperdrive after days away); 0 for never. */
+  comebackAt: number;
+  /** App version this save last ran on, for the one-time "What's new" window; '' before any. */
+  versionSeen: string;
   collapses: number;
+  /** The last universes collapsed, newest first (up to PAST_RUNS_KEPT). */
+  pastRuns: PastRun[];
   cometsRun: number;
   cometsAll: number;
   buffs: Buff[];
@@ -69,6 +103,8 @@ export interface GameState {
   runStartedAt: number;
   /** Game-clock second this universe began. */
   runStartClock: number;
+  /** Best Dark Matter per hour seen this universe, for the "good time to collapse" nudge. */
+  runPeakRate: number;
   lastSeen: number;
   highestSps: number;
   offlineEarnedAll: number;
@@ -129,10 +165,20 @@ export interface GameState {
   wheelFree: boolean;
   wheelAds: number;
   wheelSpins: number;
+  /** Days in a row the free spin was used, and the last such day. */
+  wheelStreak: number;
+  wheelStreakDay: number;
+  /** Google Play rating prompt: when last asked, how often, and whether to stop. */
+  rateAskedAt: number;
+  rateAsks: number;
+  rateDone: boolean;
   /** Purchases by product id: how many times each was bought. */
   purchases: Record<string, number>;
   /** Celestial body skin id, or 'default'. */
   skin: string;
+  /** Golden Halo sky trail: earned on a 28-day spin streak, and whether it is shown. */
+  haloEarned: boolean;
+  haloOn: boolean;
   /** Hours of production saved in the Stardust Vault. */
   vaultHours: number;
   /** Real-time ms of the last vault fill; 0 until it starts. */
@@ -159,13 +205,18 @@ export function newState(now = Date.now()): GameState {
     tapEarnedAll: 0,
     tapsRun: 0,
     tapsAll: 0,
+    trophiesSeen: 0,
     generators: GENERATORS.map(() => 0),
     upgrades: {},
     achievements: {},
     cosmic: {},
     darkMatter: 0,
     darkMatterSpent: 0,
+    echoes: 0,
+    comebackAt: 0,
+    versionSeen: '',
     collapses: 0,
+    pastRuns: [],
     cometsRun: 0,
     cometsAll: 0,
     buffs: [],
@@ -175,6 +226,7 @@ export function newState(now = Date.now()): GameState {
     startedAt: now,
     runStartedAt: now,
     runStartClock: 0,
+    runPeakRate: 0,
     lastSeen: now,
     highestSps: 0,
     offlineEarnedAll: 0,
@@ -216,8 +268,15 @@ export function newState(now = Date.now()): GameState {
     wheelFree: true,
     wheelAds: 0,
     wheelSpins: 0,
+    wheelStreak: 0,
+    wheelStreakDay: -1,
+    rateAskedAt: 0,
+    rateAsks: 0,
+    rateDone: false,
     purchases: {},
     skin: 'default',
+    haloEarned: false,
+    haloOn: false,
     vaultHours: 0,
     vaultAt: 0,
     vaultsOpened: 0,
@@ -226,7 +285,7 @@ export function newState(now = Date.now()): GameState {
     dailyClaims: 0,
     contractTiers: 0,
     badgesWon: 0,
-    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, notifications: false },
+    settings: { sound: true, music: true, vibration: true, numberStyle: 'short', particles: true, reduceMotion: false, notifications: false, saver: false, saverAuto: false, saverManual: false, lang: 'auto', buyAmount: '1' },
   };
 }
 

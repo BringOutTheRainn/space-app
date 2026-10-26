@@ -1,14 +1,17 @@
 // Plays the game with a simple greedy bot to check pacing.
 // Usage: node tools/simulate.mjs [hours] [tapsPerSecond]
+// SESSIONS=10,120 plays in sessions instead: 10 minutes on, then 120 minutes
+// away earning offline progress, and so on until [hours] of real time pass.
 import { newState } from '../www/js/core/state.js';
-import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgrades, upgradePrice, tick, tap, buyCosmic, cosmicAvailable } from '../www/js/core/economy.js';
+import { computeDerived, generatorPrice, buyGenerator, buyUpgrade, availableUpgrades, upgradePrice, tick, tap, buyCosmic, cosmicAvailable, buyEcho } from '../www/js/core/economy.js';
 import { catchComet, cometDue, scheduleNextComet } from '../www/js/core/comets.js';
 import { checkAchievements } from '../www/js/core/achievements.js';
 import { checkAnomaly } from '../www/js/core/anomalies.js';
-import { pendingDarkMatter, collapse } from '../www/js/core/prestige.js';
+import { pendingDarkMatter, collapse, pastPeak, sampleRunPeak } from '../www/js/core/prestige.js';
 import { GENERATORS } from '../www/js/data/generators.js';
 import { COSMIC } from '../www/js/data/cosmic.js';
 import { fmt, fmtTime } from '../www/js/core/format.js';
+import { applyOffline } from '../www/js/core/save.js';
 
 const hours = Number(process.argv[2] ?? 6);
 const tps = Number(process.argv[3] ?? 3);
@@ -61,10 +64,18 @@ function bestBuy() {
   return best;
 }
 
+const [playMin, awayMin] = (process.env.SESSIONS ?? '').split(',').map(Number);
+let sessionEnds = playMin * 60;
+let lastSample = 0;
 let runStart = 0;
 const end = hours * 3600;
 const comets = { seen: 0, caught: 0 };
 while (s.time < end) {
+  if (playMin > 0 && s.time >= sessionEnds) {
+    s.lastSeen = 0;
+    applyOffline(s, d, awayMin * 60_000);
+    sessionEnds = s.time + playMin * 60;
+  }
   for (let i = 0; i < tps; i++) tap(s, d);
   if (tick(s, d, 1)) d = computeDerived(s);
   if (cometDue(s)) {
@@ -89,9 +100,16 @@ while (s.time < end) {
   }
   const pending = pendingDarkMatter(s);
   once('dm1', pending >= 1, 'first Dark Matter available');
-  // Collapse when it would at least double Dark Matter (and at least 3 on the first one).
+  // Collapse when it would at least double Dark Matter (and at least 10 on the first one).
+  // PEAK=1 instead collapses when the game's own nudge says so (Dark Matter per hour past its
+  // peak, see pastPeak in prestige.ts), sampled once a second as the game does.
   const want = Math.max(10, s.darkMatter);
-  if (pending >= want) {
+  let go = pending >= want;
+  if (process.env.PEAK && s.collapses > 0) {
+    if (s.time - lastSample >= 1) { sampleRunPeak(s); lastSample = s.time; }
+    go = pastPeak(s);
+  }
+  if (go) {
     mark(`collapse #${s.collapses + 1}: +${pending} Dark Matter (run took ${fmtTime(s.time - runStart)}, ${Object.keys(s.achievements).length} achievements)`);
     collapse(s, d, 0);
     let bought = true;
@@ -99,11 +117,13 @@ while (s.time < end) {
       bought = false;
       const open = COSMIC.filter((c) => cosmicAvailable(s, c.id)).sort((a, b) => a.cost - b.cost);
       for (const c of open) if (buyCosmic(s, c.id)) { bought = true; mark(`  cosmic: ${c.name}`); break; }
+      if (!bought && buyEcho(s)) { bought = true; mark(`  Stellar Echo ${s.echoes}`); }
     }
     d = computeDerived(s);
     runStart = s.time;
   }
 }
 console.log(marks.join('\n'));
-console.log(`\nAfter ${hours}h at ${tps} taps/s: ${fmt(s.earnedAll)} earned, ${fmt(d.baseSps)}/s, DM ${s.darkMatter}, ${Object.keys(s.upgrades).length} upgrades, ${Object.keys(s.achievements).length} achievements, comets ${comets.caught}/${comets.seen}`);
+const mode = playMin > 0 ? ` (${playMin} min sessions every ${playMin + awayMin} min)` : '';
+console.log(`\nAfter ${hours}h at ${tps} taps/s${mode}: ${fmt(s.earnedAll)} earned, ${fmt(d.baseSps)}/s, DM ${s.darkMatter}, ${Object.keys(s.upgrades).length} upgrades, ${Object.keys(s.achievements).length} achievements, comets ${comets.caught}/${comets.seen}`);
 console.log('Generators:', s.generators.join(' '));

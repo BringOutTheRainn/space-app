@@ -38,6 +38,11 @@ needs a signing key in the repository secrets; see [docs/RELEASE.md](docs/RELEAS
 npm test                          # builds, then runs tests/*.test.js with Node's test runner
 node tools/simulate.mjs 12 3      # a greedy bot plays 12 hours at 3 taps/s and prints milestones
 npm run screens                   # headless Chromium screenshots at phone size into screens/
+npm run release-check             # every browser check below in one go, about 18 minutes
+node tools/fit-check.mjs          # with www/ served on port 8766: cut-off text or leftover English, 5 languages (--zoom=1.3 for large Android text)
+node tools/monkey.mjs             # with www/ served on port 8766: random taps in 5 languages, new and late game
+node tools/contrast-check.mjs     # with www/ served on port 8766: text contrast on every tab and window
+node tools/name-check.mjs         # with www/ served on port 8766: in all five languages: every control has a screen reader name, none look alike, no text untranslated
 ```
 
 ## How it is organised
@@ -62,6 +67,11 @@ tests/         Rule tests
 | Add a cosmic upgrade | `src/data/cosmic.ts` (x and y place it in the tree) |
 | Add a headline | `src/data/news.ts` |
 | Change the app icon | `www/icon.svg` and `resources/icon-foreground.svg`, then `npm run icons` |
+| Release an update | See `docs/RELEASE.md`, Later releases |
+
+The game is in English, Spanish, Portuguese, French and German. Any new text players see also needs
+a line in `src/i18n/es.ts`, `pt.ts`, `fr.ts` and `de.ts` (game data such as generator, upgrade and
+achievement names goes in the matching `*-data.ts` files). `npm test` lists anything still missing.
 
 Saves live in local storage under `stardust-empire-save`, are versioned, and migrate through
 `MIGRATIONS` in `src/core/save.ts`. Players can copy and load a save code from Settings.

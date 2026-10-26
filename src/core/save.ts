@@ -2,12 +2,19 @@
 
 import { GENERATORS } from '../data/generators.js';
 import { earn, HYPER_MULT, type Derived } from './economy.js';
+import { fixClockJump } from './clock.js';
 import { EVENT_GENS } from './event.js';
 import { seedById, type Plot } from './garden.js';
 import { GOODS, HISTORY } from './market.js';
-import { newState, SAVE_VERSION, type GameState } from './state.js';
+import { BUY_AMOUNTS, newState, SAVE_VERSION, type BuyAmountSetting, type GameState } from './state.js';
+import type { NumberStyle } from './format.js';
+
+const NUMBER_STYLES: NumberStyle[] = ['short', 'scientific'];
 
 export const SAVE_KEY = 'stardust-empire-save';
+/** A second copy, refreshed every few minutes, used if the main save is unreadable. */
+export const BACKUP_KEY = SAVE_KEY + '-backup';
+export const BACKUP_EVERY_MS = 5 * 60000;
 
 export function serialize(s: GameState): string {
   return JSON.stringify(s);
@@ -18,10 +25,72 @@ type Migration = (raw: Record<string, unknown>) => void;
 // MIGRATIONS[n] upgrades a version n save to version n + 1.
 const MIGRATIONS: Record<number, Migration> = {};
 
+/**
+ * Puts back any top-level number that is not finite (NaN, Infinity or null),
+ * or is negative where it never can be,
+ * with its starting value, so one bad value cannot break every later save.
+ * Returns the names of the fields it fixed.
+ */
+export function repairNumbers(s: GameState, now = Date.now()): string[] {
+  const base = newState(now) as unknown as Record<string, unknown>;
+  const st = s as unknown as Record<string, unknown>;
+  const fixed: string[] = [];
+  for (const k of Object.keys(base)) {
+    // No saved count, balance or clock is ever below its default (0, or -1 for "never").
+    if (typeof base[k] === 'number' && !(typeof st[k] === 'number' && Number.isFinite(st[k]) && st[k] >= Math.min(0, base[k] as number))) {
+      st[k] = base[k];
+      fixed.push(k);
+    }
+  }
+  return fixed;
+}
+
+/**
+ * Puts back the default for any list, record, text or flag whose type is wrong
+ * (a hand-edited import or a damaged save), so one bad field cannot stop the
+ * game from starting. Lists of records keep only their well-formed entries.
+ */
+function repairShapes(s: GameState, base: GameState): void {
+  const st = s as unknown as Record<string, unknown>;
+  const b = base as unknown as Record<string, unknown>;
+  const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+  for (const k of Object.keys(b)) {
+    const want = b[k];
+    const have = st[k];
+    if (Array.isArray(want)) {
+      if (!Array.isArray(have)) st[k] = want;
+    } else if (isRecord(want)) {
+      if (!isRecord(have)) st[k] = want;
+    } else if (typeof want === 'string' || typeof want === 'boolean') {
+      if (typeof have !== typeof want) st[k] = want;
+    }
+  }
+  s.buffs = s.buffs.filter((x) => isRecord(x) && typeof x.kind === 'string' && Number.isFinite(x.endsAt));
+  s.expeditions = s.expeditions.filter((x) => isRecord(x) && typeof x.id === 'string' && Number.isFinite(x.returnsAt));
+  s.missions = s.missions.filter((x) => isRecord(x));
+  s.pastRuns = s.pastRuns.filter((x) => isRecord(x) && Number.isFinite(x.dm) && x.dm >= 0 && Number.isFinite(x.secs) && x.secs >= 0).slice(0, 10);
+}
+
+/** The first readable save among the main copy and the backup, or null. */
+export function pickSave(main: string | null, backup: string | null, now = Date.now()): { state: GameState; from: 'main' | 'backup' } | null {
+  for (const [text, from] of [[main, 'main'], [backup, 'backup']] as const) {
+    if (!text) continue;
+    try {
+      return { state: deserialize(text, now), from };
+    } catch {
+      /* try the next copy */
+    }
+  }
+  return null;
+}
+
 /** Parses a save, filling any missing fields with defaults. Throws on garbage. */
 export function deserialize(text: string, now = Date.now()): GameState {
   const raw = JSON.parse(text) as Record<string, unknown>;
-  if (!raw || typeof raw !== 'object' || typeof raw.stardust !== 'number') throw new Error('Not a Stardust Empire save');
+  if (!raw || typeof raw !== 'object') throw new Error('Not a Stardust Empire save');
+  // A NaN that slipped into a save is written as null; keep the rest of the save.
+  if (raw.stardust === null && typeof raw.earnedAll === 'number') raw.stardust = 0;
+  if (typeof raw.stardust !== 'number') throw new Error('Not a Stardust Empire save');
   let version = typeof raw.version === 'number' ? raw.version : 1;
   while (version < SAVE_VERSION) {
     MIGRATIONS[version]?.(raw);
@@ -29,7 +98,19 @@ export function deserialize(text: string, now = Date.now()): GameState {
   }
   const base = newState(now);
   const s = { ...base, ...raw, version: SAVE_VERSION } as GameState;
-  s.settings = { ...base.settings, ...(raw.settings as object) };
+  repairShapes(s, base);
+  // Settings keep only known keys, each with the type of its default; a wrong value falls back to it.
+  const rawSettings = (raw.settings && typeof raw.settings === 'object' ? raw.settings : {}) as Record<string, unknown>;
+  const settings = { ...base.settings } as Record<string, unknown>;
+  for (const [k, def] of Object.entries(base.settings)) if (typeof rawSettings[k] === typeof def) settings[k] = rawSettings[k];
+  if (!NUMBER_STYLES.includes(settings.numberStyle as NumberStyle)) settings.numberStyle = base.settings.numberStyle;
+  if (!BUY_AMOUNTS.includes(settings.buyAmount as BuyAmountSetting)) settings.buyAmount = base.settings.buyAmount;
+  s.settings = settings as unknown as GameState['settings'];
+  s.echoes = Math.max(0, Math.floor(Number(s.echoes) || 0));
+  s.comebackAt = Math.max(0, Number(s.comebackAt) || 0);
+  s.versionSeen = typeof s.versionSeen === 'string' ? s.versionSeen : '';
+  // Saves from before the Trophies badge count everything earned so far as seen.
+  if (typeof raw.trophiesSeen !== 'number') s.trophiesSeen = Object.keys(s.achievements ?? {}).length;
   // New generators added after this save was made start at zero.
   const gens = Array.isArray(raw.generators) ? (raw.generators as number[]) : [];
   s.generators = GENERATORS.map((_, i) => (typeof gens[i] === 'number' && gens[i] >= 0 ? Math.floor(gens[i]) : 0));
@@ -65,6 +146,7 @@ export function deserialize(text: string, now = Date.now()): GameState {
   for (const key of ['stardust', 'earnedRun', 'earnedAll'] as const) {
     if (!isFinite(s[key]) || s[key] < 0) s[key] = 0;
   }
+  repairNumbers(s, now);
   return s;
 }
 
@@ -77,7 +159,10 @@ export function exportSave(s: GameState): string {
 }
 
 export function importSave(code: string, now = Date.now()): GameState {
-  const bin = atob(code.trim());
+  // Codes pasted back from chat or email can pick up quotes, line breaks,
+  // invisible characters or the URL-safe alphabet; keep only the code itself.
+  const clean = code.replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
+  const bin = atob(clean);
   const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
   return deserialize(new TextDecoder().decode(bytes), now);
 }
@@ -94,6 +179,7 @@ export interface OfflineResult {
  * comet boosts expire.
  */
 export function applyOffline(s: GameState, d: Derived, now = Date.now()): OfflineResult {
+  fixClockJump(s, now);
   const seconds = Math.max(0, (now - s.lastSeen) / 1000);
   const from = s.lastSeen;
   s.lastSeen = now;

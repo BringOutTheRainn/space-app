@@ -2,6 +2,7 @@
 // get a notification, at most one of each kind, so they stay welcome.
 
 import { AD_CONFIG } from '../data/ads.js';
+import { COMEBACK_AWAY_MS, COMEBACK_EVERY_MS, COMEBACK_HYPER_MINUTES, COMEBACK_MIN_PLAY } from './away.js';
 import { dailyReady, dayNumber } from './daily.js';
 import type { Derived } from './economy.js';
 import type { GameState } from './state.js';
@@ -12,6 +13,29 @@ export interface Reminder {
   at: number;
   title: string;
   body: string;
+  /** The body as English sentences with their values, translated by the app before scheduling. */
+  parts: ReminderPart[];
+}
+
+export interface ReminderPart {
+  key: string;
+  vars?: Record<string, number>;
+}
+
+/** Every reminder sentence, so tests can check each has a translation. */
+export const REMINDER_TEXT = [
+  'Storage full', 'Hyperdrive ended', 'Probe returned', 'Daily supply drop',
+  'Your empire has stored {h} hours of Stardust and stopped collecting. Come empty it.',
+  'Production is back to normal speed. Engage Hyperdrive again?',
+  'An expedition is back with loot. Open it before you send the next one.',
+  'A free supply drop is waiting.',
+  'Keep your {n} day streak going.',
+  'A gift is waiting', 'Come back for {h} hours of free Hyperdrive. Your empire missed you.',
+];
+
+function reminder(id: number, at: number, title: string, ...parts: ReminderPart[]): Reminder {
+  const fill = (p: ReminderPart) => p.key.replace(/\{(\w+)\}/g, (_, k: string) => String(p.vars?.[k] ?? ''));
+  return { id, at, title, body: parts.map(fill).join(' '), parts };
 }
 
 const MIN_DELAY = 10 * 60000;
@@ -29,23 +53,26 @@ function nextLocalHour(from: number, hour: number): number {
 export function planReminders(s: GameState, d: Derived, now = Date.now()): Reminder[] {
   const out: Reminder[] = [];
   if (d.baseSps > 0) {
-    out.push({
-      id: 1,
-      at: now + d.offlineCapHours * 3600000,
-      title: 'Storage full',
-      body: `Your empire has stored ${d.offlineCapHours} hours of Stardust and stopped collecting. Come empty it.`,
-    });
+    out.push(reminder(1, now + d.offlineCapHours * 3600000, 'Storage full',
+      { key: 'Your empire has stored {h} hours of Stardust and stopped collecting. Come empty it.', vars: { h: d.offlineCapHours } }));
   }
   if (AD_CONFIG.enabled && s.hyperEndsAt > now) {
-    out.push({ id: 2, at: s.hyperEndsAt, title: 'Hyperdrive ended', body: 'Production is back to normal speed. Engage Hyperdrive again?' });
+    out.push(reminder(2, s.hyperEndsAt, 'Hyperdrive ended', { key: 'Production is back to normal speed. Engage Hyperdrive again?' }));
   }
   const back = s.expeditions.map((e) => e.returnsAt).filter((t) => t > now);
   if (back.length) {
-    out.push({ id: 3, at: Math.min(...back), title: 'Probe returned', body: 'An expedition is back with loot. Open it before you send the next one.' });
+    out.push(reminder(3, Math.min(...back), 'Probe returned', { key: 'An expedition is back with loot. Open it before you send the next one.' }));
   }
   // Daily drop: remind the evening of the next day it is ready.
   const readyAt = dailyReady(s, now) ? now : nextLocalHour(now, 0);
-  const streakNote = s.dailyStreak > 1 && s.dailyLastDay >= dayNumber(now) - 1 ? ` Keep your ${s.dailyStreak} day streak going.` : '';
-  out.push({ id: 4, at: nextLocalHour(Math.max(readyAt, now + MIN_DELAY), DAILY_HOUR), title: 'Daily supply drop', body: `A free supply drop is waiting.${streakNote}` });
+  const parts: ReminderPart[] = [{ key: 'A free supply drop is waiting.' }];
+  if (s.dailyStreak > 1 && s.dailyLastDay >= dayNumber(now) - 1) parts.push({ key: 'Keep your {n} day streak going.', vars: { n: s.dailyStreak } });
+  out.push(reminder(4, nextLocalHour(Math.max(readyAt, now + MIN_DELAY), DAILY_HOUR), 'Daily supply drop', ...parts));
+  // Comeback gift: one nudge on the evening it becomes due, if it will be.
+  const giftAt = nextLocalHour(now + COMEBACK_AWAY_MS, DAILY_HOUR);
+  if (s.playSeconds >= COMEBACK_MIN_PLAY && (!s.comebackAt || giftAt - s.comebackAt >= COMEBACK_EVERY_MS)) {
+    out.push(reminder(5, giftAt, 'A gift is waiting',
+      { key: 'Come back for {h} hours of free Hyperdrive. Your empire missed you.', vars: { h: COMEBACK_HYPER_MINUTES / 60 } }));
+  }
   return out.filter((r) => r.at - now >= MIN_DELAY).sort((a, b) => a.at - b.at);
 }

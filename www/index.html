@@ -15,6 +15,51 @@
 <body>
   <div id="app"><div class="boot">Stardust Empire</div></div>
   <noscript>Stardust Empire needs JavaScript to run.</noscript>
+  <script>
+    // Phones with a very old Android System WebView cannot run the game (it needs Chrome 80
+    // features). Say so, instead of leaving the loading screen up forever.
+    (function () {
+      try { new Function('var a = {}; return a?.b ?? 1;'); return; } catch (e) { /* too old */ }
+      var l = (navigator.language || 'en').slice(0, 2);
+      var m = {
+        es: 'Stardust Empire necesita una versión más reciente de Android System WebView. Actualízala (y Chrome) desde Google Play y vuelve a abrir el juego.',
+        pt: 'Stardust Empire precisa de uma versão mais recente do Android System WebView. Atualize-o (e o Chrome) pelo Google Play e abra o jogo de novo.',
+        fr: 'Stardust Empire a besoin d\u2019une version plus récente d\u2019Android System WebView. Mettez-la à jour (ainsi que Chrome) depuis Google Play, puis rouvrez le jeu.',
+        de: 'Stardust Empire braucht eine neuere Version von Android System WebView. Aktualisiere sie (und Chrome) über Google Play und öffne das Spiel dann erneut.'
+      }[l] || 'Stardust Empire needs a newer Android System WebView. Update it (and Chrome) from Google Play, then open the game again.';
+      var app = document.getElementById('app');
+      app.innerHTML = '<div class="boot old-webview" role="alert"></div>';
+      app.firstChild.textContent = m;
+      // The game normally hides the splash screen itself.
+      try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
+    })();
+  </script>
+  <script>
+    // If the game script never starts (a file missing or broken by a bad update), say so
+    // instead of leaving the splash screen up forever: at once when a script fails before the
+    // game is up, or after 30 seconds if nothing has happened (a slow phone gets that long).
+    (function () {
+      function fail() {
+        if (window.__game || document.querySelector('.crash, .old-webview')) return;
+        var l = (navigator.language || 'en').slice(0, 2);
+        var m = {
+          es: 'Stardust Empire no pudo iniciarse. Cierra el juego y vuelve a abrirlo.',
+          pt: 'Stardust Empire não conseguiu iniciar. Feche o jogo e abra de novo.',
+          fr: 'Stardust Empire n\u2019a pas pu démarrer. Fermez le jeu puis rouvrez-le.',
+          de: 'Stardust Empire konnte nicht starten. Schließe das Spiel und öffne es erneut.'
+        }[l] || 'Stardust Empire could not start. Please close the game and open it again.';
+        var app = document.getElementById('app');
+        app.innerHTML = '<div class="boot old-webview" role="alert"></div>';
+        app.firstChild.textContent = m;
+        try { window.Capacitor.Plugins.SplashScreen.hide(); } catch (e) { /* not in the app */ }
+      }
+      window.addEventListener('error', function (e) {
+        if (window.__game) return;
+        if (e instanceof ErrorEvent || (e.target && e.target.tagName === 'SCRIPT')) setTimeout(fail, 500);
+      }, true);
+      setTimeout(fail, 30000);
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
