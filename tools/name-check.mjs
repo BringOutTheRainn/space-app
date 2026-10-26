@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 // Screen reader names: every visible control on every tab and window has a name, and no two
 // controls in the same view share one (TalkBack users could not tell "Enter" from "Enter").
+// Runs in every language, and also fails on any text shown without its translation.
 // Serve www/ on port 8766 first (npx http-server www -p 8766), then: node tools/name-check.mjs
 let pw;
 try { pw = require('playwright'); } catch { pw = require('/opt/node22/lib/node_modules/playwright'); }
@@ -10,7 +11,7 @@ try { pw = require('playwright'); } catch { pw = require('/opt/node22/lib/node_m
 const SAME_OK = ['plot empty', 'trophy secret', 'modal-x'];
 const b = await pw.chromium.launch();
 const problems = [];
-for (const locale of ['en-US', 'de-DE']) {
+for (const locale of ['en-US', 'es-ES', 'pt-BR', 'fr-FR', 'de-DE']) {
   const p = await b.newPage({ viewport: { width: 360, height: 640 }, locale });
   p.on('pageerror', (e) => problems.push(`${locale}: page error ${e.message}`));
   await p.goto('http://127.0.0.1:8766/index.html'); await p.waitForTimeout(1000);
@@ -54,8 +55,10 @@ for (const locale of ['en-US', 'de-DE']) {
     problems.push(...(await scan(`${locale} ${where}`)));
     await close();
   }
+  const miss = await p.evaluate(async () => (await import('/js/i18n/index.js')).missingText());
+  for (const m of miss) problems.push(`${locale}: shown untranslated: "${m}"`);
   await p.close();
 }
 await b.close();
-console.log(problems.length ? problems.join('\n') : 'every control named, no look-alikes');
+console.log(problems.length ? problems.join('\n') : 'every control named, no look-alikes, nothing untranslated');
 process.exitCode = problems.length ? 1 : 0;

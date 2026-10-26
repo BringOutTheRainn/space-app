@@ -23,7 +23,7 @@ const CHECKS = [
   ['Text fits, no leftover English', 'tools/fit-check.mjs'],
   ['Text fits with Android text at 130%', 'tools/fit-check.mjs', '--zoom=1.3'],
   ['Text contrast', 'tools/contrast-check.mjs'],
-  ['Screen reader names', 'tools/name-check.mjs'],
+  ['Screen reader names and translations', 'tools/name-check.mjs'],
   ['Damaged saves', 'tools/ui-save-fuzz.mjs', '40'],
   ['Windows left open and 300 toasts', 'tools/soak.mjs'],
 ];

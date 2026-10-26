@@ -1357,6 +1357,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 202. Shortcut buttons read well.** Run 200's focus check printed the Garden, Forge and Market buttons' text run together ("GardenPlots empty"). This run looked at the browser's accessibility tree to see what TalkBack would actually read. It is "Garden Plots empty", "Forge 60/60 heat" and "Market Prices steady", with the space in place. The top bar and the buttons around the sky read well too: "Stardust: 300 trillion 84.98 million per second", Shop, Stats, Settings, "Celestial body. Tap to harvest Stardust.", Daily reward, Missions with its count, and "Hyperdrive, Spin free". No changes were needed.
 
+**Run 203. Every language checked for untranslated text on screen.** The key check only finds text written straight into the code, so text built at run time (anomaly names, goods, boosts) could still show in English. The screen reader name check now runs in all five languages, opens every tab and window on a late-game save, and then asks the game which text it showed without a translation. Spanish, Portuguese, French and German showed none, and no two controls share a name in any language. It adds about a minute, so the release check now takes about 18 minutes.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
