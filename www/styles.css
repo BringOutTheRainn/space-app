@@ -388,7 +388,9 @@ body.has-banner #app { padding-bottom: var(--banner-h, 60px); }
   opacity: .86;
   transition: opacity .15s, border-color .15s;
 }
-.gen.afford { opacity: 1; border-color: #3a4590; }
+/* Red and green prices look alike to red-green colour-blind players (both turn a dull or bright
+   yellow), so a card you can buy also gets a green bar down its left edge. */
+.gen.afford { opacity: 1; border-color: #3a4590; box-shadow: inset 3px 0 0 var(--green); }
 .gen.gone { display: none; }
 .gen:active { transform: scale(.985); }
 .gen.bought { animation: bought .35s ease-out; }

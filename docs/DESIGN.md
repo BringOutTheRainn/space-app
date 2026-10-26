@@ -1325,6 +1325,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 186. Saving keeps working when storage is full.** Before, a full browser or WebView storage stopped the save and showed the warning, even when old unreadable save copies and the error log were taking the space. Now the main save frees space in order (old unreadable copies, then the stored error log, then the backup) and tries again after each step, and a failed backup no longer marks saving as broken. Checked in Playwright with storage capped at 60,000 characters and filled by two old copies: the save went through with no warning and progress survived a reload.
 
+**Run 187. Buyable generators no longer rely on colour alone.** A card you can afford showed its price in green and one you cannot in red. Simulating red-green colour blindness (deuteranopia and protanopia) turns both into yellow, told apart only by brightness. A buyable card now also gets a green bar down its left edge, a shape cue that survives any colour vision. Upgrade chips (greyed out until buyable) and Cosmos nodes (glow when buyable) already had non-colour cues. Checked in Playwright with a deuteranopia filter over the whole page.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
