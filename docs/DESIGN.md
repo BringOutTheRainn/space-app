@@ -1367,6 +1367,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 207. Pull request description brought up to date.** The description of the launch pull request now includes the work since run 196: focus moving into windows and back, a clean console during play, long absences, the untranslated-text check in all five languages, the new-player replay, the unused-code compiler check, and the last release check passing all seven checks. The steps only the owner can do are unchanged.
 
+**Run 208. Slow-phone check on the final build.** Repeated run 181's method on a late-game save with all 14 generator types: 60 fps at full speed and 39 fps with the CPU slowed 4x (run 181: 29 to 38), so the work since then has not slowed the game. With the CPU slowed 6x, a warm start in Portuguese ran 241 ms of script and the game was ready in about a second, in line with run 188. At 6x on a 2x-density screen this headless browser, which paints in software, reaches only 12 fps; real phones paint the sky on the GPU, and battery saver is offered when frames drop. No code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
