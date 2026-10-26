@@ -1369,6 +1369,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 208. Slow-phone check on the final build.** Repeated run 181's method on a late-game save with all 14 generator types: 60 fps at full speed and 39 fps with the CPU slowed 4x (run 181: 29 to 38), so the work since then has not slowed the game. With the CPU slowed 6x, a warm start in Portuguese ran 241 ms of script and the game was ready in about a second, in line with run 188. At 6x on a 2x-density screen this headless browser, which paints in software, reaches only 12 fps; real phones paint the sky on the GPU, and battery saver is offered when frames drop. No code changed.
 
+**Run 209. Project copy of the release guide brought up to date.** The copy of `docs/RELEASE.md` in the project files (`space-clicker/release.md`) was months of changes behind: it still had the old listing text and lacked the preflight warnings, the contact email step and the 18-minute release check. It now matches the repo. The four store listing copies and `design.md` already matched. No game code changed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
