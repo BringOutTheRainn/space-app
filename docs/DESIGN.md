@@ -1341,6 +1341,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 194. Screen reader names join the release check.** The scans from runs 192 and 193 are now `tools/name-check.mjs`, the seventh release check. On a late-game save in English and German it opens every tab and window and fails if a visible control has no accessible name, or if two controls in the same view share one. Allowed repeats: empty Garden plots, locked secret trophies, and a window's ✕ next to its own Close button, which do the same thing. It takes about 50 seconds and passes now. As a test, removing the Anomaly buttons' names made it fail with "6 controls named Enter".
 
+**Run 195. Upgrade chips tell screen readers their price.** The chips above the generator list were read only by name ("Carbide Bits"), and TalkBack did not say which ones were affordable; sighted players see the others greyed out. Each chip now reads like the Upgrades tab's buy button ("Buy Carbide Bits for 500 Stardust") and carries `aria-disabled` until it is affordable, as generator cards have since run 191. Tapping a chip you cannot afford still shows its price and effect. The label is rebuilt only when the price changes. Checked in Playwright in English and Spanish (Spain), and the name check from run 194 still passes.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

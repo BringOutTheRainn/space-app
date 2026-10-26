@@ -215,7 +215,15 @@ export class BuildPanel implements Panel {
     }
     this.strip.querySelectorAll<HTMLElement>('[data-upg]').forEach((el) => {
       const u = UPGRADE_BY_ID[el.dataset.upg!];
-      toggleClass(el, 'afford', upgradePrice(d, u) <= s.stardust);
+      const price = upgradePrice(d, u);
+      const afford = price <= s.stardust;
+      toggleClass(el, 'afford', afford);
+      // Sighted players see the chip greyed out until they can buy it; TalkBack hears the price and "disabled".
+      setAttr(el, 'aria-disabled', String(!afford));
+      if (el.dataset.price !== String(price)) {
+        el.dataset.price = String(price);
+        el.setAttribute('aria-label', t('Buy {name} for {price} Stardust', { name: tName(u), price: fmtSpoken(price) }));
+      }
     });
 
     let shownNext = false;
