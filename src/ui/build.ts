@@ -244,7 +244,10 @@ export class BuildPanel implements Panel {
         setText(row.priceSr, fmtSpoken(price));
       }
       setText(row.qty, amount > 1 ? ` x${amount}` : '');
-      toggleClass(row.el, 'afford', visible && !locked && price <= s.stardust);
+      const canBuy = visible && !locked && price <= s.stardust;
+      toggleClass(row.el, 'afford', canBuy);
+      // TalkBack reads "disabled" on a card you cannot buy yet, as sighted players see it dimmed.
+      setAttr(row.el, 'aria-disabled', String(!canBuy));
       const owned = s.generators[i];
       setText(row.owned, owned ? String(owned) : '');
       // Progress toward the next tier upgrade (5, 25, 50 ... 250 owned), the bar resets at each one.

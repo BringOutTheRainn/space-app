@@ -1333,6 +1333,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 190. Store screenshots retaken with the new buy cue.** Run 187 added a green bar to generator cards you can afford, which shows in most store shots. All 80 screenshots were taken again with tools/store-shots.mjs: 8 phone and 8 tablet shots in each of English, Spanish, Portuguese, French and German. None had page errors. They were copied into the store folder in the same places as before (English at the top and in `tablet/`, the others in their language folders).
 
+**Run 191. Screen readers hear which generators you can buy.** Sighted players see a card they cannot afford dimmed with a red price (and, since run 187, without the green bar). TalkBack read every card the same way, so a blind player only found out by tapping and hearing the denied sound. A card you cannot buy now carries `aria-disabled`, so TalkBack adds "disabled"; it stays focusable, and tapping it still plays the denied sound. Upgrade chips are left as they are, because tapping one you cannot afford shows its price and effect. Checked in Playwright through the accessibility tree (the drone reads as disabled at the start, enabled at 18 Stardust, and buying still works), and the random-tap check passed in four languages.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
