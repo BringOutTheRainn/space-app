@@ -1359,6 +1359,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 203. Every language checked for untranslated text on screen.** The key check only finds text written straight into the code, so text built at run time (anomaly names, goods, boosts) could still show in English. The screen reader name check now runs in all five languages, opens every tab and window on a late-game save, and then asks the game which text it showed without a translation. Spanish, Portuguese, French and German showed none, and no two controls share a name in any language. It adds about a minute, so the release check now takes about 18 minutes.
 
+**Run 204. A new player's first five minutes, replayed in Spanish.** The last full replay of a new player was run 24, and much has been added since. A browser player started a fresh game in Spanish on a 360x640 phone, tapping about six times a second and buying what it could. The first Mining Drone came at 5 seconds, the first upgrade at 74, the second generator at 80, the first comet (caught) at 91 and the third generator at about 4 minutes. Each hint showed once, in order, and cleared as soon as it was done. No window opened on its own, and there were no errors or warnings. Nothing needed changing.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
