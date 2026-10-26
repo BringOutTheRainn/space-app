@@ -1329,6 +1329,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 188. Only the player's language loads at start.** Every start fetched and parsed all four translations (about 280 KB, 38% of the game's script) though a player sees one. Translations now load on demand: the game waits for the save's language before drawing, English loads none, and a translation that cannot be read leaves the game in English instead of failing. Changing language in Settings already restarts the page, so nothing else changed. On a 6x slowed CPU, script time at start fell from 543 to 242 ms in English and 622 to 294 ms in Portuguese; the first screen shows about 170 ms sooner. Checked in Playwright with Portuguese, German and English phones and a switch to French.
 
+**Run 189. Release check after the startup change.** Run 188 made startup wait for the translation, so the full release check ran again and all six checks passed: random taps in every language, text fit at normal size and at 130%, contrast, damaged saves, and windows left open with 300 toasts (heap 3.0 MB, down from 3.3). Also checked in Playwright: when startup fails on a Portuguese phone, the crash screen still explains it in Portuguese, and when the Portuguese translation cannot be read, the game starts in English with no errors.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
