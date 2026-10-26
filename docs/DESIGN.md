@@ -1347,6 +1347,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 197. Long absences, and no audio warnings at start.** A late-game save was moved back 1, 60 and 400 days and loaded in Playwright. Each time the Welcome back window showed the capped offline harvest ("Storage filled up after 8 hours"), the Forge and Vault lines and the time away ("400d 0h"), with no errors. The same check found that any sound before the first tap (such as achievement sounds on load) created the audio context early, and the browser logged "AudioContext was not allowed to start" 18 times per start. On Android those warnings would land in logcat and the pre-launch report. Now only the first tap creates the context; sounds and music before it are skipped, since they could not play anyway. Checked: no warnings at start, and 14 sound effects after five taps.
 
+**Run 198. Console stays clean during play.** After run 197's audio fix, a scripted session (new game and late game, English and Portuguese, every tab and window, an autosave) logged no console warnings or errors at all. To keep it that way, the random-tap release check (`tools/monkey.mjs`) now fails on console warnings as well as errors. The Android WebView passes both to logcat, which Play's pre-launch report reads. It passes in all four of its runs.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).

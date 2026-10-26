@@ -15,7 +15,8 @@ for (const [i, [locale, late]] of RUNS.entries()) {
   const p = await b.newPage({ viewport: { width: 360, height: 640 }, hasTouch: true, locale });
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
-  p.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  // Warnings too: the WebView sends them to logcat, which Play's pre-launch report reads (run 197 found 18 audio ones per start).
+  p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(m.type() + ': ' + m.text()); });
   p.on('dialog', (d) => d.dismiss());
   await p.goto('http://127.0.0.1:8766/index.html'); await p.waitForTimeout(800);
   if (late) await p.evaluate(() => { const { ctx } = window.__game; const s = ctx.s; s.tutorialDone = true; s.stardust = 3e17; s.earnedRun = 4e17; s.earnedAll = 9e18; s.darkMatter = 400; s.collapses = 4; s.crystals = 40;
