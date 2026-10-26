@@ -1343,6 +1343,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 195. Upgrade chips tell screen readers their price.** The chips above the generator list were read only by name ("Carbide Bits"), and TalkBack did not say which ones were affordable; sighted players see the others greyed out. Each chip now reads like the Upgrades tab's buy button ("Buy Carbide Bits for 500 Stardust") and carries `aria-disabled` until it is affordable, as generator cards have since run 191. Tapping a chip you cannot afford still shows its price and effect. The label is rebuilt only when the price changes. Checked in Playwright in English and Spanish (Spain), and the name check from run 194 still passes.
 
+**Run 196. Pull request description brought up to date.** PR #1's description last changed in run 180. It now covers the work since then: full-storage recovery, loading only the player's language at start, the non-colour buy cue, screen reader names and the name check in the release check, and the regional store listings. It also lists the remaining items only the owner can do (AdMob IDs, the ADMOB_APP_ID variable, the contact email, the regional listings and app-ads.txt hosting).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
