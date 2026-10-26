@@ -1331,6 +1331,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 189. Release check after the startup change.** Run 188 made startup wait for the translation, so the full release check ran again and all six checks passed: random taps in every language, text fit at normal size and at 130%, contrast, damaged saves, and windows left open with 300 toasts (heap 3.0 MB, down from 3.3). Also checked in Playwright: when startup fails on a Portuguese phone, the crash screen still explains it in Portuguese, and when the Portuguese translation cannot be read, the game starts in English with no errors.
 
+**Run 190. Store screenshots retaken with the new buy cue.** Run 187 added a green bar to generator cards you can afford, which shows in most store shots. All 80 screenshots were taken again with tools/store-shots.mjs: 8 phone and 8 tablet shots in each of English, Spanish, Portuguese, French and German. None had page errors. They were copied into the store folder in the same places as before (English at the top and in `tablet/`, the others in their language folders).
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
