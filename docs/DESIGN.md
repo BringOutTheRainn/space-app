@@ -1339,6 +1339,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 193. No more look-alike buttons for screen readers.** Following run 192, a scan of every tab and window looked for buttons in the same view with the same accessible name, which TalkBack users cannot tell apart. Found: six Anomaly buttons that each said "Enter", the two Boosts buttons that each said "Watch ad", and the Shop's buy buttons, which said only their price (five read "$0.99"). They now read "Enter Hands Tied", "Watch ad: Hyperdrive" and "Starter Pack, $0.99", in all five languages. The other languages use a colon form ("Entrar: Manos Atadas") so the grammar holds for every name. Left as they are: empty Garden plots ("Plant Star Moss" on each, and any plot does the same thing) and locked secret trophies. A rescan found no other repeats.
 
+**Run 194. Screen reader names join the release check.** The scans from runs 192 and 193 are now `tools/name-check.mjs`, the seventh release check. On a late-game save in English and German it opens every tab and window and fails if a visible control has no accessible name, or if two controls in the same view share one. Allowed repeats: empty Garden plots, locked secret trophies, and a window's ✕ next to its own Close button, which do the same thing. It takes about 50 seconds and passes now. As a test, removing the Anomaly buttons' names made it fail with "6 controls named Enter".
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
