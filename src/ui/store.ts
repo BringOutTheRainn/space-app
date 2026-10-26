@@ -211,9 +211,11 @@ export async function restorePurchases(): Promise<void> {
 
 // ------------------------------------------------------------------ Shop
 
-function buyButton(ctx: Ctx, id: string, label?: string): string {
+/** `what` names the product for screen readers, which otherwise hear several buttons that only say "$0.99". */
+function buyButton(ctx: Ctx, id: string, what: string, label?: string): string {
   const ok = canBuy(ctx.s, id);
-  return `<button class="btn ${ok ? 'btn-primary' : 'btn-plain'} shop-buy" data-buy="${id}" ${ok ? '' : 'disabled'}>${esc(label ?? productPrice(id))}</button>`;
+  const text = label ?? productPrice(id);
+  return `<button class="btn ${ok ? 'btn-primary' : 'btn-plain'} shop-buy" data-buy="${id}" ${ok ? '' : 'disabled'} aria-label="${esc(`${what}, ${text}`)}">${esc(text)}</button>`;
 }
 
 export function openShop(ctx: Ctx, onChange: () => void): void {
@@ -227,34 +229,34 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
     if (starterLeft > 0) {
       parts.push(`<div class="shop-card shop-feature">
         <div class="shop-kicker">${t('New player offer · ends in {time}', { time: fmtTime(starterLeft / 1000) })}</div>
-        <div class="shop-row">${icon('gift')}<div class="shop-main"><b>${t('Starter Pack')}</b><span>${t('10 Quasar Crystals, 4 hours of production and +{pct}% production forever.', { pct: STARTER_PCT * 100 })}</span></div>${buyButton(ctx, 'starter_pack')}</div>
+        <div class="shop-row">${icon('gift')}<div class="shop-main"><b>${t('Starter Pack')}</b><span>${t('10 Quasar Crystals, 4 hours of production and +{pct}% production forever.', { pct: STARTER_PCT * 100 })}</span></div>${buyButton(ctx, 'starter_pack', t('Starter Pack'))}</div>
       </div>`);
     }
 
     parts.push(`<div class="shop-card${owns(s, 'supporter_pack') ? ' owned' : ''}">
       <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>${t('Supporter Pack')}</b><span>${t('No break ads or banners, ever. Production x{n} forever. Optional reward ads stay for their bonuses.', { n: SUPPORTER_MULT })}</span></div>
-      ${owns(s, 'supporter_pack') ? `<span class="shop-owned">${t('Owned')}</span>` : buyButton(ctx, 'supporter_pack')}</div></div>`);
+      ${owns(s, 'supporter_pack') ? `<span class="shop-owned">${t('Owned')}</span>` : buyButton(ctx, 'supporter_pack', t('Supporter Pack'))}</div></div>`);
 
     const v = vaultValue(s, d);
     parts.push(`<div class="shop-card">
       <div class="shop-row">${icon('darkMatter')}<div class="shop-main"><b>${t('Stardust Vault')}</b><span>${t('Saves {n} minutes of production every hour, even while you are away, up to {cap} hours.', { n: VAULT_RATE * 60, cap: VAULT_CAP_HOURS })}${crystalsUnlocked(s) ? ` ${t('Plus a crystal for every {n} hours saved.', { n: VAULT_HOURS_PER_CRYSTAL })}` : ''}</span></div></div>
       <div class="bar"><div class="bar-fill vault-fill" style="width:${(s.vaultHours / VAULT_CAP_HOURS) * 100}%"></div></div>
       <div class="shop-row shop-sub"><span class="dim small">${t('{n} of {cap} hours saved · worth {sd} Stardust', { n: fmtDec(s.vaultHours), cap: VAULT_CAP_HOURS, sd: numHtml(v.stardust) })}${v.crystals ? (v.crystals === 1 ? t(' and 1 crystal') : t(' and {n} crystals', { n: v.crystals })) : ''}</span>
-      ${buyButton(ctx, 'vault_open', s.vaultHours >= 1 ? t('Open {price}', { price: productPrice('vault_open') }) : t('Filling'))}</div></div>`);
+      ${buyButton(ctx, 'vault_open', t('Stardust Vault'), s.vaultHours >= 1 ? t('Open {price}', { price: productPrice('vault_open') }) : t('Filling'))}</div></div>`);
 
     const pass = currentPass(s, now);
     parts.push(`<div class="shop-card">
       <div class="shop-row">${icon('trophy')}<div class="shop-main"><b>${t('Star Pass Premium')}</b><span>${t('This season (ends in {time}): a second reward track with double Stardust, 20 crystals, 2 Contract Medals and the Aurora skin. Rewards for tiers you already reached are paid at once.', { time: fmtTime(seasonTimeLeft(now) / 1000) })}</span></div>
-      ${pass.premium ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'star_pass')}</div></div>`);
+      ${pass.premium ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'star_pass', t('Star Pass Premium'))}</div></div>`);
 
     const e = currentEvent(s, now);
     parts.push(`<div class="shop-card">
       <div class="shop-row">${icon('rift')}<div class="shop-main"><b>${t('Event Pass')}</b><span>${e ? t('This weekend: double Flux and a Platinum badge worth 12 hours of production and 10 crystals.') : eventActive(now) ? t('Opens with the next weekend event.') : t('Opens with the next weekend event, in {time}.', { time: fmtTime(eventTimeLeft(now) / 1000) })}</span></div>
-      ${e?.pass ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'event_pass')}</div></div>`);
+      ${e?.pass ? `<span class="shop-owned">${t('Active')}</span>` : buyButton(ctx, 'event_pass', t('Event Pass'))}</div></div>`);
 
     const packs = ['crystals_5', 'crystals_30', 'crystals_80'].map((id) => {
       const p = PRODUCT_BY_ID[id];
-      return `<div class="shop-pack">${icon('crystal')}<b>${esc(p.desc.split(' ')[0])}</b><span class="dim small">${esc(t(p.name))}</span>${buyButton(ctx, id)}</div>`;
+      return `<div class="shop-pack">${icon('crystal')}<b>${esc(p.desc.split(' ')[0])}</b><span class="dim small">${esc(t(p.name))}</span>${buyButton(ctx, id, `${p.desc.split(' ')[0]} ${t(p.name)}`)}</div>`;
     }).join('');
     parts.push(`<div class="shop-card"><div class="shop-head"><b>${t('Quasar Crystals')}</b>${crystalsUnlocked(s) ? `<span class="dim small">${t('You have {n}', { n: s.crystals })}</span>` : `<span class="dim small">${t('Unlock at 1B lifetime Stardust')}</span>`}</div>
       <div class="shop-packs">${packs}</div></div>`);
@@ -263,7 +265,7 @@ export function openShop(ctx: Ctx, onChange: () => void): void {
       const have = k.id === 'default' || owns(s, `skin_${k.id}`);
       const using = s.skin === k.id;
       return `<div class="shop-skin${using ? ' using' : ''}"><span class="skin-swatch" style="background:radial-gradient(circle at 35% 30%, ${k.swatch[0]}, ${k.swatch[1]})"></span>
-        <b>${esc(t(k.name))}</b>${using ? `<span class="shop-owned">${t('In use')}</span>` : have ? `<button class="btn btn-plain shop-buy" data-skin="${k.id}">${t('Use')}</button>` : 'exclusive' in k && k.exclusive ? `<span class="dim small shop-owned-note">${t('Star Pass reward')}</span>` : buyButton(ctx, `skin_${k.id}`)}</div>`;
+        <b>${esc(t(k.name))}</b>${using ? `<span class="shop-owned">${t('In use')}</span>` : have ? `<button class="btn btn-plain shop-buy" data-skin="${k.id}">${t('Use')}</button>` : 'exclusive' in k && k.exclusive ? `<span class="dim small shop-owned-note">${t('Star Pass reward')}</span>` : buyButton(ctx, `skin_${k.id}`, t(k.name))}</div>`;
     }).join('');
     const halo = s.haloEarned
       ? `<button class="btn btn-plain shop-buy" data-halo aria-pressed="${s.haloOn}">${s.haloOn ? t('Hide') : t('Show')}</button>`

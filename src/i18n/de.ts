@@ -136,6 +136,8 @@ export const DE: Record<string, string> = {
   "Goal {n}": "Ziel {n}",
   "Leave": "Verlassen",
   "Enter": "Betreten",
+  "Enter {name}": "Betreten: {name}",
+  "Watch ad: {name}": "Werbung ansehen: {name}",
   "Enter {name}?": "{name} betreten?",
   "<b>Rule:</b> {rule}<br><b>Goal:</b> earn {goal} Stardust in this universe.<br><b>Reward:</b> {reward}": "<b>Regel:</b> {rule}<br><b>Ziel:</b> verdiene {goal} Sternenstaub in diesem Universum.<br><b>Belohnung:</b> {reward}",
   "Your current universe collapses and you collect <b class=\"dm\">+{n} Dark Matter</b>.": "Dein aktuelles Universum kollabiert und du erhältst <b class=\"dm\">+{n} Dunkle Materie</b>.",

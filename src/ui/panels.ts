@@ -334,7 +334,7 @@ export class CosmosPanel implements Panel {
           <div class="dim">${esc(t(a.rule))}</div>
           <div class="anomaly-reward">${esc(t(a.rewardText))}</div>
           ${active ? `<div class="bar"><div class="bar-fill" id="anomaly-bar"></div></div><div class="anomaly-row"><span class="dim small" id="anomaly-progress"></span><button class="btn btn-plain" id="btn-abandon">${t('Leave')}</button></div>`
-            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''}>${t('Enter')}</button>`}
+            : isDone ? '' : `<button class="btn btn-cosmic" data-anomaly="${a.id}" ${s.anomaly ? 'disabled' : ''} aria-label="${esc(t('Enter {name}', { name: t(a.name) }))}">${t('Enter')}</button>`}
         </div>`;
       }).join('')}</div>`;
   }

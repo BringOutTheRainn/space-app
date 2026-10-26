@@ -443,14 +443,14 @@ export function openHyperdrive(ctx: Ctx): void {
           <p>${t('Double all production for {n} hours. Keeps running while you are away and stacks up to {cap} hours.', { n: (AD_CONFIG.hyperMinutes * mult) / 60, cap: AD_CONFIG.hyperCapMinutes / 60 })}</p>
           ${left > 0 ? `<p class="dim small">${t('Active: {time} left.', { time: fmtTime(left / 1000) })}</p>` : ''}
           ${hyperCanStack(s) ? '' : `<p class="dim small">${t('Fully charged. Come back when it runs lower.')}</p>`}</div>
-        <button class="btn ${can ? 'btn-primary' : 'btn-plain'}" data-boost="hyper" ${can ? '' : 'disabled'}>${t('Watch ad')}</button>
+        <button class="btn ${can ? 'btn-primary' : 'btn-plain'}" data-boost="hyper" ${can ? '' : 'disabled'} aria-label="${esc(t('Watch ad: {name}', { name: t('Hyperdrive') }))}">${t('Watch ad')}</button>
       </div>
       <div class="boost">
         <div class="boost-ico">${icon('tap')}</div>
         <div class="boost-main"><b>${t('Tap Frenzy')}</b>
           <p>${t('For {n} seconds, probes tap {rate} times a second and every tap is worth x{mult}.', { n: AD_CONFIG.frenzySeconds * mult, rate: AD_CONFIG.frenzyTapsPerSecond, mult: BUFF_MULT.frenzy })}</p>
           ${frenzyText ? `<p class="dim small">${frenzyText}</p>` : ''}</div>
-        <button class="btn ${frenzyUsable() ? 'btn-primary' : 'btn-plain'}" data-boost="frenzy" ${frenzyUsable() ? '' : 'disabled'}>${t('Watch ad')}</button>
+        <button class="btn ${frenzyUsable() ? 'btn-primary' : 'btn-plain'}" data-boost="frenzy" ${frenzyUsable() ? '' : 'disabled'} aria-label="${esc(t('Watch ad: {name}', { name: t('Tap Frenzy') }))}">${t('Watch ad')}</button>
       </div>
     </div>`;
   };
