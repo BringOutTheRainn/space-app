@@ -1351,6 +1351,8 @@ backup's 12,345 Stardust with no page errors; a random-tap session was clean.
 
 **Run 199. Focus moves into windows and back.** This checked where keyboard and TalkBack focus goes when a window opens and closes with the keyboard. It covered Stats, Settings, Shop, Missions and Boosts on a late-game save. Each time, focus moved into the window as it opened, and Escape closed it and put focus back on the button that opened it. The Garden, Forge, Market and gift windows were hidden at this point in that save and were not tried. They open through the same window code (`openModal`). No changes were needed.
 
+**Run 200. Focus check for the remaining windows.** Run 199 skipped the Garden, Forge, Market, daily gift and Quasar Crystals windows because that save had not unlocked them. On a save that has, each was opened with the keyboard: focus moved into the window, and Escape closed it and put focus back on the button that opened it. No changes were needed.
+
 ### Backlog from research (best first)
 1. After launch: a layer past Stellar Echoes for players in their second month, when universes
    start lasting four days or more (run 88).
